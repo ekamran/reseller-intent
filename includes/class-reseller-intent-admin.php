@@ -241,9 +241,18 @@ final class Reseller_Intent_Admin {
 			365 => __( '1 year', 'reseller-intent' ),
 			730 => __( '2 years', 'reseller-intent' ),
 		);
+		$notice = isset( $_GET['rintent_notice'] ) ? sanitize_key( wp_unslash( $_GET['rintent_notice'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Reseller Intent — Settings', 'reseller-intent' ); ?></h1>
+
+			<?php if ( 'settings_saved' === $notice ) : ?>
+				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Settings saved.', 'reseller-intent' ); ?></p></div>
+			<?php elseif ( preg_match( '/^imported_(\d+)$/', $notice, $import_match ) ) : ?>
+				<div class="notice notice-success is-dismissible"><p><?php echo esc_html( sprintf( /* translators: %s: number of events */ __( '%s legacy events imported.', 'reseller-intent' ), number_format_i18n( (int) $import_match[1] ) ) ); ?></p></div>
+			<?php elseif ( 'import_skipped' === $notice ) : ?>
+				<div class="notice notice-info is-dismissible"><p><?php esc_html_e( 'Import skipped — already imported or no legacy table found.', 'reseller-intent' ); ?></p></div>
+			<?php endif; ?>
 
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="rintent_save_settings" />

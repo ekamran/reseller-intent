@@ -50,7 +50,7 @@ final class Reseller_Intent_Settings {
 
 		wp_safe_redirect(
 			add_query_arg(
-				array( 'page' => 'reseller-intent', 'rintent_notice' => 'settings_saved' ),
+				array( 'page' => 'reseller-intent-settings', 'rintent_notice' => 'settings_saved' ),
 				admin_url( 'admin.php' )
 			)
 		);

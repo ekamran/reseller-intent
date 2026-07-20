@@ -157,8 +157,8 @@ final class Reseller_Intent_Admin {
 			</div>
 
 			<div class="rintent-card">
-				<h2><?php esc_html_e( 'Starting-at price', 'reseller-intent' ); ?></h2>
-				<p class="rintent-card-desc"><?php esc_html_e( 'Prints the cheapest current price from the selected products. Select every plan of a family so the number stays correct when prices change.', 'reseller-intent' ); ?></p>
+				<h2><?php esc_html_e( 'Live product price', 'reseller-intent' ); ?></h2>
+				<p class="rintent-card-desc"><?php esc_html_e( 'Prints a live price from the selected products: cheapest, highest or a range. Add your own text around it. Select every plan of a family so the number stays correct when prices change.', 'reseller-intent' ); ?></p>
 
 				<?php if ( empty( $products ) ) : ?>
 					<p><em><?php esc_html_e( 'No published Reseller Store products found. Import products in Reseller Store first.', 'reseller-intent' ); ?></em></p>
@@ -183,6 +183,31 @@ final class Reseller_Intent_Admin {
 						</span>
 					</div>
 					<div class="rintent-field">
+						<span class="rintent-label"><label for="rintent-gen-mode"><?php esc_html_e( 'Show', 'reseller-intent' ); ?></label></span>
+						<span>
+							<select id="rintent-gen-mode">
+								<option value="min"><?php esc_html_e( 'Cheapest price', 'reseller-intent' ); ?></option>
+								<option value="max"><?php esc_html_e( 'Highest price', 'reseller-intent' ); ?></option>
+								<option value="range"><?php esc_html_e( 'Price range (cheapest to highest)', 'reseller-intent' ); ?></option>
+							</select>
+						</span>
+					</div>
+					<div class="rintent-field">
+						<span class="rintent-label"><label for="rintent-gen-before"><?php esc_html_e( 'Text around it', 'reseller-intent' ); ?></label></span>
+						<span>
+							<input type="text" id="rintent-gen-before" class="regular-text" placeholder="<?php esc_attr_e( 'Starting at ', 'reseller-intent' ); ?>" />
+							<input type="text" id="rintent-gen-after" class="regular-text" placeholder="<?php esc_attr_e( ' per year', 'reseller-intent' ); ?>" />
+							<p class="description"><?php esc_html_e( 'Before and after text, both optional. Use any wording you like, spaces included.', 'reseller-intent' ); ?></p>
+						</span>
+					</div>
+					<div class="rintent-field" id="rintent-gen-sep-row" style="display:none;">
+						<span class="rintent-label"><label for="rintent-gen-separator"><?php esc_html_e( 'Range separator', 'reseller-intent' ); ?></label></span>
+						<span>
+							<input type="text" id="rintent-gen-separator" class="regular-text" placeholder=" to " />
+							<p class="description"><?php esc_html_e( 'Printed between the two prices. Default: to', 'reseller-intent' ); ?></p>
+						</span>
+					</div>
+					<div class="rintent-field">
 						<span class="rintent-label"><label for="rintent-gen-fallback"><?php esc_html_e( 'Fallback text', 'reseller-intent' ); ?></label></span>
 						<span>
 							<input type="text" id="rintent-gen-fallback" class="regular-text" placeholder="$3.99" />
@@ -194,6 +219,12 @@ final class Reseller_Intent_Admin {
 						<span class="rintent-output">
 							<code id="rintent-gen-price-out" data-empty="<?php esc_attr_e( 'Select at least one product', 'reseller-intent' ); ?>"></code>
 							<button type="button" class="button" id="rintent-gen-price-copy"><?php esc_html_e( 'Copy', 'reseller-intent' ); ?></button>
+						</span>
+					</div>
+					<div class="rintent-field">
+						<span class="rintent-label"><?php esc_html_e( 'Styling', 'reseller-intent' ); ?></span>
+						<span>
+							<p class="description" style="margin:0;"><?php esc_html_e( 'Every part has its own class, style them from your theme:', 'reseller-intent' ); ?> <code>.rintent-price</code> <code>.rintent-price-before</code> <code>.rintent-price-amount</code> <code>.rintent-price-sep</code> <code>.rintent-price-after</code></p>
 						</span>
 					</div>
 				<?php endif; ?>
@@ -284,8 +315,27 @@ final class Reseller_Intent_Admin {
 					return;
 				}
 				var ids = Array.prototype.slice.call(document.querySelectorAll('.rintent-gen-product:checked')).map(function(cb) { return cb.value; });
-				var fallback = esc((document.getElementById('rintent-gen-fallback') || { value: '' }).value);
+				var mode = document.getElementById('rintent-gen-mode').value;
+				var before = esc(document.getElementById('rintent-gen-before').value);
+				var after = esc(document.getElementById('rintent-gen-after').value);
+				var separator = esc(document.getElementById('rintent-gen-separator').value);
+				var fallback = esc(document.getElementById('rintent-gen-fallback').value);
+
+				document.getElementById('rintent-gen-sep-row').style.display = mode === 'range' ? '' : 'none';
+
 				var out = '[rintent_price ids="' + ids.join(',') + '"';
+				if (mode !== 'min') {
+					out += ' mode="' + mode + '"';
+				}
+				if (before) {
+					out += ' before="' + before + '"';
+				}
+				if (after) {
+					out += ' after="' + after + '"';
+				}
+				if (mode === 'range' && separator) {
+					out += ' separator="' + separator + '"';
+				}
 				if (fallback) {
 					out += ' fallback="' + fallback + '"';
 				}
@@ -317,7 +367,10 @@ final class Reseller_Intent_Admin {
 				document.querySelectorAll('.rintent-gen-product').forEach(function(cb) {
 					cb.addEventListener('change', buildPrice);
 				});
-				document.getElementById('rintent-gen-fallback').addEventListener('input', buildPrice);
+				['rintent-gen-mode', 'rintent-gen-before', 'rintent-gen-after', 'rintent-gen-separator', 'rintent-gen-fallback'].forEach(function(id) {
+					document.getElementById(id).addEventListener('input', buildPrice);
+					document.getElementById(id).addEventListener('change', buildPrice);
+				});
 				document.getElementById('rintent-gen-price-copy').addEventListener('click', function() { copy('rintent-gen-price-out', this); });
 			}
 

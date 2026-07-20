@@ -4,17 +4,24 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * [rintent_price], live "starting at" price pulled from Reseller Store
- * product meta (rstore_salePrice / rstore_listPrice), which GoDaddy's own
- * catalog sync keeps fresh. Pass every plan of a family and the cheapest one
- * is shown, so the number stays correct even if GoDaddy reprices a different
- * plan lowest.
+ * [rintent_price], live price pulled from Reseller Store product meta
+ * (rstore_salePrice / rstore_listPrice), which GoDaddy's own catalog sync
+ * keeps fresh. Pass every plan of a family so the number stays correct
+ * even if GoDaddy reprices a different plan lowest.
  *
  * Attributes:
- *   ids       Comma-separated reseller_product post IDs.       Required.
- *   fallback  Text to print if no product yields a price.      Default: ""
+ *   ids        Comma-separated reseller_product post IDs.        Required.
+ *   mode       "min" (cheapest, default), "max" or "range".
+ *   before     Text printed before the price, e.g. "From ".      Default: ""
+ *   after      Text printed after it, e.g. " per year".          Default: ""
+ *   separator  Between the two range prices.                     Default: " to "
+ *   fallback   Text to print if no product yields a price.       Default: ""
+ *   class      Extra CSS class(es) on the wrapper.
  *
- * Usage: Starting at [rintent_price ids="116,118,119" fallback="$3.99"]/mo
+ * Markup (style from your theme, every part has a class):
+ *   .rintent-price > .rintent-price-before / -amount / -sep / -after
+ *
+ * Usage: [rintent_price ids="116,118" before="Starting at " after="/mo"]
  */
 final class Reseller_Intent_Price {
 
@@ -25,15 +32,24 @@ final class Reseller_Intent_Price {
 	public function render( $atts ) {
 		$atts = shortcode_atts(
 			array(
-				'ids'      => '',
-				'fallback' => '',
+				'ids'       => '',
+				'mode'      => 'min',
+				'before'    => '',
+				'after'     => '',
+				'separator' => ' to ',
+				'fallback'  => '',
+				'class'     => '',
 			),
 			$atts,
 			'rintent_price'
 		);
 
-		$lowest       = null;
-		$lowest_label = '';
+		$mode = in_array( $atts['mode'], array( 'min', 'max', 'range' ), true ) ? $atts['mode'] : 'min';
+
+		$lowest        = null;
+		$highest       = null;
+		$lowest_label  = '';
+		$highest_label = '';
 
 		foreach ( wp_parse_id_list( $atts['ids'] ) as $post_id ) {
 			if ( 'publish' !== get_post_status( $post_id ) ) {
@@ -54,13 +70,50 @@ final class Reseller_Intent_Price {
 				$lowest       = $value;
 				$lowest_label = trim( $label );
 			}
+
+			if ( null === $highest || $value > $highest ) {
+				$highest       = $value;
+				$highest_label = trim( $label );
+			}
 		}
+
+		$classes = trim( 'rintent-price ' . preg_replace( '/[^A-Za-z0-9 _-]/', '', (string) ( $atts['class'] ?? '' ) ) );
 
 		if ( null === $lowest ) {
-			$lowest_label = $atts['fallback'];
+			if ( '' === (string) $atts['fallback'] ) {
+				return '';
+			}
+
+			return '<span class="' . esc_attr( $classes ) . '">'
+				. $this->part( 'before', $atts['before'] )
+				. '<span class="rintent-price-amount">' . esc_html( $atts['fallback'] ) . '</span>'
+				. $this->part( 'after', $atts['after'] )
+				. '</span>';
 		}
 
-		return esc_html( $lowest_label );
+		$primary = 'max' === $mode ? $highest_label : $lowest_label;
+
+		$html  = '<span class="' . esc_attr( $classes ) . '">';
+		$html .= $this->part( 'before', $atts['before'] );
+		$html .= '<span class="rintent-price-amount">' . esc_html( $primary ) . '</span>';
+
+		// Range collapses to one price when every product costs the same.
+		if ( 'range' === $mode && $highest > $lowest ) {
+			$html .= '<span class="rintent-price-sep">' . esc_html( $atts['separator'] ) . '</span>';
+			$html .= '<span class="rintent-price-amount rintent-price-amount--max">' . esc_html( $highest_label ) . '</span>';
+		}
+
+		$html .= $this->part( 'after', $atts['after'] );
+
+		return $html . '</span>';
+	}
+
+	private function part( $name, $text ) {
+		if ( '' === (string) $text ) {
+			return '';
+		}
+
+		return '<span class="rintent-price-' . $name . '">' . esc_html( $text ) . '</span>';
 	}
 
 	/**

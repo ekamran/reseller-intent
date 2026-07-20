@@ -79,7 +79,10 @@ final class Reseller_Intent_TLD_Strip {
 
 		wp_safe_redirect(
 			add_query_arg(
-				array( 'page' => 'reseller-intent-shortcodes', 'rintent_notice' => $notice ),
+				array(
+					'page'           => 'reseller-intent-shortcodes',
+					'rintent_notice' => $notice,
+				),
 				admin_url( 'admin.php' )
 			)
 		);
@@ -282,7 +285,7 @@ final class Reseller_Intent_TLD_Strip {
 		$sets = (array) get_option( self::SETS_OPTION, array() );
 		$key  = md5( implode( ',', $tlds ) );
 
-		if ( ! isset( $sets[ $key ] ) || $sets[ $key ] !== array_values( $tlds ) ) {
+		if ( ! isset( $sets[ $key ] ) || array_values( $tlds ) !== $sets[ $key ] ) {
 			$sets[ $key ] = array_values( $tlds );
 			update_option( self::SETS_OPTION, $sets, false );
 		}

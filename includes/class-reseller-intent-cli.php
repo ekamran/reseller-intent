@@ -52,11 +52,26 @@ final class Reseller_Intent_CLI {
 		WP_CLI\Utils\format_items(
 			'table',
 			array(
-				array( 'metric' => 'searches', 'value' => $searches ),
-				array( 'metric' => 'unique searches', 'value' => $row ? (int) $row->unique_searches : 0 ),
-				array( 'metric' => 'cart clicks', 'value' => $carts ),
-				array( 'metric' => 'domains added', 'value' => $row ? (int) $row->domains_added : 0 ),
-				array( 'metric' => 'search to cart rate', 'value' => $searches ? round( $carts / $searches * 100, 1 ) . '%' : '0%' ),
+				array(
+					'metric' => 'searches',
+					'value'  => $searches,
+				),
+				array(
+					'metric' => 'unique searches',
+					'value'  => $row ? (int) $row->unique_searches : 0,
+				),
+				array(
+					'metric' => 'cart clicks',
+					'value'  => $carts,
+				),
+				array(
+					'metric' => 'domains added',
+					'value'  => $row ? (int) $row->domains_added : 0,
+				),
+				array(
+					'metric' => 'search to cart rate',
+					'value'  => $searches ? round( $carts / $searches * 100, 1 ) . '%' : '0%',
+				),
 			),
 			array( 'metric', 'value' )
 		);
@@ -77,6 +92,7 @@ final class Reseller_Intent_CLI {
 	 * : Write to this file instead of stdout.
 	 */
 	public function export( $args, $assoc_args ) {
+		// phpcs:disable WordPress.WP.AlternativeFunctions -- streaming export to stdout or a caller-chosen file; WP_Filesystem cannot stream.
 		global $wpdb;
 
 		$days   = max( 0, (int) ( $assoc_args['days'] ?? 0 ) );
@@ -110,7 +126,7 @@ final class Reseller_Intent_CLI {
 		do {
 			$rows = $wpdb->get_results(
 				$wpdb->prepare(
-					'SELECT ' . implode( ',', $columns ) . " FROM {$table_name}{$where}" . ( $where ? ' AND' : ' WHERE' ) . ' id > %d ORDER BY id ASC LIMIT 5000', // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					'SELECT ' . implode( ',', $columns ) . " FROM {$table_name}{$where}" . ( $where ? ' AND' : ' WHERE' ) . ' id > %d ORDER BY id ASC LIMIT 5000', // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- fixed column list, prefixed table, prepared where fragment.
 					$last_id
 				),
 				ARRAY_A
@@ -125,9 +141,10 @@ final class Reseller_Intent_CLI {
 					fwrite( $handle, ( $total ? ',' : '' ) . wp_json_encode( $row ) );
 				}
 
-				$total++;
+				++$total;
 			}
-		} while ( count( $rows ) === 5000 );
+			$fetched = count( $rows );
+		} while ( 5000 === $fetched );
 
 		if ( 'json' === $format ) {
 			fwrite( $handle, ']}' );
@@ -138,6 +155,7 @@ final class Reseller_Intent_CLI {
 		if ( $output ) {
 			WP_CLI::success( sprintf( '%d events exported to %s.', $total, $output ) );
 		}
+		// phpcs:enable WordPress.WP.AlternativeFunctions
 	}
 
 	/**

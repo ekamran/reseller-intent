@@ -20,11 +20,11 @@ final class Reseller_Intent {
 	private $health;
 
 	public function __construct() {
-		$this->settings = new Reseller_Intent_Settings();
-		$this->assets   = new Reseller_Intent_Assets();
-		$this->tracker  = new Reseller_Intent_Tracker();
-		$this->admin    = new Reseller_Intent_Admin();
-		$this->import   = new Reseller_Intent_Import();
+		$this->settings  = new Reseller_Intent_Settings();
+		$this->assets    = new Reseller_Intent_Assets();
+		$this->tracker   = new Reseller_Intent_Tracker();
+		$this->admin     = new Reseller_Intent_Admin();
+		$this->import    = new Reseller_Intent_Import();
 		$this->tld_strip = new Reseller_Intent_TLD_Strip();
 		$this->price     = new Reseller_Intent_Price();
 		$this->phone     = new Reseller_Intent_Phone();
@@ -117,5 +117,4 @@ final class Reseller_Intent {
 			'<p>' . esc_html__( 'This site records anonymous statistics about domain name searches made in the search box: the searched name, whether it was available, the country-level region, the device type (mobile or desktop) and the page it happened on. No IP addresses, no names, no accounts and no cookies are stored, and single visitors cannot be identified or tracked over time. The data is kept only to understand which domains people look for.', 'reseller-intent' ) . '</p>'
 		);
 	}
-
 }

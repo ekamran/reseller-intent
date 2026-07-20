@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<ruleset name="Reseller Intent">
+	<description>WordPress coding standards for Reseller Intent.</description>
+
+	<file>.</file>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/blueprints/*</exclude-pattern>
+
+	<arg value="ps"/>
+	<arg name="extensions" value="php"/>
+	<arg name="parallel" value="8"/>
+
+	<config name="minimum_wp_version" value="6.2"/>
+	<config name="testVersion" value="8.1-"/>
+
+	<rule ref="WordPress">
+		<!-- Analytics on a custom table: every query is a direct query by design,
+		     caching lives in the application layer (transients, last-good options). -->
+		<exclude name="WordPress.DB.DirectDatabaseQuery"/>
+
+		<!-- Queries interpolate only the wpdb-prefixed table name and WHERE
+		     fragments that were themselves built with $wpdb->prepare(); every
+		     user-supplied value goes through prepare() placeholders. -->
+		<exclude name="WordPress.DB.PreparedSQL.InterpolatedNotPrepared"/>
+
+		<!-- Commenting style: the codebase documents the why inline; formal
+		     file/class/variable docblocks and full param tags are not enforced. -->
+		<exclude name="Squiz.Commenting.FileComment"/>
+		<exclude name="Squiz.Commenting.ClassComment"/>
+		<exclude name="Squiz.Commenting.VariableComment"/>
+		<exclude name="Squiz.Commenting.FunctionComment"/>
+		<exclude name="Generic.Commenting.DocComment"/>
+	</rule>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="reseller-intent"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>

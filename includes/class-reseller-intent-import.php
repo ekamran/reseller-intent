@@ -84,7 +84,10 @@ final class Reseller_Intent_Import {
 	private function redirect( $notice ) {
 		wp_safe_redirect(
 			add_query_arg(
-				array( 'page' => 'reseller-intent-settings', 'rintent_notice' => sanitize_key( $notice ) ),
+				array(
+					'page'           => 'reseller-intent-settings',
+					'rintent_notice' => sanitize_key( $notice ),
+				),
 				admin_url( 'admin.php' )
 			)
 		);

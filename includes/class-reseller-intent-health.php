@@ -34,7 +34,7 @@ final class Reseller_Intent_Health {
 	private function result( $test, $status, $label, $description ) {
 		return array(
 			'label'       => $label,
-			'status'      => $status, // good | recommended | critical
+			'status'      => $status, // One of: good, recommended, critical.
 			'badge'       => array(
 				'label' => __( 'Reseller Intent', 'reseller-intent' ),
 				'color' => 'blue',

@@ -44,7 +44,10 @@ final class Reseller_Intent_Digest {
 
 		wp_safe_redirect(
 			add_query_arg(
-				array( 'page' => 'reseller-intent-settings', 'rintent_notice' => $sent ? 'digest_sent' : 'digest_failed' ),
+				array(
+					'page'           => 'reseller-intent-settings',
+					'rintent_notice' => $sent ? 'digest_sent' : 'digest_failed',
+				),
 				admin_url( 'admin.php' )
 			)
 		);
@@ -145,10 +148,11 @@ final class Reseller_Intent_Digest {
 			$wpdb->prepare(
 				"SELECT LOWER(SUBSTRING_INDEX(domain_query, '.', -1)) AS tld, COUNT(*) AS hits
 				FROM {$table_name}
-				WHERE event_type = 'domain_search' AND domain_query LIKE '%%.%%' AND created_at >= %s
+				WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s
 				GROUP BY tld
 				ORDER BY hits DESC
 				LIMIT 5",
+				'%' . $wpdb->esc_like( '.' ) . '%',
 				$start
 			)
 		);
@@ -169,7 +173,7 @@ final class Reseller_Intent_Digest {
 
 		$html  = '<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:560px;margin:0 auto;color:#1d2327;">';
 		$html .= '<h2 style="border-bottom:3px solid ' . esc_attr( $accent ) . ';padding-bottom:8px;">' . esc_html( get_bloginfo( 'name' ) ) . ', ' . esc_html__( 'Domain search digest', 'reseller-intent' ) . '</h2>';
-		$html .= '<p style="color:#646970;">' . esc_html( wp_date( 'M j' , time() - ( 6 * DAY_IN_SECONDS ) ) . ' – ' . wp_date( 'M j, Y' ) ) . '</p>';
+		$html .= '<p style="color:#646970;">' . esc_html( wp_date( 'M j', time() - ( 6 * DAY_IN_SECONDS ) ) . ' – ' . wp_date( 'M j, Y' ) ) . '</p>';
 
 		$html .= '<table role="presentation" style="width:100%;border-collapse:collapse;margin:16px 0;">';
 		$html .= '<tr>';

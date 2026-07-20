@@ -70,11 +70,13 @@ final class Reseller_Intent_Settings {
 
 		check_admin_referer( 'rintent_save_numbers' );
 
-		$numbers = $this->maybe_default_support_numbers( $this->sanitize_support_numbers(
-			isset( $_POST['support_label'] ) ? (array) wp_unslash( $_POST['support_label'] ) : array(),
-			isset( $_POST['support_number'] ) ? (array) wp_unslash( $_POST['support_number'] ) : array(),
-			isset( $_POST['support_countries'] ) ? (array) wp_unslash( $_POST['support_countries'] ) : array()
-		) );
+		$numbers = $this->maybe_default_support_numbers(
+			$this->sanitize_support_numbers(
+				isset( $_POST['support_label'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['support_label'] ) ) : array(),
+				isset( $_POST['support_number'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['support_number'] ) ) : array(),
+				isset( $_POST['support_countries'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['support_countries'] ) ) : array()
+			)
+		);
 
 		$settings = (array) get_option( self::OPTION, array() );
 
@@ -83,7 +85,10 @@ final class Reseller_Intent_Settings {
 
 		wp_safe_redirect(
 			add_query_arg(
-				array( 'page' => 'reseller-intent-shortcodes', 'rintent_notice' => 'numbers_saved' ),
+				array(
+					'page'           => 'reseller-intent-shortcodes',
+					'rintent_notice' => 'numbers_saved',
+				),
 				admin_url( 'admin.php' )
 			)
 		);
@@ -107,7 +112,10 @@ final class Reseller_Intent_Settings {
 
 		wp_safe_redirect(
 			add_query_arg(
-				array( 'page' => 'reseller-intent-shortcodes', 'rintent_notice' => 'numbers_reset' ),
+				array(
+					'page'           => 'reseller-intent-shortcodes',
+					'rintent_notice' => 'numbers_reset',
+				),
 				admin_url( 'admin.php' )
 			)
 		);
@@ -122,18 +130,18 @@ final class Reseller_Intent_Settings {
 		check_admin_referer( 'rintent_save_settings' );
 
 		$settings = array(
-			'accent_color'        => $this->sanitize_color( isset( $_POST['accent_color'] ) ? wp_unslash( $_POST['accent_color'] ) : '' ),
-			'retention_days'      => $this->sanitize_retention( isset( $_POST['retention_days'] ) ? wp_unslash( $_POST['retention_days'] ) : '0' ),
+			'accent_color'        => $this->sanitize_color( isset( $_POST['accent_color'] ) ? sanitize_text_field( wp_unslash( $_POST['accent_color'] ) ) : '' ),
+			'retention_days'      => $this->sanitize_retention( isset( $_POST['retention_days'] ) ? sanitize_text_field( wp_unslash( $_POST['retention_days'] ) ) : '0' ),
 			'delete_on_uninstall' => ! empty( $_POST['delete_on_uninstall'] ),
 			'track_bots'          => ! empty( $_POST['track_bots'] ),
 			'style_widget'        => ! empty( $_POST['style_widget'] ),
 			'widget_skeletons'    => ! empty( $_POST['widget_skeletons'] ),
 			'widget_clear_all'    => ! empty( $_POST['widget_clear_all'] ),
-			'blocklist'           => $this->sanitize_blocklist( isset( $_POST['blocklist'] ) ? wp_unslash( $_POST['blocklist'] ) : '' ),
+			'blocklist'           => $this->sanitize_blocklist( isset( $_POST['blocklist'] ) ? sanitize_textarea_field( wp_unslash( $_POST['blocklist'] ) ) : '' ),
 			'digest_enabled'      => ! empty( $_POST['digest_enabled'] ),
 			'digest_email'        => sanitize_email( isset( $_POST['digest_email'] ) ? wp_unslash( $_POST['digest_email'] ) : '' ),
 			'trim_gd_assets'      => ! empty( $_POST['trim_gd_assets'] ),
-			'gd_asset_pages'      => $this->sanitize_id_list( isset( $_POST['gd_asset_pages'] ) ? wp_unslash( $_POST['gd_asset_pages'] ) : '' ),
+			'gd_asset_pages'      => $this->sanitize_id_list( isset( $_POST['gd_asset_pages'] ) ? sanitize_text_field( wp_unslash( $_POST['gd_asset_pages'] ) ) : '' ),
 		);
 
 		/*
@@ -151,7 +159,10 @@ final class Reseller_Intent_Settings {
 
 		wp_safe_redirect(
 			add_query_arg(
-				array( 'page' => 'reseller-intent-settings', 'rintent_notice' => 'settings_saved' ),
+				array(
+					'page'           => 'reseller-intent-settings',
+					'rintent_notice' => 'settings_saved',
+				),
 				admin_url( 'admin.php' )
 			)
 		);
@@ -200,7 +211,7 @@ final class Reseller_Intent_Settings {
 	 * the owner's own list and future plugin updates never touch it.
 	 */
 	private function maybe_default_support_numbers( array $numbers ) {
-		return $numbers === Reseller_Intent_Phone::default_numbers() ? null : $numbers;
+		return Reseller_Intent_Phone::default_numbers() === $numbers ? null : $numbers;
 	}
 
 	private function sanitize_support_numbers( array $labels, array $numbers, array $countries ) {

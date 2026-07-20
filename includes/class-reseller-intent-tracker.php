@@ -4,16 +4,29 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class Reseller_Intent_Tracker {
+	/**
+	 * Anonymous frontend tracking endpoint.
+	 *
+	 * phpcs:disable WordPress.Security.NonceVerification.Missing -- deliberately
+	 * nonce-free: nonces baked into cached pages outlive their lifetime and
+	 * silently kill tracking. Guarded instead by a same-origin check and a
+	 * rate limiter; every field below is sanitized individually.
+	 */
 	public function handle_track_event() {
 		global $wpdb;
 
-		$request_method = isset( $_SERVER['REQUEST_METHOD'] ) ? (string) $_SERVER['REQUEST_METHOD'] : '';
+		$request_method = isset( $_SERVER['REQUEST_METHOD'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) : '';
 		if ( 'POST' !== strtoupper( $request_method ) ) {
 			wp_send_json_error( array( 'message' => 'Invalid request method' ), 405 );
 		}
 
 		if ( $this->is_bot_request() ) {
-			wp_send_json_success( array( 'ignored' => true, 'reason' => 'bot' ) );
+			wp_send_json_success(
+				array(
+					'ignored' => true,
+					'reason'  => 'bot',
+				)
+			);
 		}
 
 		/*
@@ -49,7 +62,7 @@ final class Reseller_Intent_Tracker {
 		}
 
 		if ( isset( $_POST['items_json'] ) ) {
-			$raw_items = wp_unslash( $_POST['items_json'] );
+			$raw_items = wp_unslash( $_POST['items_json'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitize_text_field would corrupt JSON; decoded, validated and re-encoded below, never used raw.
 			$decoded   = json_decode( $raw_items, true );
 
 			if ( is_array( $decoded ) ) {
@@ -67,11 +80,21 @@ final class Reseller_Intent_Tracker {
 			wp_send_json_success( array( 'ignored' => true ) );
 		}
 		if ( $this->is_rate_limited( $event_type, $domain_query, $items_count ) ) {
-			wp_send_json_success( array( 'ignored' => true, 'reason' => 'rate_limited' ) );
+			wp_send_json_success(
+				array(
+					'ignored' => true,
+					'reason'  => 'rate_limited',
+				)
+			);
 		}
 
 		if ( $this->is_blocklisted( $domain_query ) ) {
-			wp_send_json_success( array( 'ignored' => true, 'reason' => 'blocklisted' ) );
+			wp_send_json_success(
+				array(
+					'ignored' => true,
+					'reason'  => 'blocklisted',
+				)
+			);
 		}
 
 		$event_data = array(
@@ -95,7 +118,12 @@ final class Reseller_Intent_Tracker {
 		 * @param array $event_data   The normalized event about to be saved.
 		 */
 		if ( ! apply_filters( 'rintent_should_track', true, $event_data ) ) {
-			wp_send_json_success( array( 'ignored' => true, 'reason' => 'filtered' ) );
+			wp_send_json_success(
+				array(
+					'ignored' => true,
+					'reason'  => 'filtered',
+				)
+			);
 		}
 
 		/**
@@ -293,7 +321,7 @@ final class Reseller_Intent_Tracker {
 			return false;
 		}
 
-		$user_agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? (string) $_SERVER['HTTP_USER_AGENT'] : '';
+		$user_agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
 
 		if ( '' === trim( $user_agent ) ) {
 			return true;

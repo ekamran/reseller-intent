@@ -8,26 +8,29 @@
 	var useMemo = wp.element.useMemo;
 	var Fragment = wp.element.Fragment;
 
+	var __ = wp.i18n.__;
+	var sprintf = wp.i18n.sprintf;
+
 	var ACCENT = (window.resellerIntentAdmin && resellerIntentAdmin.accentColor) || '#3858e9';
 	var ACCENT_TEXT = (window.resellerIntentAdmin && resellerIntentAdmin.accentText) || '#ffffff';
 	var INK = '#1d2327';
 	var TZ_LABEL = (window.resellerIntentAdmin && resellerIntentAdmin.tzLabel) || '';
 
 	var RANGES = [
-		{ key: '7', label: '7d' },
-		{ key: '30', label: '30d' },
-		{ key: '90', label: '90d' },
-		{ key: 'all', label: 'Lifetime' }
+		{ key: '7', label: __( '7d', 'reseller-intent' ) },
+		{ key: '30', label: __( '30d', 'reseller-intent' ) },
+		{ key: '90', label: __( '90d', 'reseller-intent' ) },
+		{ key: 'all', label: __( 'Lifetime', 'reseller-intent' ) }
 	];
 
 	var CLEAR_RANGES = [
-		{ key: 'hour', label: 'Last hour' },
-		{ key: 'day', label: 'Last 24 hours' },
-		{ key: 'week', label: 'Last 7 days' },
-		{ key: 'month', label: 'Last 30 days' },
-		{ key: 'half_year', label: 'Last 6 months' },
-		{ key: 'year', label: 'Last year' },
-		{ key: 'all', label: 'All time' }
+		{ key: 'hour', label: __( 'Last hour', 'reseller-intent' ) },
+		{ key: 'day', label: __( 'Last 24 hours', 'reseller-intent' ) },
+		{ key: 'week', label: __( 'Last 7 days', 'reseller-intent' ) },
+		{ key: 'month', label: __( 'Last 30 days', 'reseller-intent' ) },
+		{ key: 'half_year', label: __( 'Last 6 months', 'reseller-intent' ) },
+		{ key: 'year', label: __( 'Last year', 'reseller-intent' ) },
+		{ key: 'all', label: __( 'All time', 'reseller-intent' ) }
 	];
 
 	function fmt(value, decimals) {
@@ -54,12 +57,12 @@
 		var text = '';
 
 		if (previous === null) {
-			text = 'All time';
+			text = __( 'All time', 'reseller-intent' );
 		} else if (previous <= 0 && current <= 0) {
 			return null; // no data either side, a badge is just noise
 		} else if (previous <= 0) {
 			cls = 'ri-delta is-up';
-			text = 'New';
+			text = __( 'New', 'reseller-intent' );
 		} else {
 			var change = ((current - previous) / previous) * 100;
 			if (change >= 0.05) {
@@ -73,7 +76,7 @@
 			}
 		}
 
-		return el('span', { className: cls, title: previous === null ? '' : 'vs previous period' }, text);
+		return el('span', { className: cls, title: previous === null ? '' : __( 'vs previous period', 'reseller-intent' ) }, text);
 	}
 
 	function Panel(props) {
@@ -207,10 +210,10 @@
 		});
 
 		if (!n) {
-			return el('p', { className: 'ri-empty' }, 'No activity yet.');
+			return el('p', { className: 'ri-empty' }, __( 'No activity yet.', 'reseller-intent' ));
 		}
 
-		return el('svg', { className: 'ri-trend', viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Search vs cart trend chart' },
+		return el('svg', { className: 'ri-trend', viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': __( 'Search vs cart trend chart', 'reseller-intent' ) },
 			gridLines,
 			el('line', { x1: padX, y1: padY + plotH, x2: padX + plotW, y2: padY + plotH, stroke: '#e2e8f0' }),
 			el('polygon', { points: areaPoints(searches), fill: 'rgba(85,62,232,0.08)' }),
@@ -233,12 +236,12 @@
 		var prevAvgCart = prev ? (prev.cartClicks > 0 ? prev.domainsAdded / prev.cartClicks : 0) : null;
 
 		var cards = [
-			{ label: 'Domain Searches', value: fmt(now.searches), current: now.searches, previous: prev ? prev.searches : null },
-			{ label: 'Unique Searches', value: fmt(now.uniqueSearches), current: now.uniqueSearches, previous: prev ? prev.uniqueSearches : null },
-			{ label: 'Cart Clicks', value: fmt(now.cartClicks), current: now.cartClicks, previous: prev ? prev.cartClicks : null },
-			{ label: 'Domains Added', value: fmt(now.domainsAdded), current: now.domainsAdded, previous: prev ? prev.domainsAdded : null },
-			{ label: 'Avg Domains / Cart', value: fmt(avgCart, 2), current: avgCart, previous: prevAvgCart },
-			{ label: 'Search → Cart Rate', value: fmt(conversion, 1) + '%', current: conversion, previous: prevConversion }
+			{ label: __( 'Domain Searches', 'reseller-intent' ), value: fmt(now.searches), current: now.searches, previous: prev ? prev.searches : null },
+			{ label: __( 'Unique Searches', 'reseller-intent' ), value: fmt(now.uniqueSearches), current: now.uniqueSearches, previous: prev ? prev.uniqueSearches : null },
+			{ label: __( 'Cart Clicks', 'reseller-intent' ), value: fmt(now.cartClicks), current: now.cartClicks, previous: prev ? prev.cartClicks : null },
+			{ label: __( 'Domains Added', 'reseller-intent' ), value: fmt(now.domainsAdded), current: now.domainsAdded, previous: prev ? prev.domainsAdded : null },
+			{ label: __( 'Avg Domains / Cart', 'reseller-intent' ), value: fmt(avgCart, 2), current: avgCart, previous: prevAvgCart },
+			{ label: __( 'Search → Cart Rate', 'reseller-intent' ), value: fmt(conversion, 1) + '%', current: conversion, previous: prevConversion }
 		];
 
 		return el('div', { className: 'ri-kpis' }, cards.map(function(card, i) {
@@ -264,8 +267,8 @@
 				)
 			];
 		});
-		return el(Panel, { title: 'Searched TLDs', note: 'Which extensions people look for.' },
-			el(MiniTable, { columns: ['TLD', 'Searches'], rows: rows, empty: 'No searches in this range.' })
+		return el(Panel, { title: __( 'Searched TLDs', 'reseller-intent' ), note: __( 'Which extensions people look for.', 'reseller-intent' ) },
+			el(MiniTable, { columns: [__( 'TLD', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )], rows: rows, empty: __( 'No searches in this range.', 'reseller-intent' ) })
 		);
 	}
 
@@ -273,8 +276,8 @@
 		var repeats = (props.repeats || []).map(function(row) {
 			return [row.domain, fmt(row.hits)];
 		});
-		return el(Panel, { title: 'Repeat Demand', note: 'Domains searched 2+ times, buyers circling.' },
-			el(MiniTable, { columns: ['Domain', 'Searches'], rows: repeats, empty: 'No repeated searches in this range.' })
+		return el(Panel, { title: __( 'Repeat Demand', 'reseller-intent' ), note: __( 'Domains searched 2+ times, buyers circling.', 'reseller-intent' ) },
+			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )], rows: repeats, empty: __( 'No repeated searches in this range.', 'reseller-intent' ) })
 		);
 	}
 
@@ -283,13 +286,13 @@
 		var rows = carted.domains.slice(0, 8).map(function(row) {
 			return [row.domain, fmt(row.count)];
 		});
-		return el(Panel, { title: 'Carted Domains', note: 'What shoppers actually sent to cart.' },
+		return el(Panel, { title: __( 'Carted Domains', 'reseller-intent' ), note: __( 'What shoppers actually sent to cart.', 'reseller-intent' ) },
 			carted.tlds.length
 				? el('div', { className: 'ri-chips' }, carted.tlds.map(function(tld, i) {
 					return el(StatChip, { key: i, value: fmt(tld.count), label: tld.label });
 				}))
 				: null,
-			el(MiniTable, { columns: ['Domain', 'Added'], rows: rows, empty: 'No carted domains in this range.' })
+			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Added', 'reseller-intent' )], rows: rows, empty: __( 'No carted domains in this range.', 'reseller-intent' ) })
 		);
 	}
 
@@ -299,8 +302,8 @@
 			return [row.domain, fmt(row.count), row.last];
 		});
 
-		return el(Panel, { title: 'Missed Opportunities', note: 'Searched and available, but never taken to cart. Warm leads.' },
-			el(MiniTable, { columns: ['Domain', 'Searches', 'Last seen'], rows: rows, empty: 'Nothing missed in this range. Every available search went to cart, or there were none.' })
+		return el(Panel, { title: __( 'Missed Opportunities', 'reseller-intent' ), note: __( 'Searched and available, but never taken to cart. Warm leads.', 'reseller-intent' ) },
+			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Last seen', 'reseller-intent' )], rows: rows, empty: __( 'Nothing missed in this range. Every available search went to cart, or there were none.', 'reseller-intent' ) })
 		);
 	}
 
@@ -314,18 +317,18 @@
 			return [row.searched, row.selected, fmt(row.hits)];
 		});
 
-		return el(Panel, { title: 'Selection Behavior', note: 'What gets picked, and what taken searches settle for.' },
+		return el(Panel, { title: __( 'Selection Behavior', 'reseller-intent' ), note: __( 'What gets picked, and what taken searches settle for.', 'reseller-intent' ) },
 			selection.total > 0
 				? el('div', { className: 'ri-chips' },
-					el(StatChip, { value: fmt(selection.total), label: 'Select clicks' }),
-					el(StatChip, { value: fmt(exactRate, 1) + '%', label: 'Kept searched name' })
+					el(StatChip, { value: fmt(selection.total), label: __( 'Select clicks', 'reseller-intent' ) }),
+					el(StatChip, { value: fmt(exactRate, 1) + '%', label: __( 'Kept searched name', 'reseller-intent' ) })
 				)
 				: null,
-			el(MiniTable, { columns: ['Domain', 'Selects'], rows: topRows, empty: 'No selection data in this range yet.' }),
+			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Selects', 'reseller-intent' )], rows: topRows, empty: __( 'No selection data in this range yet.', 'reseller-intent' ) }),
 			pairRows.length
 				? el(Fragment, null,
 					el('p', { className: 'ri-subhead' }, 'Searched → settled for'),
-					el(MiniTable, { columns: ['Searched', 'Selected instead', 'Times'], rows: pairRows, empty: '' })
+					el(MiniTable, { columns: [__( 'Searched', 'reseller-intent' ), __( 'Selected instead', 'reseller-intent' ), __( 'Times', 'reseller-intent' )], rows: pairRows, empty: '' })
 				)
 				: null
 		);
@@ -346,8 +349,8 @@
 				fmt(row.carts)
 			];
 		});
-		return el(Panel, { title: 'Search by Page', note: 'Which page each search and cart click came from.' },
-			el(MiniTable, { columns: ['Page', 'Searches', 'Cart clicks'], rows: rows, empty: 'No page data in this range.' })
+		return el(Panel, { title: __( 'Search by Page', 'reseller-intent' ), note: __( 'Which page each search and cart click came from.', 'reseller-intent' ) },
+			el(MiniTable, { columns: [__( 'Page', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Cart clicks', 'reseller-intent' )], rows: rows, empty: __( 'No page data in this range.', 'reseller-intent' ) })
 		);
 	}
 
@@ -358,19 +361,19 @@
 		var availRate = pct(availability.available, availTotal);
 		var deviceTotal = devices.mobile + devices.desktop;
 
-		return el(Panel, { title: 'Availability & Devices', note: 'How often the searched name is free, and who is searching.' },
+		return el(Panel, { title: __( 'Availability & Devices', 'reseller-intent' ), note: __( 'How often the searched name is free, and who is searching.', 'reseller-intent' ) },
 			availTotal > 0
 				? el('div', { className: 'ri-chips' },
-					el(StatChip, { value: fmt(availRate, 1) + '%', label: 'Available' }),
-					el(StatChip, { value: fmt(availability.available), label: 'Free' }),
-					el(StatChip, { value: fmt(availability.taken), label: 'Taken' })
+					el(StatChip, { value: fmt(availRate, 1) + '%', label: __( 'Available', 'reseller-intent' ) }),
+					el(StatChip, { value: fmt(availability.available), label: __( 'Free', 'reseller-intent' ) }),
+					el(StatChip, { value: fmt(availability.taken), label: __( 'Taken', 'reseller-intent' ) })
 				)
 				: el('p', { className: 'ri-empty' }, 'No availability data in this range yet.'),
 			el('p', { className: 'ri-subhead' }, 'Searches by device'),
 			deviceTotal > 0
 				? el('div', { className: 'ri-bars' },
-					el(BarRow, { label: 'Desktop', width: pct(devices.desktop, deviceTotal), value: fmt(devices.desktop) + ' (' + fmt(pct(devices.desktop, deviceTotal), 1) + '%)' }),
-					el(BarRow, { label: 'Mobile', width: pct(devices.mobile, deviceTotal), value: fmt(devices.mobile) + ' (' + fmt(pct(devices.mobile, deviceTotal), 1) + '%)' })
+					el(BarRow, { label: __( 'Desktop', 'reseller-intent' ), width: pct(devices.desktop, deviceTotal), value: fmt(devices.desktop) + ' (' + fmt(pct(devices.desktop, deviceTotal), 1) + '%)' }),
+					el(BarRow, { label: __( 'Mobile', 'reseller-intent' ), width: pct(devices.mobile, deviceTotal), value: fmt(devices.mobile) + ' (' + fmt(pct(devices.mobile, deviceTotal), 1) + '%)' })
 				)
 				: el('p', { className: 'ri-empty' }, 'No device data in this range yet.')
 		);
@@ -381,13 +384,13 @@
 		var cartSizes = props.cartSizes || [];
 		var maxStage = Math.max(1, now.searches || 0);
 		var stages = [
-			{ label: 'Searches', value: now.searches || 0, color: '#f0f0f1' },
-			{ label: 'Cart Clicks', value: now.cartClicks || 0, color: '#dcdcde' },
-			{ label: 'Domains Added', value: now.domainsAdded || 0, color: '#DCE3F2' }
+			{ label: __( 'Searches', 'reseller-intent' ), value: now.searches || 0, color: '#f0f0f1' },
+			{ label: __( 'Cart Clicks', 'reseller-intent' ), value: now.cartClicks || 0, color: '#dcdcde' },
+			{ label: __( 'Domains Added', 'reseller-intent' ), value: now.domainsAdded || 0, color: '#DCE3F2' }
 		];
 		var cartTotal = cartSizes.reduce(function(sum, b) { return sum + b.count; }, 0);
 
-		return el(Panel, { title: 'Conversion Funnel', note: 'Searches → Cart Clicks → Domains Added.' },
+		return el(Panel, { title: __( 'Conversion Funnel', 'reseller-intent' ), note: __( 'Searches → Cart Clicks → Domains Added.', 'reseller-intent' ) },
 			el('div', { className: 'ri-funnel' }, stages.map(function(stage, i) {
 				var carry = i > 0 && stages[i - 1].value > 0
 					? fmt(pct(stage.value, stages[i - 1].value), 1) + '%'
@@ -451,12 +454,12 @@
 			? 'Latest search in this range (' + TZ_LABEL + ').'
 			: 'Latest ' + fmt(rows.length) + ' searches in this range (' + TZ_LABEL + ').';
 
-		return el(Panel, { title: 'Recent Searches', note: noteText, className: 'ri-panel--wide' },
+		return el(Panel, { title: __( 'Recent Searches', 'reseller-intent' ), note: noteText, className: 'ri-panel--wide' },
 			el('div', { className: 'ri-log-tools' },
 				el('input', {
 					type: 'search',
 					className: 'ri-log-filter',
-					placeholder: 'Filter domains...',
+					placeholder: __( 'Filter domains...', 'reseller-intent' ),
 					value: filter,
 					onChange: function(event) {
 						setFilter(event.target.value);
@@ -480,7 +483,7 @@
 					: null
 			),
 			el(MiniTable, {
-				columns: ['Domain', 'Result', 'Device', 'Searched At'],
+				columns: [__( 'Domain', 'reseller-intent' ), __( 'Result', 'reseller-intent' ), __( 'Device', 'reseller-intent' ), __( 'Searched At', 'reseller-intent' )],
 				rows: pageRows,
 				empty: filter ? 'Nothing matches that filter.' : 'No searches in this range.'
 			})
@@ -498,7 +501,7 @@
 		var items = (props.countries && props.countries.items) || [];
 		var total = (props.countries && props.countries.total) || 0;
 
-		return el(Panel, { title: 'Top Countries', note: items.length ? 'Searches by visitor country (edge geo header).' : null },
+		return el(Panel, { title: __( 'Top Countries', 'reseller-intent' ), note: items.length ? 'Searches by visitor country (edge geo header).' : null },
 			items.length
 				? items.map(function(item) {
 					return el(BarRow, {
@@ -579,11 +582,11 @@
 				className: 'ri-modal',
 				role: 'dialog',
 				'aria-modal': 'true',
-				'aria-label': 'Clear data',
+				'aria-label': __( 'Clear data', 'reseller-intent' ),
 				onClick: function(event) { event.stopPropagation(); }
 			},
-				el('h2', null, 'Clear data'),
-				el('p', null, 'Delete tracked events from the selected time window. There is no undo.'),
+				el('h2', null, __( 'Clear data', 'reseller-intent' )),
+				el('p', null, __( 'Delete tracked events from the selected time window. There is no undo.', 'reseller-intent' )),
 				el('label', { className: 'ri-clear-label', htmlFor: 'ri-clear-range' }, 'Time window'),
 				el('select', {
 					id: 'ri-clear-range',
@@ -596,15 +599,15 @@
 				el('p', { className: 'ri-clear-preview' },
 					count === null
 						? 'Counting...'
-						: (count === 0 ? 'No events in this window.' : fmt(count) + ' event' + (count === 1 ? '' : 's') + ' will be permanently deleted.')
+						: (count === 0 ? __( 'No events in this window.', 'reseller-intent' ) : sprintf( /* translators: %s: number of events */ wp.i18n._n( '%s event will be permanently deleted.', '%s events will be permanently deleted.', count, 'reseller-intent' ), fmt(count) ))
 				),
 				el('div', { className: 'ri-modal-actions' },
-					el('button', { className: 'button', onClick: props.onCancel }, 'Cancel'),
+					el('button', { className: 'button', onClick: props.onCancel }, __( 'Cancel', 'reseller-intent' )),
 					el('button', {
 						className: 'button ri-danger',
 						disabled: count === null || count === 0,
 						onClick: function() { props.onConfirm(sel); }
-					}, 'Clear data')
+					}, __( 'Clear data', 'reseller-intent' ))
 				)
 			)
 		);
@@ -691,7 +694,7 @@
 				return '';
 			}
 			var n = Number(match[1]) || 0;
-			return n === 0 ? 'No events matched that window.' : fmt(n) + ' event' + (n === 1 ? '' : 's') + ' deleted.';
+			return n === 0 ? __( 'No events matched that window.', 'reseller-intent' ) : sprintf( /* translators: %s: number of events */ wp.i18n._n( '%s event deleted.', '%s events deleted.', n, 'reseller-intent' ), fmt(n) );
 		}
 
 		var rangeQuery = '&range=' + encodeURIComponent(range)
@@ -700,12 +703,12 @@
 		var exportJsonHref = resellerIntentAdmin.exportUrl + rangeQuery + '&format=json';
 
 		return el('div', { className: 'ri-app' + (loading ? ' is-loading' : ''), 'aria-busy': loading ? 'true' : 'false', style: { '--ri-accent': ACCENT, '--ri-accent-text': ACCENT_TEXT } },
-			loading ? el('div', { className: 'ri-progress', role: 'status', 'aria-label': 'Loading' }) : null,
+			loading ? el('div', { className: 'ri-progress', role: 'status', 'aria-label': __( 'Loading', 'reseller-intent' ) }) : null,
 			el('div', { className: 'ri-header' },
 				el('div', null,
 					el('h1', null, 'Reseller Intent'),
 					el('p', { className: 'ri-note' },
-						'Domain search analytics · v' + resellerIntentAdmin.version +
+						__( 'Domain search analytics', 'reseller-intent' ) + ' · v' + resellerIntentAdmin.version +
 						(data ? ' · ' + data.rangeLabel : ''),
 						data && data.lastEvent ? el('span', {
 							className: 'ri-health' + (data.lastEvent.stale ? ' is-stale' : ''),
@@ -714,7 +717,7 @@
 					)
 				),
 				el('div', { className: 'ri-header-actions' },
-					el('span', { className: 'ri-ranges' }, RANGES.concat([{ key: 'custom', label: 'Custom' }]).map(function(option) {
+					el('span', { className: 'ri-ranges' }, RANGES.concat([{ key: 'custom', label: __( 'Custom', 'reseller-intent' ) }]).map(function(option) {
 						return el('button', {
 							key: option.key,
 							className: 'ri-range' + (range === option.key ? ' is-active' : ''),
@@ -723,38 +726,38 @@
 						}, option.label);
 					})),
 					el('span', { className: 'ri-export-group' },
-						el('a', { className: 'button ri-export', href: exportHref }, 'Export CSV'),
-						el('a', { className: 'button ri-export', href: exportJsonHref, title: 'Export JSON' }, 'JSON')
+						el('a', { className: 'button ri-export', href: exportHref }, __( 'Export CSV', 'reseller-intent' )),
+						el('a', { className: 'button ri-export', href: exportJsonHref, title: __( 'Export JSON', 'reseller-intent' ) }, __( 'JSON', 'reseller-intent' ))
 					),
-					el('button', { className: 'button ri-danger-ghost', onClick: function() { setShowClear(true); } }, 'Clear data')
+					el('button', { className: 'button ri-danger-ghost', onClick: function() { setShowClear(true); } }, __( 'Clear data', 'reseller-intent' ))
 				)
 			),
 
 			range === 'custom' ? el('div', { className: 'ri-custom-range' },
-				el('label', null, 'From ',
+				el('label', null, __( 'From', 'reseller-intent' ) + ' ',
 					el('input', { type: 'date', value: customFrom, max: today, onChange: function(e) { setCustomFrom(e.target.value); } })
 				),
-				el('label', null, 'To ',
+				el('label', null, __( 'To', 'reseller-intent' ) + ' ',
 					el('input', { type: 'date', value: customTo, max: today, onChange: function(e) { setCustomTo(e.target.value); } })
 				),
 				el('button', {
 					className: 'button',
 					disabled: !customFrom || !customTo || customFrom > customTo,
 					onClick: function() { setCustomApplied({ from: customFrom, to: customTo }); }
-				}, 'Apply')
+				}, __( 'Apply', 'reseller-intent' ))
 			) : null,
 
 			clearNoticeText(notice) ? el('div', { className: 'notice notice-success is-dismissible ri-notice', onClick: function() { setNotice(''); } }, el('p', null, clearNoticeText(notice))) : null,
-			notice === 'clear_error' ? el('div', { className: 'notice notice-error ri-notice' }, el('p', null, 'Clearing data failed.')) : null,
-			notice === 'settings_saved' ? el('div', { className: 'notice notice-success is-dismissible ri-notice', onClick: function() { setNotice(''); } }, el('p', null, 'Settings saved.')) : null,
-			/^imported_\d+$/.test(notice) ? el('div', { className: 'notice notice-success is-dismissible ri-notice', onClick: function() { setNotice(''); } }, el('p', null, fmt(Number(notice.replace('imported_', '')) || 0) + ' legacy events imported.')) : null,
+			notice === 'clear_error' ? el('div', { className: 'notice notice-error ri-notice' }, el('p', null, __( 'Clearing data failed.', 'reseller-intent' ))) : null,
+			notice === 'settings_saved' ? el('div', { className: 'notice notice-success is-dismissible ri-notice', onClick: function() { setNotice(''); } }, el('p', null, __( 'Settings saved.', 'reseller-intent' ))) : null,
+			/^imported_\d+$/.test(notice) ? el('div', { className: 'notice notice-success is-dismissible ri-notice', onClick: function() { setNotice(''); } }, el('p', null, sprintf( /* translators: %s: number of events */ __( '%s legacy events imported.', 'reseller-intent' ), fmt(Number(notice.replace('imported_', '')) || 0) ))) : null,
 			error ? el('div', { className: 'notice notice-error ri-notice' }, el('p', null, error)) : null,
 
 			data
 				? el(Fragment, null,
 					el(KpiGrid, { now: data.kpis.now, prev: data.kpis.prev }),
 					el('div', { className: 'ri-grid ri-grid--2' },
-						el(Panel, { title: 'Search vs Cart Trend', note: data.bounded ? 'Daily activity in this range.' : 'Monthly activity, all time.' },
+						el(Panel, { title: __( 'Search vs Cart Trend', 'reseller-intent' ), note: data.bounded ? 'Daily activity in this range.' : 'Monthly activity, all time.' },
 							el(TrendChart, data.trend),
 							el('div', { className: 'ri-legend' },
 								el('span', null, el('i', { className: 'ri-dot', style: { background: ACCENT } }), 'Searches'),
@@ -779,7 +782,7 @@
 					),
 					el(RecentLog, { recent: data.recent })
 				)
-				: (loading ? el('div', { className: 'ri-loading' }, 'Loading...') : null),
+				: (loading ? el('div', { className: 'ri-loading' }, __( 'Loading...', 'reseller-intent' )) : null),
 
 			showClear ? el(ClearDataModal, {
 				onCancel: function() { setShowClear(false); },

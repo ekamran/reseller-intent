@@ -35,7 +35,7 @@ final class Reseller_Intent_Admin {
 			. '<circle fill="#a7aaad" cx="6.4" cy="12.2" r="1.5"/>'
 			. '</svg>';
 
-		return 'data:image/svg+xml;base64,' . base64_encode( $svg );
+		return 'data:image/svg+xml;base64,' . base64_encode( $svg ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- standard WP menu icon data URI.
 	}
 
 	public function register_admin_menu() {
@@ -90,7 +90,7 @@ final class Reseller_Intent_Admin {
 			array(
 				'post_type'      => 'reseller_product',
 				'post_status'    => 'publish',
-				'posts_per_page' => 200,
+				'posts_per_page' => 200, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- bounded product picker list, admin only.
 				'orderby'        => 'title',
 				'order'          => 'ASC',
 			)
@@ -168,7 +168,8 @@ final class Reseller_Intent_Admin {
 						<span>
 							<input type="search" id="rintent-gen-filter" class="regular-text" placeholder="<?php esc_attr_e( 'Filter products...', 'reseller-intent' ); ?>" style="margin-bottom:8px;" />
 							<div class="rintent-product-picker" id="rintent-gen-products">
-								<?php foreach ( $products as $product ) :
+								<?php
+								foreach ( $products as $product ) :
 									$sale  = (string) get_post_meta( $product->ID, 'rstore_salePrice', true );
 									$list  = (string) get_post_meta( $product->ID, 'rstore_listPrice', true );
 									$price = '' !== trim( $sale ) ? $sale : $list;
@@ -401,7 +402,7 @@ final class Reseller_Intent_Admin {
 			365 => __( '1 year', 'reseller-intent' ),
 			730 => __( '2 years', 'reseller-intent' ),
 		);
-		$notice = isset( $_GET['rintent_notice'] ) ? sanitize_key( wp_unslash( $_GET['rintent_notice'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$notice            = isset( $_GET['rintent_notice'] ) ? sanitize_key( wp_unslash( $_GET['rintent_notice'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		?>
 		<div class="wrap rintent-pages rintent-settings">
 			<h1><?php esc_html_e( 'Settings', 'reseller-intent' ); ?></h1>
@@ -612,8 +613,8 @@ final class Reseller_Intent_Admin {
 				'rintent-admin-pages',
 				'rintentPages',
 				array(
-					'copied'      => __( 'Copied', 'reseller-intent' ),
-					'copyHint'    => __( 'Click to copy', 'reseller-intent' ),
+					'copied'   => __( 'Copied', 'reseller-intent' ),
+					'copyHint' => __( 'Click to copy', 'reseller-intent' ),
 				)
 			);
 			return;
@@ -638,6 +639,8 @@ final class Reseller_Intent_Admin {
 			true
 		);
 
+		wp_set_script_translations( 'rintent-admin', 'reseller-intent' );
+
 		wp_localize_script(
 			'rintent-admin',
 			'resellerIntentAdmin',
@@ -651,7 +654,7 @@ final class Reseller_Intent_Admin {
 				),
 				'clearUrl'    => admin_url( 'admin-post.php?action=rintent_clear_data' ),
 				'actionNonce' => wp_create_nonce( 'rintent_admin_actions' ),
-				'notice'      => isset( $_GET['rintent_notice'] ) ? sanitize_key( wp_unslash( $_GET['rintent_notice'] ) ) : '',
+				'notice'      => isset( $_GET['rintent_notice'] ) ? sanitize_key( wp_unslash( $_GET['rintent_notice'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display-only notice slug from our own redirects.
 				'tzLabel'     => wp_timezone_string(),
 				'accentColor' => (string) Reseller_Intent_Settings::get( 'accent_color' ),
 				'accentText'  => Reseller_Intent_Settings::accent_text_color(),
@@ -715,7 +718,7 @@ final class Reseller_Intent_Admin {
 		$bounded = ( 'all' !== $range_key );
 		$custom  = ( 'custom' === $range_key );
 		$now_ts  = time(); // NOT current_time(): wp_date() adds the site offset itself; both = double shift after 18:30 IST.
-		$end     = ''; // exclusive upper bound, custom range only
+		$end     = ''; // Exclusive upper bound, custom range only.
 
 		if ( $custom ) {
 			// Dates are site-local calendar days; created_at is stored site-local.
@@ -738,7 +741,7 @@ final class Reseller_Intent_Admin {
 		$kpi_prev = $bounded ? $this->get_kpi_counts( $table_name, $prev_start, $start ) : null;
 
 		// TLD distribution.
-		$tld_rows = $wpdb->get_results(
+		$tld_rows  = $wpdb->get_results(
 			"SELECT LOWER(SUBSTRING_INDEX(domain_query, '.', -1)) AS tld, SUM(event_count) AS hits
 			FROM {$table_name}
 			WHERE event_type = 'domain_search' AND domain_query LIKE '%.%'{$where}
@@ -772,7 +775,7 @@ final class Reseller_Intent_Admin {
 		$trend = $this->get_trend_series( $table_name, $bounded, $len, $anchor_ts );
 
 		// Cart size buckets.
-		$cart_row = $wpdb->get_row(
+		$cart_row   = $wpdb->get_row(
 			"SELECT
 				COALESCE(SUM(CASE WHEN items_count <= 1 THEN 1 ELSE 0 END),0) AS b1,
 				COALESCE(SUM(CASE WHEN items_count = 2 THEN 1 ELSE 0 END),0) AS b2,
@@ -785,10 +788,22 @@ final class Reseller_Intent_Admin {
 		);
 		$cart_row   = is_array( $cart_row ) ? array_map( 'intval', $cart_row ) : array();
 		$cart_sizes = array(
-			array( 'label' => __( '1 domain', 'reseller-intent' ), 'count' => isset( $cart_row['b1'] ) ? $cart_row['b1'] : 0 ),
-			array( 'label' => __( '2 domains', 'reseller-intent' ), 'count' => isset( $cart_row['b2'] ) ? $cart_row['b2'] : 0 ),
-			array( 'label' => __( '3 domains', 'reseller-intent' ), 'count' => isset( $cart_row['b3'] ) ? $cart_row['b3'] : 0 ),
-			array( 'label' => __( '4+ domains', 'reseller-intent' ), 'count' => isset( $cart_row['b4'] ) ? $cart_row['b4'] : 0 ),
+			array(
+				'label' => __( '1 domain', 'reseller-intent' ),
+				'count' => isset( $cart_row['b1'] ) ? $cart_row['b1'] : 0,
+			),
+			array(
+				'label' => __( '2 domains', 'reseller-intent' ),
+				'count' => isset( $cart_row['b2'] ) ? $cart_row['b2'] : 0,
+			),
+			array(
+				'label' => __( '3 domains', 'reseller-intent' ),
+				'count' => isset( $cart_row['b3'] ) ? $cart_row['b3'] : 0,
+			),
+			array(
+				'label' => __( '4+ domains', 'reseller-intent' ),
+				'count' => isset( $cart_row['b4'] ) ? $cart_row['b4'] : 0,
+			),
 		);
 
 		// Repeat intent: searched 2+ times inside the window.
@@ -801,7 +816,7 @@ final class Reseller_Intent_Admin {
 			ORDER BY hits DESC
 			LIMIT 8"
 		);
-		$repeats = array();
+		$repeats     = array();
 		foreach ( $repeat_rows as $repeat_row ) {
 			$repeats[] = array(
 				'domain' => (string) $repeat_row->domain,
@@ -830,8 +845,8 @@ final class Reseller_Intent_Admin {
 			WHERE event_type = 'domain_search' AND is_available IS NOT NULL{$where}",
 			ARRAY_A
 		);
-		$avail = isset( $availability_row['avail'] ) ? (int) $availability_row['avail'] : 0;
-		$taken = isset( $availability_row['taken'] ) ? (int) $availability_row['taken'] : 0;
+		$avail            = isset( $availability_row['avail'] ) ? (int) $availability_row['avail'] : 0;
+		$taken            = isset( $availability_row['taken'] ) ? (int) $availability_row['taken'] : 0;
 
 		$device_rows = $wpdb->get_results(
 			"SELECT device, COALESCE(SUM(event_count),0) AS hits
@@ -840,7 +855,7 @@ final class Reseller_Intent_Admin {
 			GROUP BY device",
 			ARRAY_A
 		);
-		$devices = array(
+		$devices     = array(
 			'mobile'  => 0,
 			'desktop' => 0,
 		);
@@ -852,7 +867,7 @@ final class Reseller_Intent_Admin {
 		}
 
 		// Top countries (privacy-safe: 2-letter geo header codes, no IPs).
-		$country_rows = $wpdb->get_results(
+		$country_rows    = $wpdb->get_results(
 			"SELECT country, COALESCE(SUM(event_count),0) AS hits
 			FROM {$table_name}
 			WHERE event_type = 'domain_search' AND country <> ''{$where}
@@ -864,9 +879,9 @@ final class Reseller_Intent_Admin {
 		$countries       = array();
 		$countries_total = 0;
 		foreach ( (array) $country_rows as $country_row ) {
-			$hits              = isset( $country_row['hits'] ) ? (int) $country_row['hits'] : 0;
-			$countries_total  += $hits;
-			$countries[]       = array(
+			$hits             = isset( $country_row['hits'] ) ? (int) $country_row['hits'] : 0;
+			$countries_total += $hits;
+			$countries[]      = array(
 				'code' => isset( $country_row['country'] ) ? (string) $country_row['country'] : '',
 				'hits' => $hits,
 			);
@@ -880,7 +895,7 @@ final class Reseller_Intent_Admin {
 			ORDER BY id DESC
 			LIMIT 100"
 		);
-		$recent = array();
+		$recent      = array();
 		foreach ( $recent_rows as $recent_row ) {
 			$recent[] = array(
 				'domain'    => (string) $recent_row->domain_query,
@@ -892,52 +907,52 @@ final class Reseller_Intent_Admin {
 
 		// Tracking health: time since the newest event, any range. Surfaces
 		// silent breakage (JS error, markup drift, blocked AJAX) at a glance.
-		$last_event_at  = $wpdb->get_var( "SELECT MAX(created_at) FROM {$table_name}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$last_event_at = $wpdb->get_var( "SELECT MAX(created_at) FROM {$table_name}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		// created_at is stored in site-local time, so diff against local now.
 		$last_event_ts  = $last_event_at ? (int) strtotime( $last_event_at ) : 0;
 		$last_event_age = $last_event_ts ? max( 0, strtotime( current_time( 'mysql' ) ) - $last_event_ts ) : 0;
 
 		return array(
-			'range'      => $range_key,
-			'bounded'    => $bounded,
-			'lastEvent'  => array(
+			'range'         => $range_key,
+			'bounded'       => $bounded,
+			'lastEvent'     => array(
 				'ago'   => $last_event_ts
 					/* translators: %s: human readable time difference */
 					? sprintf( __( 'Last event %s ago', 'reseller-intent' ), human_time_diff( $last_event_ts, strtotime( current_time( 'mysql' ) ) ) )
 					: __( 'No events yet', 'reseller-intent' ),
 				'stale' => $last_event_ts ? ( $last_event_age > 3 * DAY_IN_SECONDS ) : false,
 			),
-			'rangeLabel' => $custom
+			'rangeLabel'    => $custom
 				? sprintf( '%s – %s', wp_date( 'M j, Y', strtotime( $from . ' 12:00:00' ) ), wp_date( 'M j, Y', strtotime( $to . ' 12:00:00' ) ) )
 				: ( $bounded
 					/* translators: %d: number of days */
 					? sprintf( __( 'Last %d days', 'reseller-intent' ), $len )
 					: __( 'Lifetime', 'reseller-intent' ) ),
-			'kpis'       => array(
+			'kpis'          => array(
 				'now'  => $kpi_now,
 				'prev' => $kpi_prev,
 			),
-			'tlds'       => array(
+			'tlds'          => array(
 				'items' => $tlds,
 				'total' => $tld_total,
 			),
-			'trend'      => $trend,
-			'cartSizes'  => $cart_sizes,
-			'repeats'    => $repeats,
-			'pages'      => $pages,
-			'carted'     => $carted,
+			'trend'         => $trend,
+			'cartSizes'     => $cart_sizes,
+			'repeats'       => $repeats,
+			'pages'         => $pages,
+			'carted'        => $carted,
 			'opportunities' => $opportunities,
-			'selection'  => $selection,
-			'availability' => array(
+			'selection'     => $selection,
+			'availability'  => array(
 				'available' => $avail,
 				'taken'     => $taken,
 			),
-			'devices'    => $devices,
-			'countries'  => array(
+			'devices'       => $devices,
+			'countries'     => array(
 				'items' => $countries,
 				'total' => $countries_total,
 			),
-			'recent'     => $recent,
+			'recent'        => $recent,
 		);
 	}
 
@@ -945,8 +960,8 @@ final class Reseller_Intent_Admin {
 		global $wpdb;
 
 		if ( $bounded ) {
-			$start  = wp_date( 'Y-m-d 00:00:00', $now_ts - ( ( $len - 1 ) * DAY_IN_SECONDS ) );
-			$rows   = $wpdb->get_results(
+			$start    = wp_date( 'Y-m-d 00:00:00', $now_ts - ( ( $len - 1 ) * DAY_IN_SECONDS ) );
+			$rows     = $wpdb->get_results(
 				$wpdb->prepare(
 					"SELECT DATE(created_at) AS bucket,
 						COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN event_count ELSE 0 END),0) AS searches,
@@ -977,7 +992,7 @@ final class Reseller_Intent_Admin {
 		}
 
 		// Lifetime: monthly buckets, capped at the last 24 months of data.
-		$rows = $wpdb->get_results(
+		$rows     = $wpdb->get_results(
 			"SELECT DATE_FORMAT(created_at, '%Y-%m') AS bucket,
 				COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN event_count ELSE 0 END),0) AS searches,
 				COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END),0) AS carts
@@ -1212,8 +1227,8 @@ final class Reseller_Intent_Admin {
 			WHERE event_type = 'domain_select' AND domain_query <> ''{$where}",
 			ARRAY_A
 		);
-		$total = isset( $totals['total'] ) ? (int) $totals['total'] : 0;
-		$exact = isset( $totals['exact_hits'] ) ? (int) $totals['exact_hits'] : 0;
+		$total  = isset( $totals['total'] ) ? (int) $totals['total'] : 0;
+		$exact  = isset( $totals['exact_hits'] ) ? (int) $totals['exact_hits'] : 0;
 
 		$top_rows = $wpdb->get_results(
 			"SELECT domain_query AS domain, SUM(event_count) AS hits
@@ -1223,7 +1238,7 @@ final class Reseller_Intent_Admin {
 			ORDER BY hits DESC
 			LIMIT 8"
 		);
-		$top = array();
+		$top      = array();
 		foreach ( $top_rows as $top_row ) {
 			$top[] = array(
 				'domain' => (string) $top_row->domain,
@@ -1240,7 +1255,7 @@ final class Reseller_Intent_Admin {
 			ORDER BY hits DESC
 			LIMIT 8"
 		);
-		$pairs = array();
+		$pairs     = array();
 		foreach ( $pair_rows as $pair_row ) {
 			$pairs[] = array(
 				'searched' => (string) $pair_row->searched,
@@ -1286,10 +1301,10 @@ final class Reseller_Intent_Admin {
 		$row = $wpdb->get_row( $sql, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 		return array(
-			'searches'        => isset( $row['searches'] ) ? (int) $row['searches'] : 0,
-			'cartClicks'      => isset( $row['cart_clicks'] ) ? (int) $row['cart_clicks'] : 0,
-			'domainsAdded'    => isset( $row['domains_added'] ) ? (int) $row['domains_added'] : 0,
-			'uniqueSearches'  => isset( $row['unique_searches'] ) ? (int) $row['unique_searches'] : 0,
+			'searches'       => isset( $row['searches'] ) ? (int) $row['searches'] : 0,
+			'cartClicks'     => isset( $row['cart_clicks'] ) ? (int) $row['cart_clicks'] : 0,
+			'domainsAdded'   => isset( $row['domains_added'] ) ? (int) $row['domains_added'] : 0,
+			'uniqueSearches' => isset( $row['unique_searches'] ) ? (int) $row['unique_searches'] : 0,
 		);
 	}
 
@@ -1385,7 +1400,7 @@ final class Reseller_Intent_Admin {
 		}
 		check_ajax_referer( 'rintent_admin_actions', 'nonce' );
 
-		$seconds = $this->resolve_clear_range( isset( $_POST['range'] ) ? wp_unslash( $_POST['range'] ) : '' );
+		$seconds = $this->resolve_clear_range( isset( $_POST['range'] ) ? sanitize_key( wp_unslash( $_POST['range'] ) ) : '' );
 		if ( null === $seconds ) {
 			wp_send_json_error( array( 'message' => 'Invalid range' ), 400 );
 		}
@@ -1399,7 +1414,7 @@ final class Reseller_Intent_Admin {
 		}
 		check_admin_referer( 'rintent_admin_actions' );
 
-		$seconds = $this->resolve_clear_range( isset( $_POST['range'] ) ? wp_unslash( $_POST['range'] ) : '' );
+		$seconds = $this->resolve_clear_range( isset( $_POST['range'] ) ? sanitize_key( wp_unslash( $_POST['range'] ) ) : '' );
 		$notice  = 'clear_error';
 
 		if ( null !== $seconds ) {
@@ -1457,6 +1472,7 @@ final class Reseller_Intent_Admin {
 		header( 'Pragma: no-cache' );
 		header( 'Expires: 0' );
 
+		// phpcs:disable WordPress.WP.AlternativeFunctions -- streaming download response; WP_Filesystem cannot stream to php://output.
 		$output = fopen( 'php://output', 'w' );
 		if ( false === $output ) {
 			exit;
@@ -1555,6 +1571,7 @@ final class Reseller_Intent_Admin {
 		}
 
 		fclose( $output );
+		// phpcs:enable WordPress.WP.AlternativeFunctions
 		exit;
 	}
 

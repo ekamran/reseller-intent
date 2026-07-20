@@ -14,11 +14,19 @@ final class Reseller_Intent_Admin {
 
 	const PAGE_SLUG = 'reseller-intent';
 
+	/**
+	 * Who can see the dashboard/exports. Filterable so agencies can open it
+	 * to editors etc.: add_filter( 'rintent_dashboard_capability', fn() => 'edit_pages' );
+	 */
+	public static function capability() {
+		return (string) apply_filters( 'rintent_dashboard_capability', 'manage_options' );
+	}
+
 	public function register_admin_menu() {
 		add_menu_page(
 			__( 'Reseller Intent', 'reseller-intent' ),
 			__( 'Reseller Intent', 'reseller-intent' ),
-			'manage_options',
+			self::capability(),
 			self::PAGE_SLUG,
 			array( $this, 'render_admin_page' ),
 			'dashicons-chart-area',
@@ -29,7 +37,7 @@ final class Reseller_Intent_Admin {
 			self::PAGE_SLUG,
 			__( 'Dashboard', 'reseller-intent' ),
 			__( 'Dashboard', 'reseller-intent' ),
-			'manage_options',
+			self::capability(),
 			self::PAGE_SLUG,
 			array( $this, 'render_admin_page' )
 		);
@@ -38,7 +46,7 @@ final class Reseller_Intent_Admin {
 			self::PAGE_SLUG,
 			__( 'Shortcodes', 'reseller-intent' ),
 			__( 'Shortcodes', 'reseller-intent' ),
-			'manage_options',
+			self::capability(),
 			self::PAGE_SLUG . '-shortcodes',
 			array( $this, 'render_shortcodes_page' )
 		);
@@ -47,7 +55,7 @@ final class Reseller_Intent_Admin {
 			self::PAGE_SLUG,
 			__( 'Settings', 'reseller-intent' ),
 			__( 'Settings', 'reseller-intent' ),
-			'manage_options',
+			self::capability(),
 			self::PAGE_SLUG . '-settings',
 			array( $this, 'render_settings_page' )
 		);
@@ -58,7 +66,7 @@ final class Reseller_Intent_Admin {
 	 * visually, copy the result. No page reloads, no AJAX — plain JS.
 	 */
 	public function render_shortcodes_page() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( self::capability() ) ) {
 			return;
 		}
 
@@ -216,7 +224,7 @@ final class Reseller_Intent_Admin {
 	}
 
 	public function render_settings_page() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( self::capability() ) ) {
 			return;
 		}
 
@@ -386,7 +394,7 @@ final class Reseller_Intent_Admin {
 	}
 
 	public function render_admin_page() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( self::capability() ) ) {
 			return;
 		}
 		echo '<div class="wrap rintent-wrap"><div id="rintent-root"></div></div>';
@@ -396,7 +404,7 @@ final class Reseller_Intent_Admin {
 	 * Single data endpoint: everything the dashboard shows, for one range.
 	 */
 	public function ajax_dashboard_data() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( self::capability() ) ) {
 			wp_send_json_error( array( 'message' => 'Forbidden' ), 403 );
 		}
 		check_ajax_referer( 'rintent_dashboard_data', 'nonce' );
@@ -536,6 +544,27 @@ final class Reseller_Intent_Admin {
 			}
 		}
 
+		// Top countries (privacy-safe: 2-letter geo header codes, no IPs).
+		$country_rows = $wpdb->get_results(
+			"SELECT country, COALESCE(SUM(event_count),0) AS hits
+			FROM {$table_name}
+			WHERE event_type = 'domain_search' AND country <> ''{$where}
+			GROUP BY country
+			ORDER BY hits DESC
+			LIMIT 8",
+			ARRAY_A
+		);
+		$countries       = array();
+		$countries_total = 0;
+		foreach ( (array) $country_rows as $country_row ) {
+			$hits              = isset( $country_row['hits'] ) ? (int) $country_row['hits'] : 0;
+			$countries_total  += $hits;
+			$countries[]       = array(
+				'code' => isset( $country_row['country'] ) ? (string) $country_row['country'] : '',
+				'hits' => $hits,
+			);
+		}
+
 		// Recent search log: latest 100 in range; filtered/paged client-side.
 		$recent_rows = $wpdb->get_results(
 			"SELECT domain_query, created_at, is_available, device
@@ -580,6 +609,10 @@ final class Reseller_Intent_Admin {
 				'taken'     => $taken,
 			),
 			'devices'    => $devices,
+			'countries'  => array(
+				'items' => $countries,
+				'total' => $countries_total,
+			),
 			'recent'     => $recent,
 		);
 	}
@@ -913,7 +946,7 @@ final class Reseller_Intent_Admin {
 	}
 
 	public function handle_export_domain_searches() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( self::capability() ) ) {
 			wp_die( esc_html__( 'You are not allowed to export data.', 'reseller-intent' ), 403 );
 		}
 		check_admin_referer( 'rintent_export' );
@@ -954,7 +987,7 @@ final class Reseller_Intent_Admin {
 	 * Preview endpoint: how many events would the selected range delete?
 	 */
 	public function ajax_clear_preview() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( self::capability() ) ) {
 			wp_send_json_error( array( 'message' => 'Forbidden' ), 403 );
 		}
 		check_ajax_referer( 'rintent_admin_actions', 'nonce' );
@@ -968,7 +1001,7 @@ final class Reseller_Intent_Admin {
 	}
 
 	public function handle_clear_data() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( self::capability() ) ) {
 			wp_die( esc_html__( 'You are not allowed to clear data.', 'reseller-intent' ), 403 );
 		}
 		check_admin_referer( 'rintent_admin_actions' );
@@ -1033,7 +1066,7 @@ final class Reseller_Intent_Admin {
 
 		// UTF-8 BOM improves CSV compatibility with spreadsheet apps.
 		fprintf( $output, chr( 0xEF ) . chr( 0xBB ) . chr( 0xBF ) );
-		fputcsv( $output, array( 'Event', 'Domain', 'Related Search', 'Items Count', 'Items', 'Available', 'Device', 'Page URL', 'Time (' . $tz_label . ')' ) );
+		fputcsv( $output, array( 'Event', 'Domain', 'Related Search', 'Items Count', 'Items', 'Available', 'Device', 'Country', 'Page URL', 'Time (' . $tz_label . ')' ) );
 
 		/*
 		 * Chunked export: batches keyed by id so memory stays flat no matter
@@ -1045,7 +1078,7 @@ final class Reseller_Intent_Admin {
 			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$rows = $wpdb->get_results(
 				$wpdb->prepare(
-					"SELECT id, event_type, domain_query, related_query, items_count, items_json, is_available, device, page_url, created_at
+					"SELECT id, event_type, domain_query, related_query, items_count, items_json, is_available, device, country, page_url, created_at
 					FROM {$table_name}
 					WHERE id < %d{$where}
 					ORDER BY id DESC
@@ -1080,6 +1113,7 @@ final class Reseller_Intent_Admin {
 						$this->sanitize_csv_cell( $items_cell ),
 						$avail_cell,
 						$this->sanitize_csv_cell( (string) $row->device ),
+						$this->sanitize_csv_cell( (string) $row->country ),
 						$this->sanitize_csv_cell( (string) $row->page_url ),
 						$this->sanitize_csv_cell( $this->format_datetime_local( (string) $row->created_at ) ),
 					)
@@ -1093,5 +1127,58 @@ final class Reseller_Intent_Admin {
 
 		fclose( $output );
 		exit;
+	}
+
+	/**
+	 * WP Dashboard "At a Glance"-style widget: today + 7 days.
+	 */
+	public function register_glance_widget() {
+		if ( ! current_user_can( self::capability() ) ) {
+			return;
+		}
+
+		wp_add_dashboard_widget(
+			'rintent_glance',
+			__( 'Reseller Intent', 'reseller-intent' ),
+			array( $this, 'render_glance_widget' )
+		);
+	}
+
+	public function render_glance_widget() {
+		global $wpdb;
+
+		$table_name  = Reseller_Intent_DB::table_name();
+		$today_start = wp_date( 'Y-m-d 00:00:00' );
+		$week_start  = wp_date( 'Y-m-d 00:00:00', time() - ( 6 * DAY_IN_SECONDS ) );
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$row = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT
+					SUM(CASE WHEN event_type = 'domain_search' AND created_at >= %s THEN 1 ELSE 0 END) AS searches_today,
+					SUM(CASE WHEN event_type = 'domain_search' THEN 1 ELSE 0 END) AS searches_week,
+					SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END) AS carts_week
+				FROM {$table_name}
+				WHERE created_at >= %s",
+				$today_start,
+				$week_start
+			)
+		);
+
+		$searches_today = $row ? (int) $row->searches_today : 0;
+		$searches_week  = $row ? (int) $row->searches_week : 0;
+		$carts_week     = $row ? (int) $row->carts_week : 0;
+		$rate           = $searches_week > 0 ? round( ( $carts_week / $searches_week ) * 100, 1 ) : 0;
+
+		echo '<div class="rintent-glance" style="display:flex;gap:18px;flex-wrap:wrap;">';
+		printf( '<div><strong style="font-size:20px;">%s</strong><br /><span style="color:#787c82;">%s</span></div>', esc_html( number_format_i18n( $searches_today ) ), esc_html__( 'searches today', 'reseller-intent' ) );
+		printf( '<div><strong style="font-size:20px;">%s</strong><br /><span style="color:#787c82;">%s</span></div>', esc_html( number_format_i18n( $searches_week ) ), esc_html__( 'searches, 7 days', 'reseller-intent' ) );
+		printf( '<div><strong style="font-size:20px;">%s%%</strong><br /><span style="color:#787c82;">%s</span></div>', esc_html( number_format_i18n( $rate, 1 ) ), esc_html__( 'search → cart, 7 days', 'reseller-intent' ) );
+		echo '</div>';
+		printf(
+			'<p style="margin-bottom:0;"><a href="%s">%s</a></p>',
+			esc_url( admin_url( 'admin.php?page=' . self::PAGE_SLUG ) ),
+			esc_html__( 'Open the full dashboard →', 'reseller-intent' )
+		);
 	}
 }

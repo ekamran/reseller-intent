@@ -65,6 +65,10 @@ final class Reseller_Intent_Tracker {
 			wp_send_json_success( array( 'ignored' => true, 'reason' => 'rate_limited' ) );
 		}
 
+		if ( $this->is_blocklisted( $domain_query ) ) {
+			wp_send_json_success( array( 'ignored' => true, 'reason' => 'blocklisted' ) );
+		}
+
 		$event_data = array(
 			'event_type'    => $event_type,
 			'domain_query'  => $domain_query,
@@ -73,6 +77,7 @@ final class Reseller_Intent_Tracker {
 			'items_count'   => $items_count,
 			'items_json'    => $items_json,
 			'device'        => $device,
+			'country'       => $this->get_country_code(),
 			'page_url'      => $page_url,
 			'created_at'    => current_time( 'mysql' ),
 		);
@@ -98,7 +103,7 @@ final class Reseller_Intent_Tracker {
 		$inserted = $wpdb->insert(
 			Reseller_Intent_DB::table_name(),
 			$event_data,
-			array( '%s', '%s', '%s', '%d', '%d', '%s', '%s', '%s', '%s' )
+			array( '%s', '%s', '%s', '%d', '%d', '%s', '%s', '%s', '%s', '%s' )
 		);
 
 		if ( false === $inserted ) {
@@ -200,6 +205,59 @@ final class Reseller_Intent_Tracker {
 		}
 
 		return substr( $normalized, 0, 191 );
+	}
+
+	/**
+	 * Country from edge/proxy geo headers — privacy-safe: a 2-letter code
+	 * the CDN already computed; no IP address is ever read into storage.
+	 * Empty when no supported header is present.
+	 */
+	private function get_country_code() {
+		foreach ( array( 'HTTP_CF_IPCOUNTRY', 'HTTP_X_VERCEL_IP_COUNTRY', 'HTTP_X_COUNTRY_CODE' ) as $header ) {
+			if ( empty( $_SERVER[ $header ] ) ) {
+				continue;
+			}
+
+			$code = strtoupper( sanitize_text_field( wp_unslash( $_SERVER[ $header ] ) ) );
+
+			if ( preg_match( '/^[A-Z]{2}$/', $code ) && ! in_array( $code, array( 'XX', 'T1' ), true ) ) {
+				return $code;
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * Owner-defined ignore list (Settings): one pattern per line, matched
+	 * against the normalized domain query. `*` wildcards supported.
+	 */
+	private function is_blocklisted( $domain_query ) {
+		if ( '' === $domain_query ) {
+			return false;
+		}
+
+		$patterns = Reseller_Intent_Settings::get( 'blocklist' );
+
+		if ( ! is_array( $patterns ) || empty( $patterns ) ) {
+			return false;
+		}
+
+		foreach ( $patterns as $pattern ) {
+			$pattern = strtolower( trim( (string) $pattern ) );
+
+			if ( '' === $pattern ) {
+				continue;
+			}
+
+			$regex = '/^' . str_replace( '\*', '.*', preg_quote( $pattern, '/' ) ) . '$/';
+
+			if ( preg_match( $regex, $domain_query ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

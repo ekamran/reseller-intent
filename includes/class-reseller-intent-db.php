@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 final class Reseller_Intent_DB {
 	const TABLE_SUFFIX      = 'rintent_events';
-	const DB_VERSION        = '1';
+	const DB_VERSION        = '2';
 	const DB_VERSION_OPTION = 'rintent_db_version';
 
 	public static function table_name() {
@@ -36,6 +36,7 @@ final class Reseller_Intent_DB {
 			items_json LONGTEXT NULL,
 			is_available TINYINT(1) NULL,
 			device VARCHAR(16) NOT NULL DEFAULT '',
+			country CHAR(2) NOT NULL DEFAULT '',
 			page_url TEXT NULL,
 			created_at DATETIME NOT NULL,
 			PRIMARY KEY  (id),

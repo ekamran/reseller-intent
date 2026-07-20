@@ -43,6 +43,7 @@ final class Reseller_Intent {
 		// Admin dashboard + actions.
 		add_action( 'admin_menu', array( $this->admin, 'register_admin_menu' ) );
 		add_action( 'admin_enqueue_scripts', array( $this->admin, 'enqueue_admin_assets' ) );
+		add_action( 'wp_dashboard_setup', array( $this->admin, 'register_glance_widget' ) );
 		add_action( 'wp_ajax_rintent_dashboard_data', array( $this->admin, 'ajax_dashboard_data' ) );
 		add_action( 'wp_ajax_rintent_clear_preview', array( $this->admin, 'ajax_clear_preview' ) );
 		add_action( 'admin_post_rintent_export_csv', array( $this->admin, 'handle_export_domain_searches' ) );

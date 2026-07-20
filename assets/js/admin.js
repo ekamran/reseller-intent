@@ -475,6 +475,31 @@
 		);
 	}
 
+	function flagEmoji(code) {
+		if (!/^[A-Z]{2}$/.test(code)) {
+			return '';
+		}
+		return String.fromCodePoint(0x1F1E6 + code.charCodeAt(0) - 65, 0x1F1E6 + code.charCodeAt(1) - 65);
+	}
+
+	function CountriesPanel(props) {
+		var items = (props.countries && props.countries.items) || [];
+		var total = (props.countries && props.countries.total) || 0;
+
+		return el(Panel, { title: 'Top Countries', note: items.length ? 'Searches by visitor country (edge geo header).' : null },
+			items.length
+				? items.map(function(item) {
+					return el(BarRow, {
+						key: item.code,
+						label: flagEmoji(item.code) + ' ' + item.code,
+						width: pct(item.hits, total),
+						value: fmt(item.hits)
+					});
+				})
+				: el('p', { className: 'ri-empty' }, 'No country data yet. Your host/CDN needs to send a geo header (e.g. Cloudflare’s CF-IPCountry).')
+		);
+	}
+
 	/*
 	 * Browser-style "Clear data" modal: pick a window, see exactly how many
 	 * events it covers, then confirm. Preview count loads live per range.
@@ -668,7 +693,8 @@
 						el(SelectionPanel, { selection: data.selection }),
 						el('div', { className: 'ri-stack' },
 							el(QualityPanel, { availability: data.availability, devices: data.devices }),
-							el(PagesPanel, { pages: data.pages })
+							el(PagesPanel, { pages: data.pages }),
+							el(CountriesPanel, { countries: data.countries })
 						)
 					),
 					el(RecentLog, { recent: data.recent })

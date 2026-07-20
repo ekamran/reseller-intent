@@ -36,6 +36,8 @@ Your Reseller Store domain search is where buying decisions happen — and by de
 
 * No cookies, no fingerprinting, no IP addresses stored, no user accounts recorded — events are anonymous interaction counts
 * Known bots and crawlers are ignored by default
+* Country stats without IPs — uses the 2-letter geo header your CDN already computes (e.g. Cloudflare)
+* Ignore-list for your own test searches (wildcards supported)
 * `rintent_should_track` filter lets consent plugins pause tracking until consent is given
 
 **For developers**
@@ -73,8 +75,7 @@ Build both visually under Reseller Intent → Shortcodes.
 
 == Roadmap ==
 
-* Country stats (privacy-safe, header-based), custom date ranges, dashboard glance widget
-* Weekly email digest, JSON export, capability control, search blocklist
+* Custom date ranges, weekly email digest, JSON export
 
 == Changelog ==
 
@@ -82,3 +83,4 @@ Build both visually under Reseller Intent → Shortcodes.
 * Initial release: anonymous domain-search tracking, intent dashboard, chunked CSV export, browser-style clear-data, retention controls, legacy importer.
 * Widget style pack: accent-driven styling, skeleton loaders, floating Clear All, dark context, documented theming variables.
 * Shortcodes with generator UI: TLD price strip (cached + cron-warmed) and starting-at price.
+* Top Countries panel (privacy-safe geo headers), WP dashboard glance widget, search ignore-list, filterable dashboard capability.

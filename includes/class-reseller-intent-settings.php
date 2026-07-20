@@ -14,6 +14,7 @@ final class Reseller_Intent_Settings {
 		'style_widget'        => true,
 		'widget_skeletons'    => true,
 		'widget_clear_all'    => true,
+		'blocklist'           => array(),
 	);
 
 	public static function get( $key ) {
@@ -41,6 +42,7 @@ final class Reseller_Intent_Settings {
 			'style_widget'        => ! empty( $_POST['style_widget'] ),
 			'widget_skeletons'    => ! empty( $_POST['widget_skeletons'] ),
 			'widget_clear_all'    => ! empty( $_POST['widget_clear_all'] ),
+			'blocklist'           => $this->sanitize_blocklist( isset( $_POST['blocklist'] ) ? wp_unslash( $_POST['blocklist'] ) : '' ),
 		);
 
 		update_option( self::OPTION, $settings );
@@ -74,6 +76,21 @@ final class Reseller_Intent_Settings {
 		$color = sanitize_hex_color( (string) $value );
 
 		return $color ? $color : self::$defaults['accent_color'];
+	}
+
+	private function sanitize_blocklist( $value ) {
+		$lines = preg_split( '/[\r\n]+/', (string) $value );
+		$clean = array();
+
+		foreach ( (array) $lines as $line ) {
+			$line = strtolower( trim( sanitize_text_field( $line ) ) );
+
+			if ( '' !== $line && strlen( $line ) <= 191 && count( $clean ) < 100 ) {
+				$clean[] = $line;
+			}
+		}
+
+		return array_values( array_unique( $clean ) );
 	}
 
 	private function sanitize_retention( $value ) {

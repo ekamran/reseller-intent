@@ -574,6 +574,10 @@
 		var _e = useState(''), error = _e[0], setError = _e[1];
 		var _m = useState(false), showClear = _m[0], setShowClear = _m[1];
 		var _n = useState(resellerIntentAdmin.notice || ''), notice = _n[0], setNotice = _n[1];
+		var today = new Date().toISOString().slice(0, 10);
+		var _cf = useState(today), customFrom = _cf[0], setCustomFrom = _cf[1];
+		var _ct = useState(today), customTo = _ct[0], setCustomTo = _ct[1];
+		var _ca = useState({ from: today, to: today }), customApplied = _ca[0], setCustomApplied = _ca[1];
 
 		useEffect(function() {
 			var cancelled = false;
@@ -584,6 +588,10 @@
 			body.append('action', 'rintent_dashboard_data');
 			body.append('nonce', resellerIntentAdmin.nonce);
 			body.append('range', range);
+			if (range === 'custom') {
+				body.append('from', customApplied.from);
+				body.append('to', customApplied.to);
+			}
 
 			window.fetch(resellerIntentAdmin.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: body })
 				.then(function(response) { return response.json(); })
@@ -609,7 +617,7 @@
 				});
 
 			return function() { cancelled = true; };
-		}, [range]);
+		}, [range, customApplied]);
 
 		function confirmClear(rangeKey) {
 			var form = document.createElement('form');
@@ -641,7 +649,10 @@
 			return n === 0 ? 'No events matched that window.' : fmt(n) + ' event' + (n === 1 ? '' : 's') + ' deleted.';
 		}
 
-		var exportHref = resellerIntentAdmin.exportUrl + '&range=' + encodeURIComponent(range);
+		var rangeQuery = '&range=' + encodeURIComponent(range)
+			+ (range === 'custom' ? '&from=' + encodeURIComponent(customApplied.from) + '&to=' + encodeURIComponent(customApplied.to) : '');
+		var exportHref = resellerIntentAdmin.exportUrl + rangeQuery;
+		var exportJsonHref = resellerIntentAdmin.exportUrl + rangeQuery + '&format=json';
 
 		return el('div', { className: 'ri-app' + (loading ? ' is-loading' : ''), style: { '--ri-accent': ACCENT } },
 			el('header', { className: 'ri-header' },
@@ -653,7 +664,7 @@
 					)
 				),
 				el('div', { className: 'ri-header-actions' },
-					el('span', { className: 'ri-ranges' }, RANGES.map(function(option) {
+					el('span', { className: 'ri-ranges' }, RANGES.concat([{ key: 'custom', label: 'Custom' }]).map(function(option) {
 						return el('button', {
 							key: option.key,
 							className: 'ri-range' + (range === option.key ? ' is-active' : ''),
@@ -661,9 +672,24 @@
 						}, option.label);
 					})),
 					el('a', { className: 'button ri-export', href: exportHref }, 'Export CSV'),
+					el('a', { className: 'button ri-export', href: exportJsonHref, title: 'Export JSON' }, 'JSON'),
 					el('button', { className: 'button ri-danger-ghost', onClick: function() { setShowClear(true); } }, 'Clear data')
 				)
 			),
+
+			range === 'custom' ? el('div', { className: 'ri-custom-range' },
+				el('label', null, 'From ',
+					el('input', { type: 'date', value: customFrom, max: today, onChange: function(e) { setCustomFrom(e.target.value); } })
+				),
+				el('label', null, 'To ',
+					el('input', { type: 'date', value: customTo, max: today, onChange: function(e) { setCustomTo(e.target.value); } })
+				),
+				el('button', {
+					className: 'button',
+					disabled: !customFrom || !customTo || customFrom > customTo,
+					onClick: function() { setCustomApplied({ from: customFrom, to: customTo }); }
+				}, 'Apply')
+			) : null,
 
 			clearNoticeText(notice) ? el('div', { className: 'notice notice-success is-dismissible ri-notice', onClick: function() { setNotice(''); } }, el('p', null, clearNoticeText(notice))) : null,
 			notice === 'clear_error' ? el('div', { className: 'notice notice-error ri-notice' }, el('p', null, 'Clearing data failed.')) : null,

@@ -562,3 +562,24 @@
 	color: #1d2327;
 	font-variant-numeric: tabular-nums;
 }
+
+/* Custom date range row */
+.ri-custom-range {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	margin: 0 0 14px;
+	padding: 10px 14px;
+	background: #fff;
+	border: 1px solid #e2e8f0;
+	border-radius: 10px;
+	font-size: 12.5px;
+}
+
+.ri-custom-range label {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	color: #64748b;
+	font-weight: 600;
+}

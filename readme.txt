@@ -17,14 +17,15 @@ Your Reseller Store domain search is where buying decisions happen — and by de
 **Dashboard**
 
 * KPI cards with previous-period comparison
-* Search vs cart trend chart (7 / 30 / 90 days / lifetime)
+* Search vs cart trend chart (7 / 30 / 90 days / lifetime / custom date range)
 * Intent funnel: searches → selections → cart clicks, with per-stage rates
 * TLD demand distribution
 * "Kept searched name" vs settled-for-alternative selection insights
 * Availability quality and device split
 * Per-page breakdown (which search box converts)
 * Recent searches log with filter
-* CSV export for any range
+* CSV and JSON export for any range
+* Weekly email digest (searches, conversion, top domains & TLDs) with a test-send button
 
 **Data controls**
 
@@ -74,10 +75,6 @@ Build both visually under Reseller Intent → Shortcodes.
 * `[rintent_price ids="12,14,15" fallback="$3.99"]` — cheapest current price across the selected Reseller Store products, e.g. "Starting at [rintent_price ids=…]/mo".
 * `[rintent_phone format="link|text" prefix="Call "]` — geo-aware support number. Configure regional numbers (label, number, countries) in Settings; visitors see their region's number via a page-cache-safe client-side swap based on the browser timezone. No IPs, no lookup services.
 
-== Roadmap ==
-
-* Custom date ranges, weekly email digest, JSON export
-
 == Changelog ==
 
 = 1.0.0 =
@@ -87,3 +84,4 @@ Build both visually under Reseller Intent → Shortcodes.
 * Top Countries panel (privacy-safe geo headers), WP dashboard glance widget, search ignore-list, filterable dashboard capability.
 * Timezone-based country fallback for hosts without geo headers; legacy timezone aliases handled.
 * Geo-aware support phone shortcode with regional numbers manager.
+* Custom date range on the dashboard, JSON export, weekly email digest.

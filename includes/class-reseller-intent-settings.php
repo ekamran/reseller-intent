@@ -16,6 +16,8 @@ final class Reseller_Intent_Settings {
 		'widget_clear_all'    => true,
 		'blocklist'           => array(),
 		'support_numbers'     => array(),
+		'digest_enabled'      => false,
+		'digest_email'        => '',
 	);
 
 	public static function get( $key ) {
@@ -44,6 +46,8 @@ final class Reseller_Intent_Settings {
 			'widget_skeletons'    => ! empty( $_POST['widget_skeletons'] ),
 			'widget_clear_all'    => ! empty( $_POST['widget_clear_all'] ),
 			'blocklist'           => $this->sanitize_blocklist( isset( $_POST['blocklist'] ) ? wp_unslash( $_POST['blocklist'] ) : '' ),
+			'digest_enabled'      => ! empty( $_POST['digest_enabled'] ),
+			'digest_email'        => sanitize_email( isset( $_POST['digest_email'] ) ? wp_unslash( $_POST['digest_email'] ) : '' ),
 			'support_numbers'     => $this->sanitize_support_numbers(
 				isset( $_POST['support_label'] ) ? (array) wp_unslash( $_POST['support_label'] ) : array(),
 				isset( $_POST['support_number'] ) ? (array) wp_unslash( $_POST['support_number'] ) : array(),

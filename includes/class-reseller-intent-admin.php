@@ -252,6 +252,10 @@ final class Reseller_Intent_Admin {
 				<div class="notice notice-success is-dismissible"><p><?php echo esc_html( sprintf( /* translators: %s: number of events */ __( '%s legacy events imported.', 'reseller-intent' ), number_format_i18n( (int) $import_match[1] ) ) ); ?></p></div>
 			<?php elseif ( 'import_skipped' === $notice ) : ?>
 				<div class="notice notice-info is-dismissible"><p><?php esc_html_e( 'Import skipped — already imported or no legacy table found.', 'reseller-intent' ); ?></p></div>
+			<?php elseif ( 'digest_sent' === $notice ) : ?>
+				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Test digest sent.', 'reseller-intent' ); ?></p></div>
+			<?php elseif ( 'digest_failed' === $notice ) : ?>
+				<div class="notice notice-error is-dismissible"><p><?php esc_html_e( 'Sending failed — check that your site can send email (an SMTP plugin usually fixes this).', 'reseller-intent' ); ?></p></div>
 			<?php endif; ?>
 
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
@@ -323,6 +327,19 @@ final class Reseller_Intent_Admin {
 						</td>
 					</tr>
 					<tr>
+						<th scope="row"><?php esc_html_e( 'Weekly digest', 'reseller-intent' ); ?></th>
+						<td>
+							<label for="rintent-digest">
+								<input type="checkbox" id="rintent-digest" name="digest_enabled" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'digest_enabled' ) ); ?> />
+								<?php esc_html_e( 'Email a weekly summary (searches, conversion, top domains & TLDs)', 'reseller-intent' ); ?>
+							</label>
+							<p style="margin:8px 0 0;">
+								<input type="email" name="digest_email" class="regular-text" value="<?php echo esc_attr( (string) Reseller_Intent_Settings::get( 'digest_email' ) ); ?>" placeholder="<?php echo esc_attr( get_option( 'admin_email' ) ); ?>" />
+							</p>
+							<p class="description"><?php esc_html_e( 'Leave empty to use the site admin email.', 'reseller-intent' ); ?></p>
+						</td>
+					</tr>
+					<tr>
 						<th scope="row"><?php esc_html_e( 'Support numbers', 'reseller-intent' ); ?></th>
 						<td>
 							<p class="description" style="margin-bottom:8px;"><?php esc_html_e( 'Regional support phone numbers for the [rintent_phone] shortcode. Countries = comma-separated 2-letter codes (IN, US, AE…); leave empty for the default number shown to everyone else. Visitors see their region\'s number automatically — page-cache safe.', 'reseller-intent' ); ?></p>
@@ -388,6 +405,12 @@ final class Reseller_Intent_Admin {
 				</table>
 
 				<?php submit_button( __( 'Save Settings', 'reseller-intent' ) ); ?>
+			</form>
+
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin-top:-8px;">
+				<input type="hidden" name="action" value="rintent_send_digest_test" />
+				<?php wp_nonce_field( 'rintent_send_digest_test' ); ?>
+				<?php submit_button( __( 'Send test digest email', 'reseller-intent' ), 'secondary', 'submit', false ); ?>
 			</form>
 
 			<?php if ( Reseller_Intent_Import::legacy_table_exists() && ! Reseller_Intent_Import::already_imported() ) : ?>
@@ -464,27 +487,62 @@ final class Reseller_Intent_Admin {
 		check_ajax_referer( 'rintent_dashboard_data', 'nonce' );
 
 		$range_key = isset( $_POST['range'] ) ? sanitize_key( wp_unslash( $_POST['range'] ) ) : '90';
-		if ( ! in_array( $range_key, array( '7', '30', '90', 'all' ), true ) ) {
+		if ( ! in_array( $range_key, array( '7', '30', '90', 'all', 'custom' ), true ) ) {
 			$range_key = '90';
 		}
 
-		wp_send_json_success( $this->get_dashboard_data( $range_key ) );
+		$from = isset( $_POST['from'] ) ? sanitize_text_field( wp_unslash( $_POST['from'] ) ) : '';
+		$to   = isset( $_POST['to'] ) ? sanitize_text_field( wp_unslash( $_POST['to'] ) ) : '';
+
+		if ( 'custom' === $range_key && ! self::valid_custom_range( $from, $to ) ) {
+			$range_key = '90';
+		}
+
+		wp_send_json_success( $this->get_dashboard_data( $range_key, $from, $to ) );
 	}
 
-	private function get_dashboard_data( $range_key ) {
+	/**
+	 * @return bool True when $from/$to are valid Y-m-d, ordered, max 2 years.
+	 */
+	public static function valid_custom_range( $from, $to ) {
+		if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', (string) $from ) || ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', (string) $to ) ) {
+			return false;
+		}
+
+		$from_ts = strtotime( $from . ' 00:00:00' );
+		$to_ts   = strtotime( $to . ' 00:00:00' );
+
+		return $from_ts && $to_ts && $from_ts <= $to_ts && ( $to_ts - $from_ts ) <= 2 * YEAR_IN_SECONDS;
+	}
+
+	private function get_dashboard_data( $range_key, $from = '', $to = '' ) {
 		global $wpdb;
 
 		$table_name = Reseller_Intent_DB::table_name();
 
-		$bounded    = ( 'all' !== $range_key );
-		$len        = $bounded ? (int) $range_key : 0;
-		$now_ts     = time(); // NOT current_time(): wp_date() adds the site offset itself; both = double shift after 18:30 IST.
-		$start      = $bounded ? wp_date( 'Y-m-d 00:00:00', $now_ts - ( ( $len - 1 ) * DAY_IN_SECONDS ) ) : '';
-		$prev_start = $bounded ? wp_date( 'Y-m-d 00:00:00', $now_ts - ( ( ( 2 * $len ) - 1 ) * DAY_IN_SECONDS ) ) : '';
-		$where      = $bounded ? $wpdb->prepare( ' AND created_at >= %s', $start ) : '';
+		$bounded = ( 'all' !== $range_key );
+		$custom  = ( 'custom' === $range_key );
+		$now_ts  = time(); // NOT current_time(): wp_date() adds the site offset itself; both = double shift after 18:30 IST.
+		$end     = ''; // exclusive upper bound, custom range only
+
+		if ( $custom ) {
+			// Dates are site-local calendar days; created_at is stored site-local.
+			$len        = (int) ( ( strtotime( $to ) - strtotime( $from ) ) / DAY_IN_SECONDS ) + 1;
+			$start      = $from . ' 00:00:00';
+			$end        = gmdate( 'Y-m-d', strtotime( $to . ' +1 day' ) ) . ' 00:00:00';
+			$prev_start = gmdate( 'Y-m-d', strtotime( $from . ' -' . $len . ' days' ) ) . ' 00:00:00';
+			$anchor_ts  = ( new DateTimeImmutable( $to . ' 12:00:00', wp_timezone() ) )->getTimestamp();
+			$where      = $wpdb->prepare( ' AND created_at >= %s AND created_at < %s', $start, $end );
+		} else {
+			$len        = $bounded ? (int) $range_key : 0;
+			$start      = $bounded ? wp_date( 'Y-m-d 00:00:00', $now_ts - ( ( $len - 1 ) * DAY_IN_SECONDS ) ) : '';
+			$prev_start = $bounded ? wp_date( 'Y-m-d 00:00:00', $now_ts - ( ( ( 2 * $len ) - 1 ) * DAY_IN_SECONDS ) ) : '';
+			$anchor_ts  = $now_ts;
+			$where      = $bounded ? $wpdb->prepare( ' AND created_at >= %s', $start ) : '';
+		}
 
 		// KPIs: one aggregate query per window.
-		$kpi_now  = $this->get_kpi_counts( $table_name, $start );
+		$kpi_now  = $this->get_kpi_counts( $table_name, $start, $end );
 		$kpi_prev = $bounded ? $this->get_kpi_counts( $table_name, $prev_start, $start ) : null;
 
 		// TLD distribution.
@@ -519,7 +577,7 @@ final class Reseller_Intent_Admin {
 		}
 
 		// Trend: daily for bounded ranges, monthly for lifetime.
-		$trend = $this->get_trend_series( $table_name, $bounded, $len, $now_ts );
+		$trend = $this->get_trend_series( $table_name, $bounded, $len, $anchor_ts );
 
 		// Cart size buckets.
 		$cart_row = $wpdb->get_row(
@@ -640,10 +698,12 @@ final class Reseller_Intent_Admin {
 		return array(
 			'range'      => $range_key,
 			'bounded'    => $bounded,
-			'rangeLabel' => $bounded
-				/* translators: %d: number of days */
-				? sprintf( __( 'Last %d days', 'reseller-intent' ), $len )
-				: __( 'Lifetime', 'reseller-intent' ),
+			'rangeLabel' => $custom
+				? sprintf( '%s – %s', wp_date( 'M j, Y', strtotime( $from . ' 12:00:00' ) ), wp_date( 'M j, Y', strtotime( $to . ' 12:00:00' ) ) )
+				: ( $bounded
+					/* translators: %d: number of days */
+					? sprintf( __( 'Last %d days', 'reseller-intent' ), $len )
+					: __( 'Lifetime', 'reseller-intent' ) ),
 			'kpis'       => array(
 				'now'  => $kpi_now,
 				'prev' => $kpi_prev,
@@ -1006,11 +1066,20 @@ final class Reseller_Intent_Admin {
 		check_admin_referer( 'rintent_export' );
 
 		$range_key = isset( $_GET['range'] ) ? sanitize_key( wp_unslash( $_GET['range'] ) ) : 'all';
-		if ( ! in_array( $range_key, array( '7', '30', '90', 'all' ), true ) ) {
+		if ( ! in_array( $range_key, array( '7', '30', '90', 'all', 'custom' ), true ) ) {
 			$range_key = 'all';
 		}
 
-		$this->export_domain_search_csv( Reseller_Intent_DB::table_name(), $range_key );
+		$from = isset( $_GET['from'] ) ? sanitize_text_field( wp_unslash( $_GET['from'] ) ) : '';
+		$to   = isset( $_GET['to'] ) ? sanitize_text_field( wp_unslash( $_GET['to'] ) ) : '';
+
+		if ( 'custom' === $range_key && ! self::valid_custom_range( $from, $to ) ) {
+			$range_key = 'all';
+		}
+
+		$format = isset( $_GET['format'] ) && 'json' === sanitize_key( wp_unslash( $_GET['format'] ) ) ? 'json' : 'csv';
+
+		$this->export_domain_search_csv( Reseller_Intent_DB::table_name(), $range_key, $format, $from, $to );
 	}
 
 	/**
@@ -1092,11 +1161,14 @@ final class Reseller_Intent_Admin {
 		return $value;
 	}
 
-	private function export_domain_search_csv( $table_name, $range_key = 'all' ) {
+	private function export_domain_search_csv( $table_name, $range_key = 'all', $format = 'csv', $from = '', $to = '' ) {
 		global $wpdb;
 
 		$where = '';
-		if ( 'all' !== $range_key ) {
+		if ( 'custom' === $range_key ) {
+			$end_excl = gmdate( 'Y-m-d', strtotime( $to . ' +1 day' ) ) . ' 00:00:00';
+			$where    = $wpdb->prepare( ' AND created_at >= %s AND created_at < %s', $from . ' 00:00:00', $end_excl );
+		} elseif ( 'all' !== $range_key ) {
 			$len   = (int) $range_key;
 			$start = wp_date( 'Y-m-d 00:00:00', time() - ( ( $len - 1 ) * DAY_IN_SECONDS ) );
 			$where = $wpdb->prepare( ' AND created_at >= %s', $start );
@@ -1106,8 +1178,12 @@ final class Reseller_Intent_Admin {
 			ob_end_clean();
 		}
 		nocache_headers();
-		header( 'Content-Type: text/csv; charset=utf-8' );
-		header( 'Content-Disposition: attachment; filename="reseller-intent-' . gmdate( 'Ymd-His' ) . '.csv"' );
+
+		$is_json  = ( 'json' === $format );
+		$tz_label = wp_timezone_string();
+
+		header( 'Content-Type: ' . ( $is_json ? 'application/json' : 'text/csv' ) . '; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="reseller-intent-' . gmdate( 'Ymd-His' ) . ( $is_json ? '.json' : '.csv' ) . '"' );
 		header( 'Pragma: no-cache' );
 		header( 'Expires: 0' );
 
@@ -1116,11 +1192,15 @@ final class Reseller_Intent_Admin {
 			exit;
 		}
 
-		$tz_label = wp_timezone_string();
+		if ( $is_json ) {
+			fwrite( $output, '{"generated":' . wp_json_encode( gmdate( 'c' ) ) . ',"timezone":' . wp_json_encode( $tz_label ) . ',"events":[' );
+		} else {
+			// UTF-8 BOM improves CSV compatibility with spreadsheet apps.
+			fprintf( $output, chr( 0xEF ) . chr( 0xBB ) . chr( 0xBF ) );
+			fputcsv( $output, array( 'Event', 'Domain', 'Related Search', 'Items Count', 'Items', 'Available', 'Device', 'Country', 'Page URL', 'Time (' . $tz_label . ')' ) );
+		}
 
-		// UTF-8 BOM improves CSV compatibility with spreadsheet apps.
-		fprintf( $output, chr( 0xEF ) . chr( 0xBB ) . chr( 0xBF ) );
-		fputcsv( $output, array( 'Event', 'Domain', 'Related Search', 'Items Count', 'Items', 'Available', 'Device', 'Country', 'Page URL', 'Time (' . $tz_label . ')' ) );
+		$json_first = true;
 
 		/*
 		 * Chunked export: batches keyed by id so memory stays flat no matter
@@ -1157,26 +1237,51 @@ final class Reseller_Intent_Admin {
 					$items_cell = implode( ' ', $this->extract_carted_domains( (string) $row->items_json ) );
 				}
 
-				fputcsv(
-					$output,
-					array(
-						$this->sanitize_csv_cell( (string) $row->event_type ),
-						$this->sanitize_csv_cell( (string) $row->domain_query ),
-						$this->sanitize_csv_cell( (string) $row->related_query ),
-						(int) $row->items_count,
-						$this->sanitize_csv_cell( $items_cell ),
-						$avail_cell,
-						$this->sanitize_csv_cell( (string) $row->device ),
-						$this->sanitize_csv_cell( (string) $row->country ),
-						$this->sanitize_csv_cell( (string) $row->page_url ),
-						$this->sanitize_csv_cell( $this->format_datetime_local( (string) $row->created_at ) ),
-					)
-				);
+				if ( $is_json ) {
+					fwrite(
+						$output,
+						( $json_first ? '' : ',' ) . wp_json_encode(
+							array(
+								'event'     => (string) $row->event_type,
+								'domain'    => (string) $row->domain_query,
+								'related'   => (string) $row->related_query,
+								'items'     => (int) $row->items_count,
+								'carted'    => $items_cell,
+								'available' => '' === $avail_cell ? null : ( 'yes' === $avail_cell ),
+								'device'    => (string) $row->device,
+								'country'   => (string) $row->country,
+								'page'      => (string) $row->page_url,
+								'time'      => $this->format_datetime_local( (string) $row->created_at ),
+							)
+						)
+					);
+					$json_first = false;
+				} else {
+					fputcsv(
+						$output,
+						array(
+							$this->sanitize_csv_cell( (string) $row->event_type ),
+							$this->sanitize_csv_cell( (string) $row->domain_query ),
+							$this->sanitize_csv_cell( (string) $row->related_query ),
+							(int) $row->items_count,
+							$this->sanitize_csv_cell( $items_cell ),
+							$avail_cell,
+							$this->sanitize_csv_cell( (string) $row->device ),
+							$this->sanitize_csv_cell( (string) $row->country ),
+							$this->sanitize_csv_cell( (string) $row->page_url ),
+							$this->sanitize_csv_cell( $this->format_datetime_local( (string) $row->created_at ) ),
+						)
+					);
+				}
 
 				$last_id = (int) $row->id;
 			}
 
 			flush();
+		}
+
+		if ( $is_json ) {
+			fwrite( $output, ']}' );
 		}
 
 		fclose( $output );

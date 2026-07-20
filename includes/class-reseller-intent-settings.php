@@ -15,7 +15,7 @@ final class Reseller_Intent_Settings {
 		'widget_skeletons'    => true,
 		'widget_clear_all'    => true,
 		'blocklist'           => array(),
-		'support_numbers'     => array(),
+		'support_numbers'     => null,  // null = built-in GoDaddy defaults; array = owner's own list.
 		'digest_enabled'      => false,
 		'digest_email'        => '',
 	);
@@ -28,6 +28,31 @@ final class Reseller_Intent_Settings {
 
 	public function register() {
 		add_action( 'admin_post_rintent_save_settings', array( $this, 'handle_save' ) );
+		add_action( 'admin_post_rintent_reset_numbers', array( $this, 'handle_reset_numbers' ) );
+	}
+
+	/**
+	 * Forget the owner's support number list so the built-in defaults
+	 * (and any updates to them) apply again.
+	 */
+	public function handle_reset_numbers() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Sorry, you are not allowed to do that.', 'reseller-intent' ) );
+		}
+
+		check_admin_referer( 'rintent_reset_numbers' );
+
+		$settings = (array) get_option( self::OPTION, array() );
+		unset( $settings['support_numbers'] );
+		update_option( self::OPTION, $settings );
+
+		wp_safe_redirect(
+			add_query_arg(
+				array( 'page' => 'reseller-intent-settings', 'rintent_notice' => 'numbers_reset' ),
+				admin_url( 'admin.php' )
+			)
+		);
+		exit;
 	}
 
 	public function handle_save() {
@@ -48,11 +73,11 @@ final class Reseller_Intent_Settings {
 			'blocklist'           => $this->sanitize_blocklist( isset( $_POST['blocklist'] ) ? wp_unslash( $_POST['blocklist'] ) : '' ),
 			'digest_enabled'      => ! empty( $_POST['digest_enabled'] ),
 			'digest_email'        => sanitize_email( isset( $_POST['digest_email'] ) ? wp_unslash( $_POST['digest_email'] ) : '' ),
-			'support_numbers'     => $this->sanitize_support_numbers(
+			'support_numbers'     => $this->maybe_default_support_numbers( $this->sanitize_support_numbers(
 				isset( $_POST['support_label'] ) ? (array) wp_unslash( $_POST['support_label'] ) : array(),
 				isset( $_POST['support_number'] ) ? (array) wp_unslash( $_POST['support_number'] ) : array(),
 				isset( $_POST['support_countries'] ) ? (array) wp_unslash( $_POST['support_countries'] ) : array()
-			),
+			) ),
 		);
 
 		update_option( self::OPTION, $settings );
@@ -103,13 +128,22 @@ final class Reseller_Intent_Settings {
 		return array_values( array_unique( $clean ) );
 	}
 
+	/**
+	 * If the submitted list matches the built-in defaults exactly, store
+	 * null so the site keeps following default updates. Anything else is
+	 * the owner's own list and future plugin updates never touch it.
+	 */
+	private function maybe_default_support_numbers( array $numbers ) {
+		return $numbers === Reseller_Intent_Phone::default_numbers() ? null : $numbers;
+	}
+
 	private function sanitize_support_numbers( array $labels, array $numbers, array $countries ) {
 		$clean = array();
 
 		foreach ( $numbers as $i => $number ) {
 			$number = trim( sanitize_text_field( (string) $number ) );
 
-			if ( '' === $number || ! preg_match( '/^[0-9+][0-9 ()+.\-]{4,24}$/', $number ) || count( $clean ) >= 20 ) {
+			if ( '' === $number || ! preg_match( '/^[0-9+][0-9 ()+.\-]{4,24}$/', $number ) || count( $clean ) >= 40 ) {
 				continue;
 			}
 

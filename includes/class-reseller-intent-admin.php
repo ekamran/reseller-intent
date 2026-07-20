@@ -283,6 +283,8 @@ final class Reseller_Intent_Admin {
 				<div class="notice notice-success is-dismissible"><p><?php echo esc_html( sprintf( /* translators: %s: number of events */ __( '%s legacy events imported.', 'reseller-intent' ), number_format_i18n( (int) $import_match[1] ) ) ); ?></p></div>
 			<?php elseif ( 'import_skipped' === $notice ) : ?>
 				<div class="notice notice-info is-dismissible"><p><?php esc_html_e( 'Import skipped. Already imported or no legacy table found.', 'reseller-intent' ); ?></p></div>
+			<?php elseif ( 'numbers_reset' === $notice ) : ?>
+				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Support numbers reset to the GoDaddy defaults.', 'reseller-intent' ); ?></p></div>
 			<?php elseif ( 'digest_sent' === $notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Test digest sent.', 'reseller-intent' ); ?></p></div>
 			<?php elseif ( 'digest_failed' === $notice ) : ?>
@@ -349,10 +351,22 @@ final class Reseller_Intent_Admin {
 				<div class="rintent-card">
 					<h2><?php esc_html_e( 'Support numbers', 'reseller-intent' ); ?></h2>
 					<p class="rintent-card-desc"><?php esc_html_e( 'Regional phone numbers for the [rintent_phone] shortcode. Each visitor sees the number for their region automatically. Page-cache safe.', 'reseller-intent' ); ?></p>
+					<?php if ( Reseller_Intent_Phone::is_customized() ) : ?>
+						<p class="rintent-numbers-status rintent-numbers-status--custom">
+							<span class="dashicons dashicons-edit" aria-hidden="true"></span>
+							<?php esc_html_e( 'Your own list is saved. Plugin updates will never change it.', 'reseller-intent' ); ?>
+							<a class="rintent-numbers-reset" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=rintent_reset_numbers' ), 'rintent_reset_numbers' ) ); ?>" onclick="return confirm('<?php echo esc_js( __( 'Replace your list with the GoDaddy default numbers? Your custom entries will be removed.', 'reseller-intent' ) ); ?>');"><?php esc_html_e( 'Reset to GoDaddy defaults', 'reseller-intent' ); ?></a>
+						</p>
+					<?php else : ?>
+						<p class="rintent-numbers-status rintent-numbers-status--default">
+							<span class="dashicons dashicons-yes-alt" aria-hidden="true"></span>
+							<?php esc_html_e( 'Using the built-in GoDaddy support numbers. Edit anything and save to make the list your own. Once you do, updates will not touch it.', 'reseller-intent' ); ?>
+						</p>
+					<?php endif; ?>
 					<table id="rintent-support-rows" class="widefat striped">
 						<thead><tr><th><?php esc_html_e( 'Label', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'Phone number', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'Countries', 'reseller-intent' ); ?></th><th></th></tr></thead>
 						<tbody>
-							<?php foreach ( (array) Reseller_Intent_Settings::get( 'support_numbers' ) as $support_entry ) : ?>
+							<?php foreach ( Reseller_Intent_Phone::numbers() as $support_entry ) : ?>
 								<tr>
 									<td><input type="text" name="support_label[]" value="<?php echo esc_attr( $support_entry['label'] ); ?>" placeholder="<?php esc_attr_e( 'US Support', 'reseller-intent' ); ?>" /></td>
 									<td><input type="text" name="support_number[]" value="<?php echo esc_attr( $support_entry['number'] ); ?>" placeholder="+1-480-000-0000" /></td>

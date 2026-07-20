@@ -104,6 +104,41 @@
 	border-radius: 6px;
 }
 
+/* Support numbers: defaults vs custom status line */
+.rintent-numbers-status {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-wrap: wrap;
+	margin: 0 0 12px;
+	padding: 8px 12px;
+	border-radius: 8px;
+	font-size: 12.5px;
+}
+
+.rintent-numbers-status .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+}
+
+.rintent-numbers-status--default {
+	background: #f0fdf4;
+	border: 1px solid #bbf7d0;
+	color: #166534;
+}
+
+.rintent-numbers-status--custom {
+	background: #eff6ff;
+	border: 1px solid #bfdbfe;
+	color: #1e40af;
+}
+
+.rintent-numbers-reset {
+	margin-left: auto;
+	font-weight: 600;
+}
+
 /* Support numbers table */
 .rintent-pages #rintent-support-rows {
 	border: 1px solid #e2e8f0;

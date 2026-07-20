@@ -706,8 +706,10 @@
 							onClick: function() { setRange(option.key); }
 						}, option.label);
 					})),
-					el('a', { className: 'button ri-export', href: exportHref }, 'Export CSV'),
-					el('a', { className: 'button ri-export', href: exportJsonHref, title: 'Export JSON' }, 'JSON'),
+					el('span', { className: 'ri-export-group' },
+						el('a', { className: 'button ri-export', href: exportHref }, 'Export CSV'),
+						el('a', { className: 'button ri-export', href: exportJsonHref, title: 'Export JSON' }, 'JSON')
+					),
 					el('button', { className: 'button ri-danger-ghost', onClick: function() { setShowClear(true); } }, 'Clear data')
 				)
 			),

@@ -26,12 +26,59 @@ final class Reseller_Intent_Phone {
 	}
 
 	/**
+	 * Built-in defaults: GoDaddy's public support numbers per country
+	 * (godaddy.com/contact-us) plus a global fallback. These live in code,
+	 * so plugin updates can refresh them. The moment a site owner saves
+	 * their own list, their list wins and updates never touch it.
+	 *
 	 * @return array[] Each: ['label' => '', 'number' => '', 'countries' => ['IN', ...]], empty countries = default.
 	 */
+	public static function default_numbers() {
+		return array(
+			array( 'label' => 'Global Support', 'number' => '+1 480 366 3549', 'countries' => array() ),
+			array( 'label' => 'India', 'number' => '+91 40 6760 7600', 'countries' => array( 'IN' ) ),
+			array( 'label' => 'United States', 'number' => '+1 480 366 3549', 'countries' => array( 'US' ) ),
+			array( 'label' => 'Canada', 'number' => '+1 866 938 1119', 'countries' => array( 'CA' ) ),
+			array( 'label' => 'United Kingdom', 'number' => '+44 20 7084 1810', 'countries' => array( 'GB' ) ),
+			array( 'label' => 'Ireland', 'number' => '+353 1 653 5976', 'countries' => array( 'IE' ) ),
+			array( 'label' => 'Australia', 'number' => '+61 1300 351 076', 'countries' => array( 'AU', 'NZ' ) ),
+			array( 'label' => 'United Arab Emirates', 'number' => '800 032 0329', 'countries' => array( 'AE' ) ),
+			array( 'label' => 'Argentina', 'number' => '+54 11 5235 3894', 'countries' => array( 'AR' ) ),
+			array( 'label' => 'Austria', 'number' => '+43 800 300 248', 'countries' => array( 'AT' ) ),
+			array( 'label' => 'Belgium', 'number' => '+32 78 48 03 73', 'countries' => array( 'BE' ) ),
+			array( 'label' => 'Brazil', 'number' => '+55 4003 3329', 'countries' => array( 'BR' ) ),
+			array( 'label' => 'Chile', 'number' => '+56 44 8909 402', 'countries' => array( 'CL' ) ),
+			array( 'label' => 'Denmark', 'number' => '+45 78 72 57 85', 'countries' => array( 'DK' ) ),
+			array( 'label' => 'France', 'number' => '+33 9 70 01 93 53', 'countries' => array( 'FR' ) ),
+			array( 'label' => 'Germany', 'number' => '+49 89 21 094 807', 'countries' => array( 'DE' ) ),
+			array( 'label' => 'Hong Kong', 'number' => '+852 3008 5887', 'countries' => array( 'HK' ) ),
+			array( 'label' => 'Italy', 'number' => '+39 800 934 119', 'countries' => array( 'IT' ) ),
+			array( 'label' => 'Mexico', 'number' => '+52 55 8877 3680', 'countries' => array( 'MX' ) ),
+			array( 'label' => 'Netherlands', 'number' => '+31 9701 026 5160', 'countries' => array( 'NL' ) ),
+			array( 'label' => 'Norway', 'number' => '+47 235 02 160', 'countries' => array( 'NO' ) ),
+			array( 'label' => 'Peru', 'number' => '+51 1 709 7939', 'countries' => array( 'PE' ) ),
+			array( 'label' => 'Poland', 'number' => '+48 22 292 26 69', 'countries' => array( 'PL' ) ),
+			array( 'label' => 'Portugal', 'number' => '+351 300 609 032', 'countries' => array( 'PT' ) ),
+			array( 'label' => 'Spain', 'number' => '+34 91 198 05 24', 'countries' => array( 'ES' ) ),
+			array( 'label' => 'Sweden', 'number' => '+46 077 588 89 68', 'countries' => array( 'SE' ) ),
+			array( 'label' => 'Switzerland', 'number' => '+41 44 511 1274', 'countries' => array( 'CH' ) ),
+			array( 'label' => 'Taiwan', 'number' => '+886 02 7703 9087', 'countries' => array( 'TW' ) ),
+			array( 'label' => 'Turkiye', 'number' => '+90 850 390 75 46', 'countries' => array( 'TR' ) ),
+			array( 'label' => 'Ukraine', 'number' => '+380 89 324 0205', 'countries' => array( 'UA' ) ),
+		);
+	}
+
+	/**
+	 * @return bool True when the site owner saved their own list.
+	 */
+	public static function is_customized() {
+		return is_array( Reseller_Intent_Settings::get( 'support_numbers' ) );
+	}
+
 	public static function numbers() {
 		$numbers = Reseller_Intent_Settings::get( 'support_numbers' );
 
-		return is_array( $numbers ) ? $numbers : array();
+		return is_array( $numbers ) ? $numbers : self::default_numbers();
 	}
 
 	private function default_number( array $numbers ) {

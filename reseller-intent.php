@@ -26,6 +26,7 @@ if ( ! defined( 'RINTENT_PATH' ) ) {
 	define( 'RINTENT_PATH', plugin_dir_path( __FILE__ ) );
 }
 
+require_once RINTENT_PATH . 'includes/class-reseller-intent-tz.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent-db.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent-settings.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent-assets.php';
@@ -34,6 +35,7 @@ require_once RINTENT_PATH . 'includes/class-reseller-intent-admin.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent-import.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent-tld-strip.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent-price.php';
+require_once RINTENT_PATH . 'includes/class-reseller-intent-phone.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent.php';
 
 register_activation_hook( __FILE__, array( 'Reseller_Intent', 'activate' ) );

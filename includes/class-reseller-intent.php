@@ -14,6 +14,7 @@ final class Reseller_Intent {
 	private $import;
 	private $tld_strip;
 	private $price;
+	private $phone;
 
 	public function __construct() {
 		$this->settings = new Reseller_Intent_Settings();
@@ -23,6 +24,7 @@ final class Reseller_Intent {
 		$this->import   = new Reseller_Intent_Import();
 		$this->tld_strip = new Reseller_Intent_TLD_Strip();
 		$this->price     = new Reseller_Intent_Price();
+		$this->phone     = new Reseller_Intent_Phone();
 
 		add_action( 'plugins_loaded', array( $this, 'bootstrap' ) );
 		add_action( 'admin_notices', array( $this, 'show_dependency_notice' ) );
@@ -54,6 +56,7 @@ final class Reseller_Intent {
 		$this->import->register();
 		$this->tld_strip->register();
 		$this->price->register();
+		$this->phone->register();
 
 		// Optional auto-purge (only scheduled when retention is enabled).
 		add_action( 'rintent_auto_purge', array( 'Reseller_Intent_DB', 'run_auto_purge' ) );

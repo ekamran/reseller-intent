@@ -18,6 +18,14 @@
 		}
 	}
 
+	function getTimezone() {
+		try {
+			return Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+		} catch (error) {
+			return '';
+		}
+	}
+
 	function trackEvent(eventType, payload) {
 		var data = $.extend(
 			{
@@ -25,6 +33,7 @@
 				nonce: window.resellerIntent && window.resellerIntent.nonce ? window.resellerIntent.nonce : '',
 				event_type: eventType,
 				device: getDeviceType(),
+				tz: getTimezone(),
 				page_url: window.location.href
 			},
 			payload || {}

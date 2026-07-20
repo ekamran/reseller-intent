@@ -36,7 +36,7 @@ Your Reseller Store domain search is where buying decisions happen — and by de
 
 * No cookies, no fingerprinting, no IP addresses stored, no user accounts recorded — events are anonymous interaction counts
 * Known bots and crawlers are ignored by default
-* Country stats without IPs — uses the 2-letter geo header your CDN already computes (e.g. Cloudflare)
+* Country stats without IPs — CDN geo headers when available (Cloudflare, host GeoIP), otherwise the visitor's browser timezone mapped to a country. Works on plain shared hosting with no CDN.
 * Ignore-list for your own test searches (wildcards supported)
 * `rintent_should_track` filter lets consent plugins pause tracking until consent is given
 
@@ -72,6 +72,7 @@ Build both visually under Reseller Intent → Shortcodes.
 
 * `[rintent_tld_strip tlds=".com,.in,.io" theme="light|dark" more_url="" more_label=""]` — live TLD price pills matching checkout prices (12h cache + background refresh).
 * `[rintent_price ids="12,14,15" fallback="$3.99"]` — cheapest current price across the selected Reseller Store products, e.g. "Starting at [rintent_price ids=…]/mo".
+* `[rintent_phone format="link|text" prefix="Call "]` — geo-aware support number. Configure regional numbers (label, number, countries) in Settings; visitors see their region's number via a page-cache-safe client-side swap based on the browser timezone. No IPs, no lookup services.
 
 == Roadmap ==
 
@@ -84,3 +85,5 @@ Build both visually under Reseller Intent → Shortcodes.
 * Widget style pack: accent-driven styling, skeleton loaders, floating Clear All, dark context, documented theming variables.
 * Shortcodes with generator UI: TLD price strip (cached + cron-warmed) and starting-at price.
 * Top Countries panel (privacy-safe geo headers), WP dashboard glance widget, search ignore-list, filterable dashboard capability.
+* Timezone-based country fallback for hosts without geo headers; legacy timezone aliases handled.
+* Geo-aware support phone shortcode with regional numbers manager.

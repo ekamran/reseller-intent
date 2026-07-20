@@ -323,6 +323,51 @@ final class Reseller_Intent_Admin {
 						</td>
 					</tr>
 					<tr>
+						<th scope="row"><?php esc_html_e( 'Support numbers', 'reseller-intent' ); ?></th>
+						<td>
+							<p class="description" style="margin-bottom:8px;"><?php esc_html_e( 'Regional support phone numbers for the [rintent_phone] shortcode. Countries = comma-separated 2-letter codes (IN, US, AE…); leave empty for the default number shown to everyone else. Visitors see their region\'s number automatically — page-cache safe.', 'reseller-intent' ); ?></p>
+							<table id="rintent-support-rows" class="widefat striped" style="max-width:640px;">
+								<thead><tr><th><?php esc_html_e( 'Label', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'Phone number', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'Countries', 'reseller-intent' ); ?></th><th></th></tr></thead>
+								<tbody>
+									<?php foreach ( (array) Reseller_Intent_Settings::get( 'support_numbers' ) as $support_entry ) : ?>
+										<tr>
+											<td><input type="text" name="support_label[]" value="<?php echo esc_attr( $support_entry['label'] ); ?>" placeholder="<?php esc_attr_e( 'US Support', 'reseller-intent' ); ?>" /></td>
+											<td><input type="text" name="support_number[]" value="<?php echo esc_attr( $support_entry['number'] ); ?>" placeholder="+1-480-000-0000" /></td>
+											<td><input type="text" name="support_countries[]" value="<?php echo esc_attr( implode( ',', (array) $support_entry['countries'] ) ); ?>" placeholder="US,CA" style="width:90px;" /></td>
+											<td><button type="button" class="button-link-delete rintent-support-remove" aria-label="<?php esc_attr_e( 'Remove row', 'reseller-intent' ); ?>">&times;</button></td>
+										</tr>
+									<?php endforeach; ?>
+								</tbody>
+							</table>
+							<p><button type="button" class="button" id="rintent-support-add"><?php esc_html_e( 'Add number', 'reseller-intent' ); ?></button></p>
+							<script>
+							(function() {
+								document.getElementById('rintent-support-add').addEventListener('click', function() {
+									var tbody = document.querySelector('#rintent-support-rows tbody');
+									var row = document.createElement('tr');
+									row.innerHTML = '<td><input type="text" name="support_label[]" /></td>'
+										+ '<td><input type="text" name="support_number[]" placeholder="+1-480-000-0000" /></td>'
+										+ '<td><input type="text" name="support_countries[]" placeholder="US,CA" style="width:90px;" /></td>'
+										+ '<td><button type="button" class="button-link-delete rintent-support-remove" aria-label="Remove row">&times;</button></td>';
+									tbody.appendChild(row);
+								});
+								document.addEventListener('click', function(event) {
+									if (event.target.classList && event.target.classList.contains('rintent-support-remove')) {
+										event.target.closest('tr').remove();
+									}
+								});
+							})();
+							</script>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="rintent-blocklist"><?php esc_html_e( 'Ignore searches', 'reseller-intent' ); ?></label></th>
+						<td>
+							<textarea id="rintent-blocklist" name="blocklist" rows="4" class="large-text code" placeholder="mytestdomain.com&#10;*.internal&#10;staging*"><?php echo esc_textarea( implode( "\n", (array) Reseller_Intent_Settings::get( 'blocklist' ) ) ); ?></textarea>
+							<p class="description"><?php esc_html_e( 'One pattern per line, matched against searched domains. Use * as a wildcard — handy for ignoring your own test searches.', 'reseller-intent' ); ?></p>
+						</td>
+					</tr>
+					<tr>
 						<th scope="row"><?php esc_html_e( 'Bots', 'reseller-intent' ); ?></th>
 						<td>
 							<label for="rintent-bots">

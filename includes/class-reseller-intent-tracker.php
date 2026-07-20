@@ -208,12 +208,27 @@ final class Reseller_Intent_Tracker {
 	}
 
 	/**
-	 * Country from edge/proxy geo headers — privacy-safe: a 2-letter code
-	 * the CDN already computed; no IP address is ever read into storage.
-	 * Empty when no supported header is present.
+	 * Country, privacy-safe, in priority order — no IP is ever read:
+	 *
+	 * 1. Edge/proxy geo headers (Cloudflare, Vercel, generic) — exact.
+	 * 2. Server geo variables some hosts set (mod_geoip / LiteSpeed).
+	 * 3. The visitor's browser timezone (sent by tracker.js), mapped to a
+	 *    country with PHP's native timezone_location_get() — works on any
+	 *    plain hosting with no CDN and no geo database. Approximate but
+	 *    right for the vast majority of visitors.
+	 *
+	 * Empty when nothing usable is present.
 	 */
 	private function get_country_code() {
-		foreach ( array( 'HTTP_CF_IPCOUNTRY', 'HTTP_X_VERCEL_IP_COUNTRY', 'HTTP_X_COUNTRY_CODE' ) as $header ) {
+		$headers = array(
+			'HTTP_CF_IPCOUNTRY',
+			'HTTP_X_VERCEL_IP_COUNTRY',
+			'HTTP_X_COUNTRY_CODE',
+			'GEOIP_COUNTRY_CODE',
+			'HTTP_X_GEOIP_COUNTRY',
+		);
+
+		foreach ( $headers as $header ) {
 			if ( empty( $_SERVER[ $header ] ) ) {
 				continue;
 			}
@@ -225,7 +240,11 @@ final class Reseller_Intent_Tracker {
 			}
 		}
 
-		return '';
+		return $this->country_from_timezone( isset( $_POST['tz'] ) ? sanitize_text_field( wp_unslash( $_POST['tz'] ) ) : '' );
+	}
+
+	private function country_from_timezone( $timezone ) {
+		return Reseller_Intent_TZ::country_for( $timezone );
 	}
 
 	/**

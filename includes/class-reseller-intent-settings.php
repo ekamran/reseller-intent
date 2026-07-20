@@ -15,6 +15,7 @@ final class Reseller_Intent_Settings {
 		'widget_skeletons'    => true,
 		'widget_clear_all'    => true,
 		'blocklist'           => array(),
+		'support_numbers'     => array(),
 	);
 
 	public static function get( $key ) {
@@ -43,6 +44,11 @@ final class Reseller_Intent_Settings {
 			'widget_skeletons'    => ! empty( $_POST['widget_skeletons'] ),
 			'widget_clear_all'    => ! empty( $_POST['widget_clear_all'] ),
 			'blocklist'           => $this->sanitize_blocklist( isset( $_POST['blocklist'] ) ? wp_unslash( $_POST['blocklist'] ) : '' ),
+			'support_numbers'     => $this->sanitize_support_numbers(
+				isset( $_POST['support_label'] ) ? (array) wp_unslash( $_POST['support_label'] ) : array(),
+				isset( $_POST['support_number'] ) ? (array) wp_unslash( $_POST['support_number'] ) : array(),
+				isset( $_POST['support_countries'] ) ? (array) wp_unslash( $_POST['support_countries'] ) : array()
+			),
 		);
 
 		update_option( self::OPTION, $settings );
@@ -91,6 +97,33 @@ final class Reseller_Intent_Settings {
 		}
 
 		return array_values( array_unique( $clean ) );
+	}
+
+	private function sanitize_support_numbers( array $labels, array $numbers, array $countries ) {
+		$clean = array();
+
+		foreach ( $numbers as $i => $number ) {
+			$number = trim( sanitize_text_field( (string) $number ) );
+
+			if ( '' === $number || ! preg_match( '/^[0-9+][0-9 ()+.\-]{4,24}$/', $number ) || count( $clean ) >= 20 ) {
+				continue;
+			}
+
+			$codes = array();
+			foreach ( preg_split( '/[,\s]+/', strtoupper( (string) ( $countries[ $i ] ?? '' ) ) ) as $code ) {
+				if ( preg_match( '/^[A-Z]{2}$/', $code ) ) {
+					$codes[] = $code;
+				}
+			}
+
+			$clean[] = array(
+				'label'     => trim( sanitize_text_field( (string) ( $labels[ $i ] ?? '' ) ) ),
+				'number'    => $number,
+				'countries' => array_values( array_unique( $codes ) ),
+			);
+		}
+
+		return $clean;
 	}
 
 	private function sanitize_retention( $value ) {

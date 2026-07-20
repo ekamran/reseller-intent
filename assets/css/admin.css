@@ -9,8 +9,39 @@
 }
 
 .ri-app.is-loading {
-	opacity: 0.55;
 	pointer-events: none;
+}
+
+.ri-progress {
+	position: relative;
+	height: 3px;
+	margin-bottom: 10px;
+	border-radius: 2px;
+	overflow: hidden;
+	background: #e2e8f0;
+}
+
+.ri-progress::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	width: 40%;
+	border-radius: 2px;
+	background: var(--ri-accent, #3858e9);
+	animation: riProgressSlide 1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ri-progress::after {
+		animation: none;
+		width: 100%;
+		opacity: 0.4;
+	}
+}
+
+@keyframes riProgressSlide {
+	0% { transform: translateX(-100%); }
+	100% { transform: translateX(250%); }
 }
 
 .ri-loading {
@@ -291,7 +322,7 @@
 }
 
 .ri-empty {
-	color: #94a3b8;
+	color: #64748b;
 	font-size: 12px;
 }
 
@@ -582,4 +613,10 @@
 	gap: 6px;
 	color: #64748b;
 	font-weight: 600;
+}
+
+/* Header sits on the admin page background (not a white panel) — needs a
+ * darker muted tone to clear WCAG AA there. */
+.ri-header .ri-note {
+	color: #4b5563;
 }

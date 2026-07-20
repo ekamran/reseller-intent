@@ -164,8 +164,8 @@
 		});
 
 		var yLabels = [
-			el('text', { key: 'ymax', x: padX - 6, y: padY + 4, fontSize: 9, textAnchor: 'end', fill: '#94a3b8' }, fmt(maxVal)),
-			el('text', { key: 'y0', x: padX - 6, y: padY + plotH + 3, fontSize: 9, textAnchor: 'end', fill: '#94a3b8' }, '0')
+			el('text', { key: 'ymax', x: padX - 6, y: padY + 4, fontSize: 9, textAnchor: 'end', fill: '#64748b' }, fmt(maxVal)),
+			el('text', { key: 'y0', x: padX - 6, y: padY + plotH + 3, fontSize: 9, textAnchor: 'end', fill: '#64748b' }, '0')
 		];
 
 		// sparse data renders as a near-invisible sliver — mark the active days
@@ -209,7 +209,7 @@
 			return el('p', { className: 'ri-empty' }, 'No activity yet.');
 		}
 
-		return el('svg', { className: 'ri-trend', viewBox: '0 0 ' + W + ' ' + H, role: 'img' },
+		return el('svg', { className: 'ri-trend', viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Search vs cart trend chart' },
 			gridLines,
 			el('line', { x1: padX, y1: padY + plotH, x2: padX + plotW, y2: padY + plotH, stroke: '#e2e8f0' }),
 			el('polygon', { points: areaPoints(searches), fill: 'rgba(85,62,232,0.08)' }),
@@ -529,6 +529,39 @@
 			return function() { cancelled = true; };
 		}, [sel]);
 
+		useEffect(function() {
+			var selectEl = document.getElementById('ri-clear-range');
+			if (selectEl) {
+				selectEl.focus();
+			}
+
+			function onKey(event) {
+				if (event.key === 'Escape') {
+					props.onCancel();
+					return;
+				}
+				if (event.key !== 'Tab') {
+					return;
+				}
+				var focusables = document.querySelectorAll('.ri-modal select, .ri-modal button:not([disabled])');
+				if (!focusables.length) {
+					return;
+				}
+				var first = focusables[0];
+				var last = focusables[focusables.length - 1];
+				if (event.shiftKey && document.activeElement === first) {
+					event.preventDefault();
+					last.focus();
+				} else if (!event.shiftKey && document.activeElement === last) {
+					event.preventDefault();
+					first.focus();
+				}
+			}
+
+			document.addEventListener('keydown', onKey);
+			return function() { document.removeEventListener('keydown', onKey); };
+		}, []);
+
 		return el('div', { className: 'ri-modal-backdrop', onClick: props.onCancel },
 			el('div', {
 				className: 'ri-modal',
@@ -654,8 +687,9 @@
 		var exportHref = resellerIntentAdmin.exportUrl + rangeQuery;
 		var exportJsonHref = resellerIntentAdmin.exportUrl + rangeQuery + '&format=json';
 
-		return el('div', { className: 'ri-app' + (loading ? ' is-loading' : ''), style: { '--ri-accent': ACCENT } },
-			el('header', { className: 'ri-header' },
+		return el('div', { className: 'ri-app' + (loading ? ' is-loading' : ''), 'aria-busy': loading ? 'true' : 'false', style: { '--ri-accent': ACCENT } },
+			loading ? el('div', { className: 'ri-progress', role: 'status', 'aria-label': 'Loading' }) : null,
+			el('div', { className: 'ri-header' },
 				el('div', null,
 					el('h1', null, 'Reseller Intent'),
 					el('p', { className: 'ri-note' },
@@ -668,6 +702,7 @@
 						return el('button', {
 							key: option.key,
 							className: 'ri-range' + (range === option.key ? ' is-active' : ''),
+							'aria-pressed': range === option.key,
 							onClick: function() { setRange(option.key); }
 						}, option.label);
 					})),

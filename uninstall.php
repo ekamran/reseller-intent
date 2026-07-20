@@ -24,5 +24,10 @@ $wpdb->query( "DROP TABLE IF EXISTS {$rintent_table}" ); // phpcs:ignore WordPre
 delete_option( 'rintent_settings' );
 delete_option( 'rintent_db_version' );
 delete_option( 'rintent_import_done' );
+delete_option( 'rintent_tld_strip_sets' );
+
+// TLD price transients (both storage forms).
+$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient%rintent_tld_prices_%'" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 wp_clear_scheduled_hook( 'rintent_auto_purge' );
+wp_clear_scheduled_hook( 'rintent_tld_prefetch' );

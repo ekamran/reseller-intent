@@ -12,6 +12,8 @@ final class Reseller_Intent {
 	private $admin;
 	private $settings;
 	private $import;
+	private $tld_strip;
+	private $price;
 
 	public function __construct() {
 		$this->settings = new Reseller_Intent_Settings();
@@ -19,6 +21,8 @@ final class Reseller_Intent {
 		$this->tracker  = new Reseller_Intent_Tracker();
 		$this->admin    = new Reseller_Intent_Admin();
 		$this->import   = new Reseller_Intent_Import();
+		$this->tld_strip = new Reseller_Intent_TLD_Strip();
+		$this->price     = new Reseller_Intent_Price();
 
 		add_action( 'plugins_loaded', array( $this, 'bootstrap' ) );
 		add_action( 'admin_notices', array( $this, 'show_dependency_notice' ) );
@@ -44,9 +48,11 @@ final class Reseller_Intent {
 		add_action( 'admin_post_rintent_export_csv', array( $this->admin, 'handle_export_domain_searches' ) );
 		add_action( 'admin_post_rintent_clear_data', array( $this->admin, 'handle_clear_data' ) );
 
-		// Settings + importer.
+		// Settings + importer + shortcodes.
 		$this->settings->register();
 		$this->import->register();
+		$this->tld_strip->register();
+		$this->price->register();
 
 		// Optional auto-purge (only scheduled when retention is enabled).
 		add_action( 'rintent_auto_purge', array( 'Reseller_Intent_DB', 'run_auto_purge' ) );
@@ -79,5 +85,6 @@ final class Reseller_Intent {
 
 	public static function deactivate() {
 		wp_clear_scheduled_hook( 'rintent_auto_purge' );
+		Reseller_Intent_TLD_Strip::unschedule();
 	}
 }

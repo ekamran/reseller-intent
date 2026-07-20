@@ -36,12 +36,183 @@ final class Reseller_Intent_Admin {
 
 		add_submenu_page(
 			self::PAGE_SLUG,
+			__( 'Shortcodes', 'reseller-intent' ),
+			__( 'Shortcodes', 'reseller-intent' ),
+			'manage_options',
+			self::PAGE_SLUG . '-shortcodes',
+			array( $this, 'render_shortcodes_page' )
+		);
+
+		add_submenu_page(
+			self::PAGE_SLUG,
 			__( 'Settings', 'reseller-intent' ),
 			__( 'Settings', 'reseller-intent' ),
 			'manage_options',
 			self::PAGE_SLUG . '-settings',
 			array( $this, 'render_settings_page' )
 		);
+	}
+
+	/**
+	 * Shortcode generator: build [rintent_tld_strip] and [rintent_price]
+	 * visually, copy the result. No page reloads, no AJAX — plain JS.
+	 */
+	public function render_shortcodes_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$products = get_posts(
+			array(
+				'post_type'      => 'reseller_product',
+				'post_status'    => 'publish',
+				'posts_per_page' => 200,
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+			)
+		);
+		?>
+		<div class="wrap rintent-shortcodes">
+			<h1><?php esc_html_e( 'Reseller Intent — Shortcodes', 'reseller-intent' ); ?></h1>
+
+			<h2><?php esc_html_e( 'TLD price strip', 'reseller-intent' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'Live TLD price pills, matching checkout prices. Cached 12h and kept warm by a background refresh.', 'reseller-intent' ); ?></p>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><label for="rintent-gen-tlds"><?php esc_html_e( 'TLDs', 'reseller-intent' ); ?></label></th>
+					<td><input type="text" id="rintent-gen-tlds" class="regular-text" value=".com,.in,.org,.net,.io" />
+					<p class="description"><?php esc_html_e( 'Comma-separated, with or without dots.', 'reseller-intent' ); ?></p></td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="rintent-gen-theme"><?php esc_html_e( 'Theme', 'reseller-intent' ); ?></label></th>
+					<td><select id="rintent-gen-theme"><option value="light"><?php esc_html_e( 'Light', 'reseller-intent' ); ?></option><option value="dark"><?php esc_html_e( 'Dark', 'reseller-intent' ); ?></option></select></td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="rintent-gen-more-label"><?php esc_html_e( '"More" pill', 'reseller-intent' ); ?></label></th>
+					<td>
+						<input type="text" id="rintent-gen-more-label" class="regular-text" placeholder="<?php esc_attr_e( 'More TLDs', 'reseller-intent' ); ?>" />
+						<input type="url" id="rintent-gen-more-url" class="regular-text" placeholder="https://example.com/domains/" />
+						<p class="description"><?php esc_html_e( 'Optional trailing link pill. Leave the URL empty to hide it.', 'reseller-intent' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Shortcode', 'reseller-intent' ); ?></th>
+					<td>
+						<code id="rintent-gen-tld-out" style="display:inline-block;padding:8px 12px;user-select:all;"></code>
+						<button type="button" class="button" id="rintent-gen-tld-copy"><?php esc_html_e( 'Copy', 'reseller-intent' ); ?></button>
+					</td>
+				</tr>
+			</table>
+
+			<hr />
+
+			<h2><?php esc_html_e( 'Starting-at price', 'reseller-intent' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'Prints the cheapest current price across the selected products, straight from Reseller Store product data. Select every plan of a family so the number stays correct when prices change.', 'reseller-intent' ); ?></p>
+
+			<?php if ( empty( $products ) ) : ?>
+				<p><em><?php esc_html_e( 'No published Reseller Store products found — import products in Reseller Store first.', 'reseller-intent' ); ?></em></p>
+			<?php else : ?>
+				<p><input type="search" id="rintent-gen-filter" class="regular-text" placeholder="<?php esc_attr_e( 'Filter products…', 'reseller-intent' ); ?>" /></p>
+				<div id="rintent-gen-products" style="max-height:260px;overflow:auto;border:1px solid #dcdcde;border-radius:4px;padding:8px 12px;max-width:640px;background:#fff;">
+					<?php foreach ( $products as $product ) :
+						$sale  = (string) get_post_meta( $product->ID, 'rstore_salePrice', true );
+						$list  = (string) get_post_meta( $product->ID, 'rstore_listPrice', true );
+						$price = '' !== trim( $sale ) ? $sale : $list;
+						?>
+						<label style="display:block;padding:3px 0;">
+							<input type="checkbox" class="rintent-gen-product" value="<?php echo esc_attr( $product->ID ); ?>" data-title="<?php echo esc_attr( strtolower( $product->post_title ) ); ?>" />
+							<?php echo esc_html( $product->post_title ); ?>
+							<span style="color:#787c82;">— <?php echo esc_html( '' !== trim( $price ) ? $price : __( 'no price', 'reseller-intent' ) ); ?> · ID <?php echo esc_html( $product->ID ); ?></span>
+						</label>
+					<?php endforeach; ?>
+				</div>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="rintent-gen-fallback"><?php esc_html_e( 'Fallback text', 'reseller-intent' ); ?></label></th>
+						<td><input type="text" id="rintent-gen-fallback" class="regular-text" placeholder="$3.99" />
+						<p class="description"><?php esc_html_e( 'Shown if no selected product has a price.', 'reseller-intent' ); ?></p></td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Shortcode', 'reseller-intent' ); ?></th>
+						<td>
+							<code id="rintent-gen-price-out" style="display:inline-block;padding:8px 12px;user-select:all;"></code>
+							<button type="button" class="button" id="rintent-gen-price-copy"><?php esc_html_e( 'Copy', 'reseller-intent' ); ?></button>
+						</td>
+					</tr>
+				</table>
+			<?php endif; ?>
+		</div>
+		<script>
+		(function() {
+			function esc(value) {
+				return String(value).replace(/"/g, '');
+			}
+
+			function buildTld() {
+				var tlds = esc(document.getElementById('rintent-gen-tlds').value || '.com,.in,.org,.net,.io');
+				var theme = document.getElementById('rintent-gen-theme').value;
+				var label = esc(document.getElementById('rintent-gen-more-label').value);
+				var url = esc(document.getElementById('rintent-gen-more-url').value);
+				var out = '[rintent_tld_strip tlds="' + tlds + '"';
+				if (theme !== 'light') {
+					out += ' theme="' + theme + '"';
+				}
+				if (url) {
+					out += ' more_url="' + url + '"';
+					if (label) {
+						out += ' more_label="' + label + '"';
+					}
+				}
+				document.getElementById('rintent-gen-tld-out').textContent = out + ']';
+			}
+
+			function buildPrice() {
+				var outEl = document.getElementById('rintent-gen-price-out');
+				if (!outEl) {
+					return;
+				}
+				var ids = Array.prototype.slice.call(document.querySelectorAll('.rintent-gen-product:checked')).map(function(cb) { return cb.value; });
+				var fallback = esc((document.getElementById('rintent-gen-fallback') || { value: '' }).value);
+				var out = '[rintent_price ids="' + ids.join(',') + '"';
+				if (fallback) {
+					out += ' fallback="' + fallback + '"';
+				}
+				outEl.textContent = ids.length ? out + ']' : '';
+			}
+
+			function copy(sourceId) {
+				var text = document.getElementById(sourceId).textContent;
+				if (text && navigator.clipboard) {
+					navigator.clipboard.writeText(text);
+				}
+			}
+
+			['rintent-gen-tlds', 'rintent-gen-theme', 'rintent-gen-more-label', 'rintent-gen-more-url'].forEach(function(id) {
+				document.getElementById(id).addEventListener('input', buildTld);
+				document.getElementById(id).addEventListener('change', buildTld);
+			});
+			document.getElementById('rintent-gen-tld-copy').addEventListener('click', function() { copy('rintent-gen-tld-out'); });
+
+			var filter = document.getElementById('rintent-gen-filter');
+			if (filter) {
+				filter.addEventListener('input', function() {
+					var q = filter.value.toLowerCase();
+					document.querySelectorAll('.rintent-gen-product').forEach(function(cb) {
+						cb.closest('label').style.display = cb.getAttribute('data-title').indexOf(q) === -1 ? 'none' : 'block';
+					});
+				});
+				document.querySelectorAll('.rintent-gen-product').forEach(function(cb) {
+					cb.addEventListener('change', buildPrice);
+				});
+				document.getElementById('rintent-gen-fallback').addEventListener('input', buildPrice);
+				document.getElementById('rintent-gen-price-copy').addEventListener('click', function() { copy('rintent-gen-price-out'); });
+			}
+
+			buildTld();
+			buildPrice();
+		})();
+		</script>
+		<?php
 	}
 
 	public function render_settings_page() {

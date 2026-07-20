@@ -50,7 +50,7 @@ Requires the free [Reseller Store](https://wordpress.org/plugins/reseller-store/
 
 = Does this plugin make any external API calls? =
 
-No. Version 1.0 talks only to your own WordPress site. (The Reseller Store plugin itself talks to GoDaddy's storefront API to power the search widget — that is unchanged.)
+Tracking and the dashboard talk only to your own WordPress site. The optional TLD price strip shortcode fetches prices server-side from GoDaddy's storefront API (secureserver.net) using your reseller ID and a static probe domain — no visitor data is ever sent. Prices are cached for 12 hours and refreshed by a background task.
 
 = Is visitor data personal data under GDPR? =
 
@@ -64,10 +64,15 @@ Data starts collecting from activation. Make sure the Reseller Store domain sear
 
 Yes — if the legacy table exists, Settings shows a one-click importer.
 
+== Shortcodes ==
+
+Build both visually under Reseller Intent → Shortcodes.
+
+* `[rintent_tld_strip tlds=".com,.in,.io" theme="light|dark" more_url="" more_label=""]` — live TLD price pills matching checkout prices (12h cache + background refresh).
+* `[rintent_price ids="12,14,15" fallback="$3.99"]` — cheapest current price across the selected Reseller Store products, e.g. "Starting at [rintent_price ids=…]/mo".
+
 == Roadmap ==
 
-* TLD price strip and "starting at" price shortcodes with a generator UI
-* Optional widget style pack (dark theme, floating clear-all, skeleton loaders)
 * Country stats (privacy-safe, header-based), custom date ranges, dashboard glance widget
 * Weekly email digest, JSON export, capability control, search blocklist
 
@@ -75,3 +80,5 @@ Yes — if the legacy table exists, Settings shows a one-click importer.
 
 = 1.0.0 =
 * Initial release: anonymous domain-search tracking, intent dashboard, chunked CSV export, browser-style clear-data, retention controls, legacy importer.
+* Widget style pack: accent-driven styling, skeleton loaders, floating Clear All, dark context, documented theming variables.
+* Shortcodes with generator UI: TLD price strip (cached + cron-warmed) and starting-at price.

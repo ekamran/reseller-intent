@@ -1,0 +1,82 @@
+/**
+ * Reseller Intent — [rintent_tld_strip] price pills.
+ *
+ * Theming knobs (set from your own CSS, defaults inherit sensibly):
+ *   --rintent-accent            price color (light) / hover border
+ *   --rintent-tld-bg            pill background
+ *   --rintent-tld-border        pill border color
+ *   --rintent-tld-color         TLD text color
+ *   --rintent-tld-size          TLD font size
+ *   --rintent-tld-price-size    price font size
+ */
+
+body .rintent-tld-strip {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	justify-content: center;
+}
+
+body .rintent-tld-strip .rintent-tld {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 8px;
+	padding: 8px 18px;
+	border-radius: 8px;
+	font-size: 13.5px;
+	text-decoration: none;
+	transition: border-color 0.25s ease, background 0.25s ease;
+}
+
+body .rintent-tld-strip .rintent-tld b {
+	font-weight: 700;
+	font-size: var(--rintent-tld-size, 14.5px);
+}
+
+body .rintent-tld-strip .rintent-tld i {
+	font-style: normal;
+	font-weight: 700;
+	font-size: var(--rintent-tld-price-size, 12.5px);
+}
+
+body .rintent-tld-strip a.rintent-tld--more::after {
+	display: none !important;
+	content: none !important;
+}
+
+/* Light theme */
+body .rintent-tld-strip--light .rintent-tld {
+	background: var(--rintent-tld-bg, #f5f7fb);
+	border: 1px solid var(--rintent-tld-border, #e6e8f0);
+}
+
+body .rintent-tld-strip--light .rintent-tld b {
+	color: var(--rintent-tld-color, #1d2327);
+}
+
+body .rintent-tld-strip--light .rintent-tld i {
+	color: var(--rintent-accent, #3858e9);
+}
+
+body .rintent-tld-strip--light .rintent-tld:hover {
+	border-color: var(--rintent-accent, #3858e9);
+}
+
+/* Dark theme (for dark page sections) */
+body .rintent-tld-strip--dark .rintent-tld {
+	background: var(--rintent-tld-bg, rgba(255, 255, 255, 0.055));
+	border: 1px solid var(--rintent-tld-border, rgba(255, 255, 255, 0.09));
+}
+
+body .rintent-tld-strip--dark .rintent-tld b {
+	color: var(--rintent-tld-color, #ffffff);
+}
+
+body .rintent-tld-strip--dark .rintent-tld i {
+	color: var(--rintent-accent, #7b96ff);
+}
+
+body .rintent-tld-strip--dark .rintent-tld:hover {
+	border-color: var(--rintent-accent, #7b96ff);
+	background: rgba(255, 255, 255, 0.09);
+}

@@ -336,7 +336,7 @@ final class Reseller_Intent_Admin {
 		foreach ( $recent_rows as $recent_row ) {
 			$recent[] = array(
 				'domain'    => (string) $recent_row->domain_query,
-				'time'      => $this->format_datetime_ist( (string) $recent_row->created_at ),
+				'time'      => $this->format_datetime_local( (string) $recent_row->created_at ),
 				'available' => ( null === $recent_row->is_available || '' === (string) $recent_row->is_available ) ? null : (bool) (int) $recent_row->is_available,
 				'device'    => (string) $recent_row->device,
 			);

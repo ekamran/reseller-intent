@@ -1,0 +1,28 @@
+<?php
+/**
+ * Reseller Intent uninstall.
+ *
+ * Data is only removed when the site owner opted in via
+ * Settings → "Delete all tracked data and settings when the plugin is uninstalled".
+ */
+
+if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
+	exit;
+}
+
+$rintent_settings = (array) get_option( 'rintent_settings', array() );
+
+if ( empty( $rintent_settings['delete_on_uninstall'] ) ) {
+	return;
+}
+
+global $wpdb;
+
+$rintent_table = $wpdb->prefix . 'rintent_events';
+$wpdb->query( "DROP TABLE IF EXISTS {$rintent_table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+
+delete_option( 'rintent_settings' );
+delete_option( 'rintent_db_version' );
+delete_option( 'rintent_import_done' );
+
+wp_clear_scheduled_hook( 'rintent_auto_purge' );

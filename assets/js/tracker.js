@@ -1,0 +1,229 @@
+/**
+ * Reseller Intent — frontend tracker.
+ *
+ * Listens to the GoDaddy Reseller Store domain-search widget (React 18) and
+ * records four anonymous events: domain_search, search_result (availability
+ * attached to the matching search), domain_select, continue_to_cart.
+ *
+ * Privacy: no cookies, no fingerprinting, no IP storage, no user accounts.
+ */
+(function($) {
+	'use strict';
+
+	function getDeviceType() {
+		try {
+			return window.matchMedia('(max-width: 782px)').matches ? 'mobile' : 'desktop';
+		} catch (error) {
+			return '';
+		}
+	}
+
+	function trackEvent(eventType, payload) {
+		var data = $.extend(
+			{
+				action: 'rintent_track',
+				nonce: window.resellerIntent && window.resellerIntent.nonce ? window.resellerIntent.nonce : '',
+				event_type: eventType,
+				device: getDeviceType(),
+				page_url: window.location.href
+			},
+			payload || {}
+		);
+
+		if (!window.resellerIntent || !window.resellerIntent.ajaxUrl) {
+			return;
+		}
+
+		$.ajax({
+			url: window.resellerIntent.ajaxUrl,
+			type: 'POST',
+			data: data
+		});
+	}
+
+	function parseItemsFromForm($form) {
+		var raw = '';
+		var parsed = null;
+		var countField = parseInt($form.find('input[name="items_count"]').first().val() || '0', 10);
+
+		function countList(list) {
+			if (!Array.isArray(list)) {
+				return 0;
+			}
+
+			return list.filter(function(item) {
+				if (item && typeof item === 'object') {
+					return Object.keys(item).length > 0;
+				}
+				return String(item || '').trim() !== '';
+			}).length;
+		}
+
+		function countFromPayload(payload) {
+			var nestedKeys;
+			var i;
+
+			if (Array.isArray(payload)) {
+				return countList(payload);
+			}
+
+			if (payload && typeof payload === 'object') {
+				nestedKeys = ['items', 'domains', 'selected_domains', 'selectedDomains', 'domain_list'];
+				for (i = 0; i < nestedKeys.length; i += 1) {
+					if (Array.isArray(payload[nestedKeys[i]])) {
+						return countList(payload[nestedKeys[i]]);
+					}
+				}
+
+				if (!isNaN(parseInt(payload.count, 10))) {
+					return Math.max(0, parseInt(payload.count, 10));
+				}
+
+				return Object.keys(payload).length;
+			}
+
+			return 0;
+		}
+
+		raw = $form.find('input[name="items"]').first().val() || '';
+
+		if (raw) {
+			try {
+				parsed = JSON.parse(raw);
+			} catch (e) {
+				parsed = String(raw)
+					.split(/[,;\n]/)
+					.map(function(item) { return item.trim(); })
+					.filter(Boolean);
+			}
+		}
+
+		return {
+			itemsRaw: raw,
+			itemsCount: (function() {
+				var parsedCount = countFromPayload(parsed);
+				if (parsedCount > 0) {
+					return parsedCount;
+				}
+				if (!isNaN(countField) && countField > 0) {
+					return countField;
+				}
+				return 0;
+			})()
+		};
+	}
+
+	function getSearchQuery($scope) {
+		var value = $scope.find('.search-form .search-field').first().val() || '';
+		return String(value).trim();
+	}
+
+	/*
+	 * Once results render, report whether the searched domain was available.
+	 * The server attaches the flag to the matching domain_search row. The
+	 * signature dedupes repeat DOM mutations for the same render; it is
+	 * cleared on every new search submit so a fresh row always gets its flag.
+	 */
+	function reportSearchOutcome() {
+		$('.rstore-domain-search').each(function() {
+			var $scope = $(this);
+			var $status = $scope.find('.result-content > p.available, .result-content > p.not-available').first();
+			var query;
+			var available;
+			var signature;
+
+			if (!$status.length) {
+				return;
+			}
+
+			query = getSearchQuery($scope);
+			if (!query) {
+				return;
+			}
+
+			available = $status.hasClass('available') ? 1 : 0;
+			signature = query + ':' + available;
+			if ($scope.attr('data-rintent-outcome-sent') === signature) {
+				return;
+			}
+
+			$scope.attr('data-rintent-outcome-sent', signature);
+			trackEvent('search_result', {
+				domain_query: query,
+				is_available: available
+			});
+		});
+	}
+
+	function bindSelectTracking() {
+		if (window.__rintentSelectTrackingBound) {
+			return;
+		}
+
+		window.__rintentSelectTrackingBound = true;
+
+		document.addEventListener('click', function(event) {
+			var button = event.target && event.target.closest
+				? event.target.closest('.rstore-domain-search .rstore-domain-buy-button.select')
+				: null;
+			var $scope;
+			var $result;
+			var domainName;
+
+			if (!button) {
+				return;
+			}
+
+			$scope = $(button).closest('.rstore-domain-search');
+			$result = $(button).closest('.domain-result');
+			domainName = $result.find('.domain-name').first().text() || '';
+			domainName = String(domainName).trim();
+
+			if (!domainName) {
+				return;
+			}
+
+			trackEvent('domain_select', {
+				domain_query: domainName,
+				related_query: getSearchQuery($scope)
+			});
+		}, true);
+	}
+
+	$(document).on('submit', '.continue-form', function() {
+		var itemsMeta = parseItemsFromForm($(this));
+
+		trackEvent('continue_to_cart', {
+			items_count: itemsMeta.itemsCount,
+			items_json: itemsMeta.itemsRaw || ''
+		});
+	});
+
+	$(document).on('submit', '.rstore-domain-search .search-form', function() {
+		var $form = $(this);
+		var $scope = $form.closest('.rstore-domain-search');
+		var domainQuery;
+
+		// New search = new row; let the outcome reporter fire again.
+		$scope.removeAttr('data-rintent-outcome-sent');
+
+		domainQuery = $form.find('input[name="domainToCheck"], .search-field').first().val() || '';
+		trackEvent('domain_search', {
+			domain_query: String(domainQuery).trim()
+		});
+	});
+
+	$(document).ready(function() {
+		bindSelectTracking();
+		reportSearchOutcome();
+
+		// React re-renders replace nodes; watch for results appearing.
+		$('.rstore-domain-search').each(function() {
+			var observer = new MutationObserver(function() {
+				reportSearchOutcome();
+			});
+
+			observer.observe(this, { childList: true, subtree: true });
+		});
+	});
+})(jQuery);

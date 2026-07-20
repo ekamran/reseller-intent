@@ -16,6 +16,8 @@ final class Reseller_Intent {
 	private $price;
 	private $phone;
 	private $digest;
+	private $perf;
+	private $health;
 
 	public function __construct() {
 		$this->settings = new Reseller_Intent_Settings();
@@ -27,6 +29,8 @@ final class Reseller_Intent {
 		$this->price     = new Reseller_Intent_Price();
 		$this->phone     = new Reseller_Intent_Phone();
 		$this->digest    = new Reseller_Intent_Digest();
+		$this->perf      = new Reseller_Intent_Perf();
+		$this->health    = new Reseller_Intent_Health();
 
 		add_action( 'plugins_loaded', array( $this, 'bootstrap' ) );
 		add_action( 'admin_notices', array( $this, 'show_dependency_notice' ) );
@@ -60,6 +64,10 @@ final class Reseller_Intent {
 		$this->price->register();
 		$this->phone->register();
 		$this->digest->register();
+		$this->perf->register();
+		$this->health->register();
+		Reseller_Intent_CLI::maybe_register();
+		add_action( 'admin_init', array( $this, 'add_privacy_policy_content' ) );
 
 		// Optional auto-purge (only scheduled when retention is enabled).
 		add_action( 'rintent_auto_purge', array( 'Reseller_Intent_DB', 'run_auto_purge' ) );
@@ -95,4 +103,19 @@ final class Reseller_Intent {
 		Reseller_Intent_TLD_Strip::unschedule();
 		Reseller_Intent_Digest::unschedule();
 	}
+
+	/**
+	 * Suggested text for the site's privacy policy page.
+	 */
+	public function add_privacy_policy_content() {
+		if ( ! function_exists( 'wp_add_privacy_policy_content' ) ) {
+			return;
+		}
+
+		wp_add_privacy_policy_content(
+			__( 'Reseller Intent', 'reseller-intent' ),
+			'<p>' . esc_html__( 'This site records anonymous statistics about domain name searches made in the search box: the searched name, whether it was available, the country-level region, the device type (mobile or desktop) and the page it happened on. No IP addresses, no names, no accounts and no cookies are stored, and single visitors cannot be identified or tracked over time. The data is kept only to understand which domains people look for.', 'reseller-intent' ) . '</p>'
+		);
+	}
+
 }

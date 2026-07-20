@@ -293,6 +293,17 @@
 		);
 	}
 
+	function OpportunitiesPanel(props) {
+		var items = props.items || [];
+		var rows = items.map(function(row) {
+			return [row.domain, fmt(row.count), row.last];
+		});
+
+		return el(Panel, { title: 'Missed Opportunities', note: 'Searched and available, but never taken to cart. Warm leads.' },
+			el(MiniTable, { columns: ['Domain', 'Searches', 'Last seen'], rows: rows, empty: 'Nothing missed in this range. Every available search went to cart, or there were none.' })
+		);
+	}
+
 	function SelectionPanel(props) {
 		var selection = props.selection || { total: 0, exact: 0, top: [], pairs: [] };
 		var exactRate = pct(selection.exact, selection.total);
@@ -755,6 +766,7 @@
 					el('div', { className: 'ri-grid ri-grid--3' },
 						el(TldPanel, { items: data.tlds.items, total: data.tlds.total }),
 						el(CartedPanel, { carted: data.carted }),
+					el(OpportunitiesPanel, { items: data.opportunities }),
 						el(DemandPanel, { repeats: data.repeats })
 					),
 					el('div', { className: 'ri-grid ri-grid--2' },

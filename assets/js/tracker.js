@@ -42,6 +42,23 @@
 			return;
 		}
 
+		/*
+		 * Cart clicks navigate away immediately; a plain XHR can be killed
+		 * mid-flight and the most valuable event is lost. sendBeacon is
+		 * guaranteed to survive the navigation.
+		 */
+		if (eventType === 'continue_to_cart' && navigator.sendBeacon) {
+			var formData = new FormData();
+
+			Object.keys(data).forEach(function(key) {
+				formData.append(key, data[key]);
+			});
+
+			if (navigator.sendBeacon(window.resellerIntent.ajaxUrl, formData)) {
+				return;
+			}
+		}
+
 		$.ajax({
 			url: window.resellerIntent.ajaxUrl,
 			type: 'POST',

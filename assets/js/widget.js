@@ -192,25 +192,64 @@
 		$(this).closest('.rstore-domain-search').removeClass('rintent-results-cleared');
 	});
 
-	$(document).ready(function() {
+	function enhanceAll() {
 		ensureSkeletonRows();
 		ensureClearAllButtons();
 		alignClearButtonsToSearchForm();
 		updateClearAllVisibility();
+	}
+
+	$(document).ready(function() {
+		enhanceAll();
 
 		$(window).on('resize', function() {
 			alignClearButtonsToSearchForm();
 		});
 
-		$('.rstore-domain-search').each(function() {
-			var observer = new MutationObserver(function() {
-				ensureSkeletonRows();
-				ensureClearAllButtons();
-				alignClearButtonsToSearchForm();
-				updateClearAllVisibility();
-			});
+		/*
+		 * One document-level observer instead of one per widget found at
+		 * load: widgets injected later (Elementor popups, AJAX-loaded
+		 * sections, infinite scroll) get the same treatment. Batched via
+		 * requestAnimationFrame so bursts of mutations run the (idempotent)
+		 * enhancers once per frame, and only when a mutation actually
+		 * involves a domain-search widget.
+		 */
+		var scheduled = false;
 
-			observer.observe(this, { childList: true, subtree: true });
+		function touchesWidget(mutation) {
+			var node = mutation.target;
+
+			if (node.nodeType === 1 && (node.closest('.rstore-domain-search') || node.querySelector && node.querySelector('.rstore-domain-search'))) {
+				return true;
+			}
+
+			return false;
+		}
+
+		var observer = new MutationObserver(function(mutations) {
+			if (scheduled) {
+				return;
+			}
+
+			var relevant = false;
+			for (var i = 0; i < mutations.length; i += 1) {
+				if (touchesWidget(mutations[i])) {
+					relevant = true;
+					break;
+				}
+			}
+
+			if (!relevant) {
+				return;
+			}
+
+			scheduled = true;
+			window.requestAnimationFrame(function() {
+				scheduled = false;
+				enhanceAll();
+			});
 		});
+
+		observer.observe(document.body, { childList: true, subtree: true });
 	});
 })(jQuery);

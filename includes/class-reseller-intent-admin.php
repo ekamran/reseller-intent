@@ -477,6 +477,28 @@ final class Reseller_Intent_Admin {
 				</div>
 
 				<div class="rintent-card">
+					<h2><?php esc_html_e( 'Performance', 'reseller-intent' ); ?></h2>
+					<p class="rintent-card-desc"><?php esc_html_e( 'Reseller Store loads React, jQuery add-ons and its styles on every page of the site, even pages with no store element. Trim that to only the pages that need it.', 'reseller-intent' ); ?></p>
+					<div class="rintent-field">
+						<span class="rintent-label"><?php esc_html_e( 'Asset trim', 'reseller-intent' ); ?></span>
+						<span>
+							<label for="rintent-trim-gd">
+								<input type="checkbox" id="rintent-trim-gd" name="trim_gd_assets" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'trim_gd_assets' ) ); ?> />
+								<?php esc_html_e( 'Load Reseller Store assets only where they are used', 'reseller-intent' ); ?>
+							</label>
+							<p class="description"><?php esc_html_e( 'Kept automatically: pages whose content has any Reseller Store shortcode, product pages, and every page when a Reseller Store widget sits in a sidebar. Tracking follows along, pages without the widget load nothing from this plugin either.', 'reseller-intent' ); ?></p>
+						</span>
+					</div>
+					<div class="rintent-field">
+						<span class="rintent-label"><label for="rintent-gd-pages"><?php esc_html_e( 'Always keep on', 'reseller-intent' ); ?></label></span>
+						<span>
+							<input type="text" id="rintent-gd-pages" name="gd_asset_pages" class="regular-text" value="<?php echo esc_attr( implode( ', ', (array) Reseller_Intent_Settings::get( 'gd_asset_pages' ) ) ); ?>" placeholder="12, 34, 56" />
+							<p class="description"><?php esc_html_e( 'Page or post IDs, comma-separated. For pages where a builder or popup renders the widget outside the content, detection cannot see those. Developers can also use the rintent_page_needs_store filter.', 'reseller-intent' ); ?></p>
+						</span>
+					</div>
+				</div>
+
+				<div class="rintent-card">
 					<h2><?php esc_html_e( 'Weekly report', 'reseller-intent' ); ?></h2>
 					<div class="rintent-field">
 						<span class="rintent-label"><?php esc_html_e( 'Email digest', 'reseller-intent' ); ?></span>
@@ -793,6 +815,9 @@ final class Reseller_Intent_Admin {
 		// Carted domains from items_json (bounded scan).
 		$carted = $this->get_carted_breakdown( $table_name, $where );
 
+		// Warm leads: searched, available, never taken to cart.
+		$opportunities = $this->get_opportunities( $table_name, $where );
+
 		// Selection behavior.
 		$selection = $this->get_selection_breakdown( $table_name, $where );
 
@@ -901,6 +926,7 @@ final class Reseller_Intent_Admin {
 			'repeats'    => $repeats,
 			'pages'      => $pages,
 			'carted'     => $carted,
+			'opportunities' => $opportunities,
 			'selection'  => $selection,
 			'availability' => array(
 				'available' => $avail,
@@ -1064,6 +1090,66 @@ final class Reseller_Intent_Admin {
 		}
 
 		return substr( $path, 0, 191 );
+	}
+
+	/**
+	 * Domains that were searched, came back available, and never appeared
+	 * in any cart. The carted set is checked against recent history as a
+	 * whole (not just the selected range), a domain carted last month is
+	 * not an opportunity today.
+	 */
+	private function get_opportunities( $table_name, $where ) {
+		global $wpdb;
+
+		$carted = array();
+
+		$json_rows = $wpdb->get_results(
+			"SELECT items_json FROM {$table_name}
+			WHERE event_type = 'continue_to_cart' AND items_json IS NOT NULL AND items_json <> ''
+			ORDER BY id DESC
+			LIMIT 800" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		);
+
+		foreach ( $json_rows as $json_row ) {
+			foreach ( $this->extract_carted_domains( (string) $json_row->items_json ) as $domain ) {
+				$carted[ strtolower( $domain ) ] = true;
+			}
+		}
+
+		$rows = $wpdb->get_results(
+			"SELECT domain_query, COALESCE(SUM(event_count),0) AS hits, MAX(created_at) AS last_seen
+			FROM {$table_name}
+			WHERE event_type = 'domain_search' AND is_available = 1 AND domain_query <> ''{$where}
+			GROUP BY domain_query
+			ORDER BY hits DESC, last_seen DESC
+			LIMIT 40" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		);
+
+		$items = array();
+
+		foreach ( $rows as $row ) {
+			$domain = (string) $row->domain_query;
+
+			if ( isset( $carted[ strtolower( $domain ) ] ) ) {
+				continue;
+			}
+
+			$items[] = array(
+				'domain' => $domain,
+				'count'  => (int) $row->hits,
+				'last'   => sprintf(
+					/* translators: %s: human readable time difference */
+					__( '%s ago', 'reseller-intent' ),
+					human_time_diff( (int) strtotime( (string) $row->last_seen ), strtotime( current_time( 'mysql' ) ) )
+				),
+			);
+
+			if ( count( $items ) >= 10 ) {
+				break;
+			}
+		}
+
+		return $items;
 	}
 
 	private function get_carted_breakdown( $table_name, $where ) {

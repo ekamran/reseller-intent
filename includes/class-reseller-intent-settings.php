@@ -18,6 +18,8 @@ final class Reseller_Intent_Settings {
 		'support_numbers'     => null,  // null = built-in GoDaddy defaults; array = owner's own list.
 		'digest_enabled'      => false,
 		'digest_email'        => '',
+		'trim_gd_assets'      => false,
+		'gd_asset_pages'      => array(),
 	);
 
 	public static function get( $key ) {
@@ -130,6 +132,8 @@ final class Reseller_Intent_Settings {
 			'blocklist'           => $this->sanitize_blocklist( isset( $_POST['blocklist'] ) ? wp_unslash( $_POST['blocklist'] ) : '' ),
 			'digest_enabled'      => ! empty( $_POST['digest_enabled'] ),
 			'digest_email'        => sanitize_email( isset( $_POST['digest_email'] ) ? wp_unslash( $_POST['digest_email'] ) : '' ),
+			'trim_gd_assets'      => ! empty( $_POST['trim_gd_assets'] ),
+			'gd_asset_pages'      => $this->sanitize_id_list( isset( $_POST['gd_asset_pages'] ) ? wp_unslash( $_POST['gd_asset_pages'] ) : '' ),
 		);
 
 		/*
@@ -224,6 +228,20 @@ final class Reseller_Intent_Settings {
 		}
 
 		return $clean;
+	}
+
+	private function sanitize_id_list( $value ) {
+		$ids = array();
+
+		foreach ( preg_split( '/[,\s]+/', (string) $value ) as $piece ) {
+			$id = absint( $piece );
+
+			if ( $id > 0 && count( $ids ) < 200 ) {
+				$ids[] = $id;
+			}
+		}
+
+		return array_values( array_unique( $ids ) );
 	}
 
 	private function sanitize_retention( $value ) {

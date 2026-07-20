@@ -75,6 +75,18 @@ Build both visually under Reseller Intent → Shortcodes.
 * `[rintent_price ids="12,14,15" before="Starting at " after="/mo" fallback="$3.99"]`, live price across the selected Reseller Store products. `mode="min|max|range"` shows the cheapest (default), highest, or a full range with a `separator` of your choice. Wrap it in your own words with `before` and `after`. Every part has its own CSS class (`.rintent-price`, `-before`, `-amount`, `-sep`, `-after`).
 * `[rintent_phone format="link|text" prefix="Call "]`, geo-aware support number. Manage the numbers on the same Shortcodes page; GoDaddy's global support numbers are built in as defaults and your own list is never touched by updates. Visitors see their region's number via a page-cache-safe client-side swap based on the browser timezone. No IPs, no lookup services.
 
+== Performance ==
+
+Built to stay out of your page speed score.
+
+* Frontend files load only on pages where the Reseller Store widget script is present. Pages without it load nothing from this plugin.
+* The whole frontend footprint is a few small files (tracking about 6 KB, optional styling about 20 KB before compression). No React, no frameworks, no web fonts.
+* No external requests from your visitors' browsers. Tracking talks to your own site only, phone number swapping uses the browser timezone, TLD prices are fetched by your server on a schedule and cached.
+* Page caches are fine, even aggressive ones. Tracking does not use nonces, the phone shortcode renders a cache-safe default and swaps client-side, prices come from a server-side cache.
+* Cart clicks are sent with sendBeacon, so the event survives the jump to checkout.
+* The dashboard (React) loads in wp-admin only, never on your site.
+* Bonus: an opt-in Performance setting trims Reseller Store's own sitewide assets (React, jQuery add-ons, styles) from pages that have no store element on them.
+
 == Changelog ==
 
 = 1.0.0 =

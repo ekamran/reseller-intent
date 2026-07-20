@@ -37,6 +37,9 @@ require_once RINTENT_PATH . 'includes/class-reseller-intent-tld-strip.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent-price.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent-phone.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent-digest.php';
+require_once RINTENT_PATH . 'includes/class-reseller-intent-perf.php';
+require_once RINTENT_PATH . 'includes/class-reseller-intent-health.php';
+require_once RINTENT_PATH . 'includes/class-reseller-intent-cli.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent.php';
 
 register_activation_hook( __FILE__, array( 'Reseller_Intent', 'activate' ) );

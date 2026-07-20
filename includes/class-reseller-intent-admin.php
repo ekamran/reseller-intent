@@ -80,80 +80,109 @@ final class Reseller_Intent_Admin {
 			)
 		);
 		?>
-		<div class="wrap rintent-shortcodes">
-			<h1><?php esc_html_e( 'Reseller Intent, Shortcodes', 'reseller-intent' ); ?></h1>
+		<div class="wrap rintent-pages rintent-shortcodes">
+			<h1><?php esc_html_e( 'Shortcodes', 'reseller-intent' ); ?></h1>
+			<p class="rintent-intro"><?php esc_html_e( 'Build a shortcode below, copy it and paste it into any page or block.', 'reseller-intent' ); ?></p>
 
-			<h2><?php esc_html_e( 'TLD price strip', 'reseller-intent' ); ?></h2>
-			<p class="description"><?php esc_html_e( 'Live TLD price pills, matching checkout prices. Cached 12h and kept warm by a background refresh.', 'reseller-intent' ); ?></p>
-			<table class="form-table" role="presentation">
-				<tr>
-					<th scope="row"><label for="rintent-gen-tlds"><?php esc_html_e( 'TLDs', 'reseller-intent' ); ?></label></th>
-					<td><input type="text" id="rintent-gen-tlds" class="regular-text" value=".com,.in,.org,.net,.io" />
-					<p class="description"><?php esc_html_e( 'Comma-separated, with or without dots.', 'reseller-intent' ); ?></p></td>
-				</tr>
-				<tr>
-					<th scope="row"><label for="rintent-gen-theme"><?php esc_html_e( 'Theme', 'reseller-intent' ); ?></label></th>
-					<td><select id="rintent-gen-theme"><option value="light"><?php esc_html_e( 'Light', 'reseller-intent' ); ?></option><option value="dark"><?php esc_html_e( 'Dark', 'reseller-intent' ); ?></option></select></td>
-				</tr>
-				<tr>
-					<th scope="row"><label for="rintent-gen-more-label"><?php esc_html_e( '"More" pill', 'reseller-intent' ); ?></label></th>
-					<td>
+			<div class="rintent-card">
+				<h2><?php esc_html_e( 'TLD price strip', 'reseller-intent' ); ?></h2>
+				<p class="rintent-card-desc"><?php esc_html_e( 'Live TLD price pills that always match checkout prices. Cached for 12 hours and refreshed in the background.', 'reseller-intent' ); ?></p>
+
+				<div class="rintent-field">
+					<span class="rintent-label"><label for="rintent-gen-tlds"><?php esc_html_e( 'TLDs', 'reseller-intent' ); ?></label></span>
+					<span>
+						<input type="text" id="rintent-gen-tlds" class="regular-text" value=".com,.in,.org,.net,.io" />
+						<p class="description"><?php esc_html_e( 'Comma-separated, with or without dots.', 'reseller-intent' ); ?></p>
+					</span>
+				</div>
+				<div class="rintent-field">
+					<span class="rintent-label"><label for="rintent-gen-theme"><?php esc_html_e( 'Theme', 'reseller-intent' ); ?></label></span>
+					<span>
+						<select id="rintent-gen-theme"><option value="light"><?php esc_html_e( 'Light', 'reseller-intent' ); ?></option><option value="dark"><?php esc_html_e( 'Dark', 'reseller-intent' ); ?></option></select>
+					</span>
+				</div>
+				<div class="rintent-field">
+					<span class="rintent-label"><label for="rintent-gen-more-label"><?php esc_html_e( '"More" pill', 'reseller-intent' ); ?></label></span>
+					<span>
 						<input type="text" id="rintent-gen-more-label" class="regular-text" placeholder="<?php esc_attr_e( 'More TLDs', 'reseller-intent' ); ?>" />
 						<input type="url" id="rintent-gen-more-url" class="regular-text" placeholder="https://example.com/domains/" />
-						<p class="description"><?php esc_html_e( 'Optional trailing link pill. Leave the URL empty to hide it.', 'reseller-intent' ); ?></p>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row"><?php esc_html_e( 'Shortcode', 'reseller-intent' ); ?></th>
-					<td>
-						<code id="rintent-gen-tld-out" style="display:inline-block;padding:8px 12px;user-select:all;"></code>
-						<button type="button" class="button" id="rintent-gen-tld-copy"><?php esc_html_e( 'Copy', 'reseller-intent' ); ?></button>
-					</td>
-				</tr>
-			</table>
-
-			<hr />
-
-			<h2><?php esc_html_e( 'Starting-at price', 'reseller-intent' ); ?></h2>
-			<p class="description"><?php esc_html_e( 'Prints the cheapest current price across the selected products, straight from Reseller Store product data. Select every plan of a family so the number stays correct when prices change.', 'reseller-intent' ); ?></p>
-
-			<?php if ( empty( $products ) ) : ?>
-				<p><em><?php esc_html_e( 'No published Reseller Store products found, import products in Reseller Store first.', 'reseller-intent' ); ?></em></p>
-			<?php else : ?>
-				<p><input type="search" id="rintent-gen-filter" class="regular-text" placeholder="<?php esc_attr_e( 'Filter products...', 'reseller-intent' ); ?>" /></p>
-				<div id="rintent-gen-products" style="max-height:260px;overflow:auto;border:1px solid #dcdcde;border-radius:4px;padding:8px 12px;max-width:640px;background:#fff;">
-					<?php foreach ( $products as $product ) :
-						$sale  = (string) get_post_meta( $product->ID, 'rstore_salePrice', true );
-						$list  = (string) get_post_meta( $product->ID, 'rstore_listPrice', true );
-						$price = '' !== trim( $sale ) ? $sale : $list;
-						?>
-						<label style="display:block;padding:3px 0;">
-							<input type="checkbox" class="rintent-gen-product" value="<?php echo esc_attr( $product->ID ); ?>" data-title="<?php echo esc_attr( strtolower( $product->post_title ) ); ?>" />
-							<?php echo esc_html( $product->post_title ); ?>
-							<span style="color:#787c82;">- <?php echo esc_html( '' !== trim( $price ) ? $price : __( 'no price', 'reseller-intent' ) ); ?> · ID <?php echo esc_html( $product->ID ); ?></span>
-						</label>
-					<?php endforeach; ?>
+						<p class="description"><?php esc_html_e( 'Optional link pill at the end. Leave the URL empty to hide it.', 'reseller-intent' ); ?></p>
+					</span>
 				</div>
-				<table class="form-table" role="presentation">
-					<tr>
-						<th scope="row"><label for="rintent-gen-fallback"><?php esc_html_e( 'Fallback text', 'reseller-intent' ); ?></label></th>
-						<td><input type="text" id="rintent-gen-fallback" class="regular-text" placeholder="$3.99" />
-						<p class="description"><?php esc_html_e( 'Shown if no selected product has a price.', 'reseller-intent' ); ?></p></td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Shortcode', 'reseller-intent' ); ?></th>
-						<td>
-							<code id="rintent-gen-price-out" style="display:inline-block;padding:8px 12px;user-select:all;"></code>
+				<div class="rintent-field">
+					<span class="rintent-label"><?php esc_html_e( 'Shortcode', 'reseller-intent' ); ?></span>
+					<span class="rintent-output">
+						<code id="rintent-gen-tld-out"></code>
+						<button type="button" class="button" id="rintent-gen-tld-copy"><?php esc_html_e( 'Copy', 'reseller-intent' ); ?></button>
+					</span>
+				</div>
+			</div>
+
+			<div class="rintent-card">
+				<h2><?php esc_html_e( 'Starting-at price', 'reseller-intent' ); ?></h2>
+				<p class="rintent-card-desc"><?php esc_html_e( 'Prints the cheapest current price from the selected products. Select every plan of a family so the number stays correct when prices change.', 'reseller-intent' ); ?></p>
+
+				<?php if ( empty( $products ) ) : ?>
+					<p><em><?php esc_html_e( 'No published Reseller Store products found. Import products in Reseller Store first.', 'reseller-intent' ); ?></em></p>
+				<?php else : ?>
+					<div class="rintent-field">
+						<span class="rintent-label"><label for="rintent-gen-filter"><?php esc_html_e( 'Products', 'reseller-intent' ); ?></label></span>
+						<span>
+							<input type="search" id="rintent-gen-filter" class="regular-text" placeholder="<?php esc_attr_e( 'Filter products...', 'reseller-intent' ); ?>" style="margin-bottom:8px;" />
+							<div class="rintent-product-picker" id="rintent-gen-products">
+								<?php foreach ( $products as $product ) :
+									$sale  = (string) get_post_meta( $product->ID, 'rstore_salePrice', true );
+									$list  = (string) get_post_meta( $product->ID, 'rstore_listPrice', true );
+									$price = '' !== trim( $sale ) ? $sale : $list;
+									?>
+									<label>
+										<input type="checkbox" class="rintent-gen-product" value="<?php echo esc_attr( $product->ID ); ?>" data-title="<?php echo esc_attr( strtolower( $product->post_title ) ); ?>" />
+										<?php echo esc_html( $product->post_title ); ?>
+										<span class="rintent-product-meta">- <?php echo esc_html( '' !== trim( $price ) ? $price : __( 'no price', 'reseller-intent' ) ); ?> &middot; ID <?php echo esc_html( $product->ID ); ?></span>
+									</label>
+								<?php endforeach; ?>
+							</div>
+						</span>
+					</div>
+					<div class="rintent-field">
+						<span class="rintent-label"><label for="rintent-gen-fallback"><?php esc_html_e( 'Fallback text', 'reseller-intent' ); ?></label></span>
+						<span>
+							<input type="text" id="rintent-gen-fallback" class="regular-text" placeholder="$3.99" />
+							<p class="description"><?php esc_html_e( 'Shown if no selected product has a price.', 'reseller-intent' ); ?></p>
+						</span>
+					</div>
+					<div class="rintent-field">
+						<span class="rintent-label"><?php esc_html_e( 'Shortcode', 'reseller-intent' ); ?></span>
+						<span class="rintent-output">
+							<code id="rintent-gen-price-out" data-empty="<?php esc_attr_e( 'Select at least one product', 'reseller-intent' ); ?>"></code>
 							<button type="button" class="button" id="rintent-gen-price-copy"><?php esc_html_e( 'Copy', 'reseller-intent' ); ?></button>
-						</td>
-					</tr>
-				</table>
-			<?php endif; ?>
+						</span>
+					</div>
+				<?php endif; ?>
+			</div>
+
+			<div class="rintent-card">
+				<h2><?php esc_html_e( 'Support phone number', 'reseller-intent' ); ?></h2>
+				<p class="rintent-card-desc"><?php esc_html_e( 'Shows the right regional support number to each visitor. Add your numbers under Settings first, then use this shortcode anywhere.', 'reseller-intent' ); ?></p>
+				<div class="rintent-field">
+					<span class="rintent-label"><?php esc_html_e( 'Shortcode', 'reseller-intent' ); ?></span>
+					<span class="rintent-output">
+						<code>[rintent_phone prefix="Call "]</code>
+						<code>[rintent_phone format="text"]</code>
+					</span>
+				</div>
+			</div>
 		</div>
 		<script>
 		(function() {
 			function esc(value) {
 				return String(value).replace(/"/g, '');
+			}
+
+			function flashCopied(button) {
+				var original = button.textContent;
+				button.textContent = '<?php echo esc_js( __( 'Copied!', 'reseller-intent' ) ); ?>';
+				setTimeout(function() { button.textContent = original; }, 1200);
 			}
 
 			function buildTld() {
@@ -188,10 +217,11 @@ final class Reseller_Intent_Admin {
 				outEl.textContent = ids.length ? out + ']' : '';
 			}
 
-			function copy(sourceId) {
+			function copy(sourceId, button) {
 				var text = document.getElementById(sourceId).textContent;
 				if (text && navigator.clipboard) {
 					navigator.clipboard.writeText(text);
+					flashCopied(button);
 				}
 			}
 
@@ -199,7 +229,7 @@ final class Reseller_Intent_Admin {
 				document.getElementById(id).addEventListener('input', buildTld);
 				document.getElementById(id).addEventListener('change', buildTld);
 			});
-			document.getElementById('rintent-gen-tld-copy').addEventListener('click', function() { copy('rintent-gen-tld-out'); });
+			document.getElementById('rintent-gen-tld-copy').addEventListener('click', function() { copy('rintent-gen-tld-out', this); });
 
 			var filter = document.getElementById('rintent-gen-filter');
 			if (filter) {
@@ -213,7 +243,7 @@ final class Reseller_Intent_Admin {
 					cb.addEventListener('change', buildPrice);
 				});
 				document.getElementById('rintent-gen-fallback').addEventListener('input', buildPrice);
-				document.getElementById('rintent-gen-price-copy').addEventListener('click', function() { copy('rintent-gen-price-out'); });
+				document.getElementById('rintent-gen-price-copy').addEventListener('click', function() { copy('rintent-gen-price-out', this); });
 			}
 
 			buildTld();
@@ -243,197 +273,224 @@ final class Reseller_Intent_Admin {
 		);
 		$notice = isset( $_GET['rintent_notice'] ) ? sanitize_key( wp_unslash( $_GET['rintent_notice'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		?>
-		<div class="wrap">
-			<h1><?php esc_html_e( 'Reseller Intent, Settings', 'reseller-intent' ); ?></h1>
+		<div class="wrap rintent-pages rintent-settings">
+			<h1><?php esc_html_e( 'Settings', 'reseller-intent' ); ?></h1>
+			<p class="rintent-intro"><?php esc_html_e( 'Everything is optional. Tracking works out of the box.', 'reseller-intent' ); ?></p>
 
 			<?php if ( 'settings_saved' === $notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Settings saved.', 'reseller-intent' ); ?></p></div>
 			<?php elseif ( preg_match( '/^imported_(\d+)$/', $notice, $import_match ) ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php echo esc_html( sprintf( /* translators: %s: number of events */ __( '%s legacy events imported.', 'reseller-intent' ), number_format_i18n( (int) $import_match[1] ) ) ); ?></p></div>
 			<?php elseif ( 'import_skipped' === $notice ) : ?>
-				<div class="notice notice-info is-dismissible"><p><?php esc_html_e( 'Import skipped, already imported or no legacy table found.', 'reseller-intent' ); ?></p></div>
+				<div class="notice notice-info is-dismissible"><p><?php esc_html_e( 'Import skipped. Already imported or no legacy table found.', 'reseller-intent' ); ?></p></div>
 			<?php elseif ( 'digest_sent' === $notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Test digest sent.', 'reseller-intent' ); ?></p></div>
 			<?php elseif ( 'digest_failed' === $notice ) : ?>
-				<div class="notice notice-error is-dismissible"><p><?php esc_html_e( 'Sending failed, check that your site can send email (an SMTP plugin usually fixes this).', 'reseller-intent' ); ?></p></div>
+				<div class="notice notice-error is-dismissible"><p><?php esc_html_e( 'Sending failed. Check that your site can send email (an SMTP plugin usually fixes this).', 'reseller-intent' ); ?></p></div>
 			<?php endif; ?>
 
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="rintent_save_settings" />
 				<?php wp_nonce_field( 'rintent_save_settings' ); ?>
 
-				<table class="form-table" role="presentation">
-					<tr>
-						<th scope="row">
-							<label for="rintent-accent"><?php esc_html_e( 'Accent color', 'reseller-intent' ); ?></label>
-						</th>
-						<td>
+				<div class="rintent-card">
+					<h2><?php esc_html_e( 'Appearance', 'reseller-intent' ); ?></h2>
+					<div class="rintent-field">
+						<span class="rintent-label"><label for="rintent-accent"><?php esc_html_e( 'Accent color', 'reseller-intent' ); ?></label></span>
+						<span>
 							<input type="color" id="rintent-accent" name="accent_color" value="<?php echo esc_attr( $accent ); ?>" />
-							<p class="description"><?php esc_html_e( 'Used for charts and highlights on the dashboard.', 'reseller-intent' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row">
-							<label for="rintent-retention"><?php esc_html_e( 'Data retention', 'reseller-intent' ); ?></label>
-						</th>
-						<td>
-							<select id="rintent-retention" name="retention_days">
-								<?php foreach ( $retention_choices as $days => $label ) : ?>
-									<option value="<?php echo esc_attr( $days ); ?>" <?php selected( $retention, $days ); ?>><?php echo esc_html( $label ); ?></option>
-								<?php endforeach; ?>
-							</select>
-							<p class="description"><?php esc_html_e( 'Events older than this are deleted automatically once a day. You can also clear specific windows any time from the dashboard.', 'reseller-intent' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Widget styling', 'reseller-intent' ); ?></th>
-						<td>
-							<fieldset>
-								<label for="rintent-style-widget">
-									<input type="checkbox" id="rintent-style-widget" name="style_widget" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'style_widget' ) ); ?> />
-									<?php esc_html_e( 'Style the domain search widget (accent buttons, aligned result rows, mobile layout)', 'reseller-intent' ); ?>
-								</label>
-								<br />
-								<label for="rintent-skeletons">
-									<input type="checkbox" id="rintent-skeletons" name="widget_skeletons" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'widget_skeletons' ) ); ?> />
-									<?php esc_html_e( 'Skeleton loading rows while results load', 'reseller-intent' ); ?>
-								</label>
-								<br />
-								<label for="rintent-clear-all">
-									<input type="checkbox" id="rintent-clear-all" name="widget_clear_all" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'widget_clear_all' ) ); ?> />
-									<?php esc_html_e( 'Floating "Clear All" button under the search bar', 'reseller-intent' ); ?>
-								</label>
-								<p class="description"><?php esc_html_e( 'Wrap a dark page section in a .rintent-dark class to switch the widget to light-on-dark colors. If styling conflicts with your theme, turn the first toggle off, tracking is unaffected.', 'reseller-intent' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Used on the dashboard, the styled widget and the TLD price strip.', 'reseller-intent' ); ?></p>
+						</span>
+					</div>
+				</div>
 
-								<details class="rintent-theming-ref" style="margin-top:12px;max-width:640px;">
-									<summary style="cursor:pointer;font-weight:600;"><?php esc_html_e( 'Theming reference, CSS classes & variables', 'reseller-intent' ); ?></summary>
-									<p class="description"><?php esc_html_e( 'Target these from your theme or Appearance → Customize → Additional CSS to restyle any part of the widget.', 'reseller-intent' ); ?></p>
-									<table class="widefat striped" style="margin-top:8px;">
-										<thead><tr><th><?php esc_html_e( 'Element', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'CSS class / variable', 'reseller-intent' ); ?></th></tr></thead>
-										<tbody>
-											<tr><td><?php esc_html_e( 'Domain name in results', 'reseller-intent' ); ?></td><td><code>.rstore-domain-search .domain-name</code><br /><code>--rintent-domain-size</code> · <code>--rintent-domain-color</code> · <code>--rintent-domain-font</code> · <code>--rintent-domain-weight</code></td></tr>
-											<tr><td><?php esc_html_e( 'Price', 'reseller-intent' ); ?></td><td><code>.rstore-message .salePrice</code> / <code>.listPrice</code><br /><code>--rintent-price-size</code> · <code>--rintent-price-color</code> · <code>--rintent-price-font</code> · <code>--rintent-price-weight</code></td></tr>
-											<tr><td><?php esc_html_e( 'Clear All button', 'reseller-intent' ); ?></td><td><code>.rintent-clear-btn</code><br /><code>--rintent-clear-color</code> · <code>--rintent-clear-size</code></td></tr>
-											<tr><td><?php esc_html_e( 'Result row card', 'reseller-intent' ); ?></td><td><code>.rstore-domain-search .domain-result</code></td></tr>
-											<tr><td><?php esc_html_e( 'Search button / Continue to cart', 'reseller-intent' ); ?></td><td><code>.search-form input[type=submit]</code> · <code>.rstore-domain-continue-button</code></td></tr>
-											<tr><td><?php esc_html_e( 'Select / Selected links', 'reseller-intent' ); ?></td><td><code>.rstore-domain-buy-button.select</code> · <code>.rstore-domain-buy-button.selected</code></td></tr>
-											<tr><td><?php esc_html_e( 'Accent (buttons, focus ring)', 'reseller-intent' ); ?></td><td><code>--rintent-accent</code> <?php esc_html_e( '(set by the color picker above)', 'reseller-intent' ); ?></td></tr>
-											<tr><td><?php esc_html_e( 'Dark section context', 'reseller-intent' ); ?></td><td><code>.rintent-dark</code> <?php esc_html_e( '(wrapper class)', 'reseller-intent' ); ?></td></tr>
-										</tbody>
-									</table>
-									<p class="description" style="margin-top:8px;"><?php esc_html_e( 'Example:', 'reseller-intent' ); ?> <code>body{--rintent-domain-size:18px;--rintent-price-color:#0a7d5c;}</code></p>
-								</details>
-							</fieldset>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Weekly digest', 'reseller-intent' ); ?></th>
-						<td>
+				<div class="rintent-card">
+					<h2><?php esc_html_e( 'Widget styling', 'reseller-intent' ); ?></h2>
+					<p class="rintent-card-desc"><?php esc_html_e( 'Optional polish for the Reseller Store search widget. Turn the first toggle off if it fights with your theme. Tracking is not affected.', 'reseller-intent' ); ?></p>
+					<div class="rintent-field">
+						<span class="rintent-label"><?php esc_html_e( 'Options', 'reseller-intent' ); ?></span>
+						<span class="rintent-check-group">
+							<label for="rintent-style-widget">
+								<input type="checkbox" id="rintent-style-widget" name="style_widget" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'style_widget' ) ); ?> />
+								<?php esc_html_e( 'Style the domain search widget (accent buttons, aligned rows, mobile layout)', 'reseller-intent' ); ?>
+							</label>
+							<label for="rintent-skeletons">
+								<input type="checkbox" id="rintent-skeletons" name="widget_skeletons" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'widget_skeletons' ) ); ?> />
+								<?php esc_html_e( 'Skeleton loading rows while results load', 'reseller-intent' ); ?>
+							</label>
+							<label for="rintent-clear-all">
+								<input type="checkbox" id="rintent-clear-all" name="widget_clear_all" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'widget_clear_all' ) ); ?> />
+								<?php esc_html_e( 'Floating "Clear All" button under the search bar', 'reseller-intent' ); ?>
+							</label>
+							<p class="description"><?php esc_html_e( 'Tip: wrap a dark page section in a .rintent-dark class for light-on-dark widget colors.', 'reseller-intent' ); ?></p>
+
+							<details class="rintent-theming-ref">
+								<summary><?php esc_html_e( 'Theming reference: CSS classes and variables', 'reseller-intent' ); ?></summary>
+								<p class="description"><?php esc_html_e( 'Target these from your theme or Additional CSS to restyle any part of the widget.', 'reseller-intent' ); ?></p>
+								<table class="widefat striped">
+									<thead><tr><th><?php esc_html_e( 'Element', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'CSS class / variable', 'reseller-intent' ); ?></th></tr></thead>
+									<tbody>
+										<tr><td><?php esc_html_e( 'Domain name in results', 'reseller-intent' ); ?></td><td><code>.rstore-domain-search .domain-name</code><br /><code>--rintent-domain-size</code> &middot; <code>--rintent-domain-color</code> &middot; <code>--rintent-domain-font</code> &middot; <code>--rintent-domain-weight</code></td></tr>
+										<tr><td><?php esc_html_e( 'Price', 'reseller-intent' ); ?></td><td><code>.rstore-message .salePrice</code> / <code>.listPrice</code><br /><code>--rintent-price-size</code> &middot; <code>--rintent-price-color</code> &middot; <code>--rintent-price-font</code> &middot; <code>--rintent-price-weight</code></td></tr>
+										<tr><td><?php esc_html_e( 'Clear All button', 'reseller-intent' ); ?></td><td><code>.rintent-clear-btn</code><br /><code>--rintent-clear-color</code> &middot; <code>--rintent-clear-size</code></td></tr>
+										<tr><td><?php esc_html_e( 'Result row card', 'reseller-intent' ); ?></td><td><code>.rstore-domain-search .domain-result</code></td></tr>
+										<tr><td><?php esc_html_e( 'Search button / Continue to cart', 'reseller-intent' ); ?></td><td><code>.search-form input[type=submit]</code> &middot; <code>.rstore-domain-continue-button</code></td></tr>
+										<tr><td><?php esc_html_e( 'Select / Selected links', 'reseller-intent' ); ?></td><td><code>.rstore-domain-buy-button.select</code> &middot; <code>.rstore-domain-buy-button.selected</code></td></tr>
+										<tr><td><?php esc_html_e( 'Accent (buttons, focus ring)', 'reseller-intent' ); ?></td><td><code>--rintent-accent</code> <?php esc_html_e( '(set by the color picker above)', 'reseller-intent' ); ?></td></tr>
+										<tr><td><?php esc_html_e( 'Dark section context', 'reseller-intent' ); ?></td><td><code>.rintent-dark</code> <?php esc_html_e( '(wrapper class)', 'reseller-intent' ); ?></td></tr>
+									</tbody>
+								</table>
+								<p class="description"><?php esc_html_e( 'Example:', 'reseller-intent' ); ?> <code>body{--rintent-domain-size:18px;--rintent-price-color:#0a7d5c;}</code></p>
+							</details>
+						</span>
+					</div>
+				</div>
+
+				<div class="rintent-card">
+					<h2><?php esc_html_e( 'Support numbers', 'reseller-intent' ); ?></h2>
+					<p class="rintent-card-desc"><?php esc_html_e( 'Regional phone numbers for the [rintent_phone] shortcode. Each visitor sees the number for their region automatically. Page-cache safe.', 'reseller-intent' ); ?></p>
+					<table id="rintent-support-rows" class="widefat striped">
+						<thead><tr><th><?php esc_html_e( 'Label', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'Phone number', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'Countries', 'reseller-intent' ); ?></th><th></th></tr></thead>
+						<tbody>
+							<?php foreach ( (array) Reseller_Intent_Settings::get( 'support_numbers' ) as $support_entry ) : ?>
+								<tr>
+									<td><input type="text" name="support_label[]" value="<?php echo esc_attr( $support_entry['label'] ); ?>" placeholder="<?php esc_attr_e( 'US Support', 'reseller-intent' ); ?>" /></td>
+									<td><input type="text" name="support_number[]" value="<?php echo esc_attr( $support_entry['number'] ); ?>" placeholder="+1-480-000-0000" /></td>
+									<td><input type="text" name="support_countries[]" value="<?php echo esc_attr( implode( ',', (array) $support_entry['countries'] ) ); ?>" placeholder="US,CA" /></td>
+									<td><button type="button" class="button-link-delete rintent-support-remove" aria-label="<?php esc_attr_e( 'Remove row', 'reseller-intent' ); ?>">&times;</button></td>
+								</tr>
+							<?php endforeach; ?>
+						</tbody>
+					</table>
+					<p style="margin-bottom:0;"><button type="button" class="button" id="rintent-support-add"><?php esc_html_e( 'Add number', 'reseller-intent' ); ?></button></p>
+					<p class="description"><?php esc_html_e( 'Countries: comma-separated 2-letter codes like IN, US, AE. Leave empty on one row to make it the default for everyone else.', 'reseller-intent' ); ?></p>
+				</div>
+
+				<div class="rintent-card">
+					<h2><?php esc_html_e( 'Weekly report', 'reseller-intent' ); ?></h2>
+					<div class="rintent-field">
+						<span class="rintent-label"><?php esc_html_e( 'Email digest', 'reseller-intent' ); ?></span>
+						<span>
 							<label for="rintent-digest">
 								<input type="checkbox" id="rintent-digest" name="digest_enabled" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'digest_enabled' ) ); ?> />
-								<?php esc_html_e( 'Email a weekly summary (searches, conversion, top domains & TLDs)', 'reseller-intent' ); ?>
+								<?php esc_html_e( 'Send a weekly summary (searches, conversion, top domains and TLDs)', 'reseller-intent' ); ?>
 							</label>
 							<p style="margin:8px 0 0;">
 								<input type="email" name="digest_email" class="regular-text" value="<?php echo esc_attr( (string) Reseller_Intent_Settings::get( 'digest_email' ) ); ?>" placeholder="<?php echo esc_attr( get_option( 'admin_email' ) ); ?>" />
 							</p>
 							<p class="description"><?php esc_html_e( 'Leave empty to use the site admin email.', 'reseller-intent' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Support numbers', 'reseller-intent' ); ?></th>
-						<td>
-							<p class="description" style="margin-bottom:8px;"><?php esc_html_e( 'Regional support phone numbers for the [rintent_phone] shortcode. Countries = comma-separated 2-letter codes (IN, US, AE...); leave empty for the default number shown to everyone else. Visitors see their region\'s number automatically, page-cache safe.', 'reseller-intent' ); ?></p>
-							<table id="rintent-support-rows" class="widefat striped" style="max-width:640px;">
-								<thead><tr><th><?php esc_html_e( 'Label', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'Phone number', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'Countries', 'reseller-intent' ); ?></th><th></th></tr></thead>
-								<tbody>
-									<?php foreach ( (array) Reseller_Intent_Settings::get( 'support_numbers' ) as $support_entry ) : ?>
-										<tr>
-											<td><input type="text" name="support_label[]" value="<?php echo esc_attr( $support_entry['label'] ); ?>" placeholder="<?php esc_attr_e( 'US Support', 'reseller-intent' ); ?>" /></td>
-											<td><input type="text" name="support_number[]" value="<?php echo esc_attr( $support_entry['number'] ); ?>" placeholder="+1-480-000-0000" /></td>
-											<td><input type="text" name="support_countries[]" value="<?php echo esc_attr( implode( ',', (array) $support_entry['countries'] ) ); ?>" placeholder="US,CA" style="width:90px;" /></td>
-											<td><button type="button" class="button-link-delete rintent-support-remove" aria-label="<?php esc_attr_e( 'Remove row', 'reseller-intent' ); ?>">&times;</button></td>
-										</tr>
-									<?php endforeach; ?>
-								</tbody>
-							</table>
-							<p><button type="button" class="button" id="rintent-support-add"><?php esc_html_e( 'Add number', 'reseller-intent' ); ?></button></p>
-							<script>
-							(function() {
-								document.getElementById('rintent-support-add').addEventListener('click', function() {
-									var tbody = document.querySelector('#rintent-support-rows tbody');
-									var row = document.createElement('tr');
-									row.innerHTML = '<td><input type="text" name="support_label[]" /></td>'
-										+ '<td><input type="text" name="support_number[]" placeholder="+1-480-000-0000" /></td>'
-										+ '<td><input type="text" name="support_countries[]" placeholder="US,CA" style="width:90px;" /></td>'
-										+ '<td><button type="button" class="button-link-delete rintent-support-remove" aria-label="Remove row">&times;</button></td>';
-									tbody.appendChild(row);
-								});
-								document.addEventListener('click', function(event) {
-									if (event.target.classList && event.target.classList.contains('rintent-support-remove')) {
-										event.target.closest('tr').remove();
-									}
-								});
-							})();
-							</script>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><label for="rintent-blocklist"><?php esc_html_e( 'Ignore searches', 'reseller-intent' ); ?></label></th>
-						<td>
+						</span>
+					</div>
+				</div>
+
+				<div class="rintent-card">
+					<h2><?php esc_html_e( 'Tracking and privacy', 'reseller-intent' ); ?></h2>
+					<div class="rintent-field">
+						<span class="rintent-label"><label for="rintent-blocklist"><?php esc_html_e( 'Ignore searches', 'reseller-intent' ); ?></label></span>
+						<span>
 							<textarea id="rintent-blocklist" name="blocklist" rows="4" class="large-text code" placeholder="mytestdomain.com&#10;*.internal&#10;staging*"><?php echo esc_textarea( implode( "\n", (array) Reseller_Intent_Settings::get( 'blocklist' ) ) ); ?></textarea>
-							<p class="description"><?php esc_html_e( 'One pattern per line, matched against searched domains. Use * as a wildcard, handy for ignoring your own test searches.', 'reseller-intent' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Bots', 'reseller-intent' ); ?></th>
-						<td>
+							<p class="description"><?php esc_html_e( 'One pattern per line, matched against searched domains. Use * as a wildcard. Handy for ignoring your own test searches.', 'reseller-intent' ); ?></p>
+						</span>
+					</div>
+					<div class="rintent-field">
+						<span class="rintent-label"><?php esc_html_e( 'Bots', 'reseller-intent' ); ?></span>
+						<span>
 							<label for="rintent-bots">
 								<input type="checkbox" id="rintent-bots" name="track_bots" value="1" <?php checked( $bots ); ?> />
 								<?php esc_html_e( 'Also record events from known bots and crawlers (off recommended)', 'reseller-intent' ); ?>
 							</label>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Uninstall', 'reseller-intent' ); ?></th>
-						<td>
+						</span>
+					</div>
+				</div>
+
+				<div class="rintent-card">
+					<h2><?php esc_html_e( 'Data storage', 'reseller-intent' ); ?></h2>
+					<div class="rintent-field">
+						<span class="rintent-label"><label for="rintent-retention"><?php esc_html_e( 'Retention', 'reseller-intent' ); ?></label></span>
+						<span>
+							<select id="rintent-retention" name="retention_days">
+								<?php foreach ( $retention_choices as $days => $label ) : ?>
+									<option value="<?php echo esc_attr( $days ); ?>" <?php selected( $retention, $days ); ?>><?php echo esc_html( $label ); ?></option>
+								<?php endforeach; ?>
+							</select>
+							<p class="description"><?php esc_html_e( 'Events older than this are deleted once a day. You can also clear specific windows from the dashboard any time.', 'reseller-intent' ); ?></p>
+						</span>
+					</div>
+					<div class="rintent-field">
+						<span class="rintent-label"><?php esc_html_e( 'Uninstall', 'reseller-intent' ); ?></span>
+						<span>
 							<label for="rintent-uninstall">
 								<input type="checkbox" id="rintent-uninstall" name="delete_on_uninstall" value="1" <?php checked( $uninstall ); ?> />
 								<?php esc_html_e( 'Delete all tracked data and settings when the plugin is uninstalled', 'reseller-intent' ); ?>
 							</label>
-						</td>
-					</tr>
-				</table>
+						</span>
+					</div>
+				</div>
 
 				<?php submit_button( __( 'Save Settings', 'reseller-intent' ) ); ?>
 			</form>
 
-			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin-top:-8px;">
-				<input type="hidden" name="action" value="rintent_send_digest_test" />
-				<?php wp_nonce_field( 'rintent_send_digest_test' ); ?>
-				<?php submit_button( __( 'Send test digest email', 'reseller-intent' ), 'secondary', 'submit', false ); ?>
-			</form>
-
-			<?php if ( Reseller_Intent_Import::legacy_table_exists() && ! Reseller_Intent_Import::already_imported() ) : ?>
-				<hr />
-				<h2><?php esc_html_e( 'Import legacy data', 'reseller-intent' ); ?></h2>
-				<p><?php esc_html_e( 'Events recorded by the Reseller Store Add-On were found on this site. Import them once to keep your history.', 'reseller-intent' ); ?></p>
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-					<input type="hidden" name="action" value="rintent_import_legacy" />
-					<?php wp_nonce_field( 'rintent_import_legacy' ); ?>
-					<?php submit_button( __( 'Import events', 'reseller-intent' ), 'secondary' ); ?>
-				</form>
-			<?php endif; ?>
+			<div class="rintent-card">
+				<h2><?php esc_html_e( 'Tools', 'reseller-intent' ); ?></h2>
+				<div class="rintent-tools">
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+						<input type="hidden" name="action" value="rintent_send_digest_test" />
+						<?php wp_nonce_field( 'rintent_send_digest_test' ); ?>
+						<?php submit_button( __( 'Send test digest email', 'reseller-intent' ), 'secondary', 'submit', false ); ?>
+					</form>
+					<?php if ( Reseller_Intent_Import::legacy_table_exists() && ! Reseller_Intent_Import::already_imported() ) : ?>
+						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+							<input type="hidden" name="action" value="rintent_import_legacy" />
+							<?php wp_nonce_field( 'rintent_import_legacy' ); ?>
+							<?php submit_button( __( 'Import Reseller Store Add-On data', 'reseller-intent' ), 'secondary', 'submit', false ); ?>
+						</form>
+					<?php endif; ?>
+				</div>
+			</div>
 		</div>
+		<script>
+		(function() {
+			document.getElementById('rintent-support-add').addEventListener('click', function() {
+				var tbody = document.querySelector('#rintent-support-rows tbody');
+				var row = document.createElement('tr');
+				row.innerHTML = '<td><input type="text" name="support_label[]" /></td>'
+					+ '<td><input type="text" name="support_number[]" placeholder="+1-480-000-0000" /></td>'
+					+ '<td><input type="text" name="support_countries[]" placeholder="US,CA" /></td>'
+					+ '<td><button type="button" class="button-link-delete rintent-support-remove" aria-label="Remove row">&times;</button></td>';
+				tbody.appendChild(row);
+			});
+			document.addEventListener('click', function(event) {
+				if (event.target.classList && event.target.classList.contains('rintent-support-remove')) {
+					event.target.closest('tr').remove();
+				}
+			});
+		})();
+		</script>
 		<?php
 	}
 
 	public function enqueue_admin_assets( $hook_suffix ) {
-		if ( 'toplevel_page_' . self::PAGE_SLUG !== $hook_suffix ) {
+		$base_url  = plugin_dir_url( RINTENT_FILE );
+		$base_path = plugin_dir_path( RINTENT_FILE );
+
+		$page_hooks = array(
+			'reseller-intent_page_' . self::PAGE_SLUG . '-settings',
+			'reseller-intent_page_' . self::PAGE_SLUG . '-shortcodes',
+		);
+
+		if ( in_array( $hook_suffix, $page_hooks, true ) ) {
+			wp_enqueue_style(
+				'rintent-admin-pages',
+				$base_url . 'assets/css/admin-pages.css',
+				array(),
+				filemtime( $base_path . 'assets/css/admin-pages.css' )
+			);
 			return;
 		}
 
-		$base_url  = plugin_dir_url( RINTENT_FILE );
-		$base_path = plugin_dir_path( RINTENT_FILE );
+		if ( 'toplevel_page_' . self::PAGE_SLUG !== $hook_suffix ) {
+			return;
+		}
 
 		wp_enqueue_style(
 			'rintent-admin',

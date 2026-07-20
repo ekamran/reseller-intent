@@ -1,0 +1,222 @@
+/* Reseller Intent, Settings and Shortcodes pages */
+
+.rintent-pages {
+	max-width: 880px;
+}
+
+.rintent-pages h1 {
+	font-size: 22px;
+	font-weight: 700;
+	color: #0f172a;
+	margin: 14px 0 4px;
+}
+
+.rintent-pages .rintent-intro {
+	margin: 0 0 18px;
+	color: #64748b;
+	font-size: 13px;
+}
+
+/* Cards */
+.rintent-card {
+	background: #fff;
+	border: 1px solid #d9e2ec;
+	border-radius: 12px;
+	padding: 20px 24px;
+	margin: 0 0 16px;
+	box-sizing: border-box;
+}
+
+.rintent-card > h2 {
+	margin: 0 0 4px;
+	font-size: 15px;
+	line-height: 1.3;
+	color: #0f172a;
+}
+
+.rintent-card > .rintent-card-desc {
+	margin: 0 0 14px;
+	color: #64748b;
+	font-size: 13px;
+}
+
+/* Field rows: label column + control column */
+.rintent-field {
+	display: grid;
+	grid-template-columns: 190px minmax(0, 1fr);
+	gap: 4px 20px;
+	padding: 12px 0;
+	align-items: start;
+}
+
+.rintent-field + .rintent-field {
+	border-top: 1px solid #f0f3f8;
+}
+
+.rintent-field > .rintent-label {
+	font-weight: 600;
+	font-size: 13px;
+	color: #1d2327;
+	padding-top: 5px;
+}
+
+.rintent-field .description {
+	margin: 6px 0 0;
+	font-size: 12.5px;
+	color: #64748b;
+}
+
+.rintent-field label {
+	font-size: 13px;
+}
+
+.rintent-check-group label {
+	display: block;
+	padding: 3px 0;
+}
+
+@media ( max-width: 782px ) {
+	.rintent-field {
+		grid-template-columns: 1fr;
+	}
+
+	.rintent-card {
+		padding: 16px;
+	}
+}
+
+/* Controls */
+.rintent-pages input[type='color'] {
+	width: 60px;
+	height: 34px;
+	padding: 2px;
+	border: 1px solid #d9e2ec;
+	border-radius: 8px;
+	cursor: pointer;
+}
+
+.rintent-pages input[type='text'],
+.rintent-pages input[type='email'],
+.rintent-pages input[type='url'],
+.rintent-pages input[type='search'],
+.rintent-pages select,
+.rintent-pages textarea {
+	border-radius: 6px;
+}
+
+/* Support numbers table */
+.rintent-pages #rintent-support-rows {
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	overflow: hidden;
+	max-width: none;
+}
+
+.rintent-pages #rintent-support-rows th {
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.4px;
+	color: #64748b;
+}
+
+.rintent-pages #rintent-support-rows td input {
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.rintent-pages #rintent-support-rows td:last-child {
+	width: 40px;
+	text-align: center;
+}
+
+.rintent-support-remove {
+	color: #b91c1c;
+	font-size: 16px;
+	line-height: 1;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+/* Shortcode output row */
+.rintent-output {
+	display: flex;
+	align-items: stretch;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.rintent-output code {
+	flex: 1 1 320px;
+	display: block;
+	padding: 10px 12px;
+	background: #f6f7f9;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	font-size: 12.5px;
+	line-height: 1.5;
+	min-height: 19px;
+	word-break: break-all;
+	user-select: all;
+}
+
+.rintent-output code:empty::before {
+	content: attr(data-empty);
+	color: #94a3b8;
+	user-select: none;
+}
+
+.rintent-output .button {
+	align-self: center;
+}
+
+/* Product picker */
+.rintent-product-picker {
+	max-height: 240px;
+	overflow: auto;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	padding: 8px 12px;
+	background: #fff;
+}
+
+.rintent-product-picker label {
+	display: block;
+	padding: 4px 0;
+	font-size: 13px;
+}
+
+.rintent-product-picker .rintent-product-meta {
+	color: #787c82;
+}
+
+/* Tools row (buttons outside the main form) */
+.rintent-tools {
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.rintent-tools form {
+	margin: 0;
+}
+
+/* Theming reference table */
+.rintent-theming-ref {
+	margin-top: 12px;
+}
+
+.rintent-theming-ref summary {
+	cursor: pointer;
+	font-weight: 600;
+	font-size: 13px;
+}
+
+.rintent-theming-ref table {
+	margin-top: 10px;
+}
+
+.rintent-theming-ref td,
+.rintent-theming-ref th {
+	font-size: 12.5px;
+}

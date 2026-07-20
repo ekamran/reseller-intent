@@ -394,6 +394,19 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 	border-radius: 8px;
 }
 
+/* Dark context: same skeleton, light-on-dark shimmer */
+.rintent-dark .rstore-domain-search .rintent-skeleton-row {
+	border-color: rgba(255, 255, 255, 0.09);
+	background: rgba(255, 255, 255, 0.045);
+}
+
+.rintent-dark .rstore-domain-search .rintent-skeleton-row .sk-name,
+.rintent-dark .rstore-domain-search .rintent-skeleton-row .sk-price,
+.rintent-dark .rstore-domain-search .rintent-skeleton-row .sk-btn {
+	background: linear-gradient(90deg, rgba(255, 255, 255, 0.07) 25%, rgba(255, 255, 255, 0.15) 37%, rgba(255, 255, 255, 0.07) 63%);
+	background-size: 300% 100%;
+}
+
 @keyframes rintentSkeletonShimmer {
 	0% {
 		background-position: 100% 0;

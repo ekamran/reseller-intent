@@ -126,6 +126,7 @@ final class Reseller_Intent_Admin {
 					<span class="rintent-label"><label for="rintent-gen-theme"><?php esc_html_e( 'Theme', 'reseller-intent' ); ?></label></span>
 					<span>
 						<select id="rintent-gen-theme"><option value="light"><?php esc_html_e( 'Light', 'reseller-intent' ); ?></option><option value="dark"><?php esc_html_e( 'Dark', 'reseller-intent' ); ?></option></select>
+						<p class="description"><?php esc_html_e( 'Dark is for dark page sections. Prices use your accent color from Settings, everything else can be overridden with the --rintent-tld-* variables.', 'reseller-intent' ); ?></p>
 					</span>
 				</div>
 				<div class="rintent-field">
@@ -244,7 +245,7 @@ final class Reseller_Intent_Admin {
 				<?php else : ?>
 					<p class="rintent-numbers-status rintent-numbers-status--default">
 						<span class="dashicons dashicons-yes-alt" aria-hidden="true"></span>
-						<?php esc_html_e( 'Using the built-in GoDaddy support numbers. Edit anything and save to make the list your own. Once you do, updates will not touch it.', 'reseller-intent' ); ?>
+						<?php esc_html_e( 'GoDaddy default numbers active. Edit and save to make the list yours.', 'reseller-intent' ); ?>
 					</p>
 				<?php endif; ?>
 
@@ -310,6 +311,12 @@ final class Reseller_Intent_Admin {
 				document.getElementById('rintent-gen-tld-out').textContent = out + ']';
 			}
 
+			var PLACEHOLDERS = {
+				min: ['<?php echo esc_js( __( 'Starting at ', 'reseller-intent' ) ); ?>', '<?php echo esc_js( __( ' per year', 'reseller-intent' ) ); ?>'],
+				max: ['<?php echo esc_js( __( 'Up to ', 'reseller-intent' ) ); ?>', '<?php echo esc_js( __( ' per year', 'reseller-intent' ) ); ?>'],
+				range: ['<?php echo esc_js( __( 'Plans from ', 'reseller-intent' ) ); ?>', '<?php echo esc_js( __( ' yearly', 'reseller-intent' ) ); ?>']
+			};
+
 			function buildPrice() {
 				var outEl = document.getElementById('rintent-gen-price-out');
 				if (!outEl) {
@@ -323,6 +330,8 @@ final class Reseller_Intent_Admin {
 				var fallback = esc(document.getElementById('rintent-gen-fallback').value);
 
 				document.getElementById('rintent-gen-sep-row').style.display = mode === 'range' ? '' : 'none';
+				document.getElementById('rintent-gen-before').placeholder = PLACEHOLDERS[mode][0];
+				document.getElementById('rintent-gen-after').placeholder = PLACEHOLDERS[mode][1];
 
 				var out = '[rintent_price ids="' + ids.join(',') + '"';
 				if (mode !== 'min') {

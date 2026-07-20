@@ -31,7 +31,7 @@ final class Reseller_Intent_Health {
 		return $tests;
 	}
 
-	private function result( $status, $label, $description ) {
+	private function result( $test, $status, $label, $description ) {
 		return array(
 			'label'       => $label,
 			'status'      => $status, // good | recommended | critical
@@ -40,7 +40,8 @@ final class Reseller_Intent_Health {
 				'color' => 'blue',
 			),
 			'description' => '<p>' . $description . '</p>',
-			'test'        => '',
+			'actions'     => '',
+			'test'        => $test,
 		);
 	}
 
@@ -52,6 +53,7 @@ final class Reseller_Intent_Health {
 
 		if ( $exists ) {
 			return $this->result(
+				'rintent_table',
 				'good',
 				__( 'The Reseller Intent events table exists', 'reseller-intent' ),
 				esc_html__( 'Search events have somewhere to go.', 'reseller-intent' )
@@ -59,6 +61,7 @@ final class Reseller_Intent_Health {
 		}
 
 		return $this->result(
+			'rintent_table',
 			'critical',
 			__( 'The Reseller Intent events table is missing', 'reseller-intent' ),
 			esc_html__( 'Tracking cannot store anything. Open any Reseller Intent admin page, the table is recreated automatically. If it stays missing, check that the database user may create tables.', 'reseller-intent' )
@@ -73,6 +76,7 @@ final class Reseller_Intent_Health {
 
 		if ( ! $last ) {
 			return $this->result(
+				'rintent_tracking',
 				'recommended',
 				__( 'No search events recorded yet', 'reseller-intent' ),
 				esc_html__( 'Fine on a new site. If the domain search widget is live and this stays empty, check for JavaScript errors or a firewall blocking admin-ajax.php.', 'reseller-intent' )
@@ -83,6 +87,7 @@ final class Reseller_Intent_Health {
 
 		if ( $age > 7 * DAY_IN_SECONDS ) {
 			return $this->result(
+				'rintent_tracking',
 				'recommended',
 				__( 'No search events for over a week', 'reseller-intent' ),
 				esc_html__( 'Could just be quiet traffic. Worth a quick look: is the search widget still on the page, and does a test search appear on the dashboard?', 'reseller-intent' )
@@ -90,6 +95,7 @@ final class Reseller_Intent_Health {
 		}
 
 		return $this->result(
+			'rintent_tracking',
 			'good',
 			__( 'Tracking is receiving events', 'reseller-intent' ),
 			esc_html__( 'Recent search activity is being recorded.', 'reseller-intent' )
@@ -99,6 +105,7 @@ final class Reseller_Intent_Health {
 	public function test_store() {
 		if ( function_exists( 'rstore_is_setup' ) && rstore_is_setup() ) {
 			return $this->result(
+				'rintent_store',
 				'good',
 				__( 'Reseller Store is connected', 'reseller-intent' ),
 				esc_html__( 'The GoDaddy Reseller Store plugin is active and set up.', 'reseller-intent' )
@@ -106,6 +113,7 @@ final class Reseller_Intent_Health {
 		}
 
 		return $this->result(
+			'rintent_store',
 			'recommended',
 			__( 'Reseller Store is not set up', 'reseller-intent' ),
 			esc_html__( 'Reseller Intent tracks the Reseller Store domain search widget, connect the Reseller Store plugin to your reseller account first.', 'reseller-intent' )

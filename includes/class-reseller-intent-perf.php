@@ -67,7 +67,11 @@ final class Reseller_Intent_Perf {
 			return true;
 		}
 
-		if ( $post && $this->content_has_store_shortcode( (string) $post->post_content ) ) {
+		if ( $post && $this->mentions_store( (string) $post->post_content ) ) {
+			return true;
+		}
+
+		if ( $post && $this->builder_data_mentions_store( (int) $post->ID ) ) {
 			return true;
 		}
 
@@ -81,32 +85,51 @@ final class Reseller_Intent_Perf {
 		return (bool) apply_filters( 'rintent_page_needs_store', false, $post );
 	}
 
-	private function content_has_store_shortcode( $content ) {
-		if ( '' === $content || false === strpos( $content, 'rstore' ) ) {
+	/**
+	 * Any mention keeps the assets, over-keeping is always safe:
+	 * - "rstore" covers every Reseller Store shortcode ([rstore_domain_search]
+	 *   etc.) in the classic editor, Gutenberg shortcode blocks, WPBakery
+	 *   and Divi (both store shortcodes in post_content)
+	 * - "reseller-store" covers the Gutenberg blocks
+	 *   (wp:reseller-store/domain-search, wp:reseller-store/product)
+	 */
+	private function mentions_store( $content ) {
+		if ( '' === $content ) {
 			return false;
 		}
 
-		$shortcodes = array(
-			'rstore-domain-search',
-			'rstore_domain_search',
-			'rstore_domain',
-			'rstore_domain_transfer',
-			'rstore_cart_button',
-			'rstore_login',
-			'rstore_product',
-			'rstore_icon',
+		return false !== strpos( $content, 'rstore' ) || false !== strpos( $content, 'reseller-store' );
+	}
+
+	/**
+	 * Page builders that keep their layout in post meta instead of
+	 * post_content: Elementor, Bricks, Beaver Builder, Oxygen. Templates
+	 * rendered from OTHER posts (Elementor theme builder headers, popups)
+	 * are invisible here, that is what the keep-list and the
+	 * rintent_page_needs_store filter are for.
+	 */
+	private function builder_data_mentions_store( $post_id ) {
+		$meta_keys = array(
+			'_elementor_data',
+			'_bricks_page_content_2',
+			'_fl_builder_data',
+			'ct_builder_shortcodes',
+			'ct_builder_json',
 		);
 
-		foreach ( $shortcodes as $shortcode ) {
-			if ( has_shortcode( $content, $shortcode ) ) {
+		foreach ( $meta_keys as $meta_key ) {
+			$data = get_post_meta( $post_id, $meta_key, true );
+
+			if ( ! is_string( $data ) ) {
+				$data = maybe_serialize( $data );
+			}
+
+			if ( is_string( $data ) && $this->mentions_store( $data ) ) {
 				return true;
 			}
 		}
 
-		// Block-editor and builder markup often stores the shortcode name
-		// outside classic shortcode syntax; the strpos above caught
-		// "rstore", treat any remaining mention as a signal to keep assets.
-		return true;
+		return false;
 	}
 
 	private function store_widget_active() {

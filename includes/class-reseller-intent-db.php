@@ -51,7 +51,7 @@ final class Reseller_Intent_DB {
 	}
 
 	public static function maybe_create_table() {
-		// Version option is autoloaded — a match means the schema is current,
+		// Version option is autoloaded, a match means the schema is current,
 		// so this is a zero-query check on normal requests.
 		if ( (string) get_option( self::DB_VERSION_OPTION, '' ) === self::DB_VERSION ) {
 			return;

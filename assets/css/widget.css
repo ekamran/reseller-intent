@@ -1,5 +1,5 @@
 /**
- * Reseller Intent — optional styling for the Reseller Store domain-search
+ * Reseller Intent, optional styling for the Reseller Store domain-search
  * widget (GD Reseller Store 3.x / domain-search v5).
  *
  * Loaded only when "Style the domain search widget" is enabled in Settings.
@@ -13,7 +13,7 @@ body {
 	--rintent-widget-accent-hover: var(--rintent-accent-hover, #26429c);
 
 	/*
-	 * Theming knobs — override these (or target the classes listed in
+	 * Theming knobs, override these (or target the classes listed in
 	 * Settings → Widget styling) from your theme/customizer CSS.
 	 * Defaults inherit from your theme, so nothing changes until you set them.
 	 */
@@ -186,7 +186,7 @@ body {
 }
 
 /* Clean focus: one accent ring instead of stacked theme outlines. Focus
- * stays clearly visible (a11y) — just not doubled. */
+ * stays clearly visible (a11y), just not doubled. */
 .rstore-domain-search .search-form .search-field:focus,
 .rstore-domain-search .search-form .search-field:focus-visible {
 	outline: none !important;
@@ -232,7 +232,7 @@ body {
 	outline: none !important;
 }
 
-/* GD core fades .selected to opacity .6 and it stays clickable — make the
+/* GD core fades .selected to opacity .6 and it stays clickable, make the
  * state readable and advertise that clicking again removes the domain. */
 .rstore-domain-search button.rstore-domain-buy-button.selected.btn.btn-default {
 	display: inline-flex !important;

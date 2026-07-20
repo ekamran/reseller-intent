@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * and the [rintent_phone] swapper.
  *
  * Browsers frequently report legacy timezone aliases (Asia/Calcutta,
- * US/Eastern, Europe/Kiev…) that PHP's location lookup can't resolve, so
+ * US/Eastern, Europe/Kiev...) that PHP's location lookup can't resolve, so
  * everything funnels through canonicalize(): IntlTimeZone when available,
  * otherwise a curated map of the aliases browsers actually emit.
  */
@@ -118,7 +118,7 @@ final class Reseller_Intent_TZ {
 	}
 
 	/**
-	 * Canonical zones for a country plus every alias that resolves into it —
+	 * Canonical zones for a country plus every alias that resolves into it -
 	 * so client-side maps match whatever identifier the browser reports.
 	 *
 	 * @return string[] Timezone identifiers.

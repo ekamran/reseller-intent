@@ -615,7 +615,7 @@
 	font-weight: 600;
 }
 
-/* Header sits on the admin page background (not a white panel) — needs a
+/* Header sits on the admin page background (not a white panel), needs a
  * darker muted tone to clear WCAG AA there. */
 .ri-header .ri-note {
 	color: #4b5563;

@@ -1,9 +1,9 @@
 /**
- * Reseller Intent — optional widget enhancements.
+ * Reseller Intent, optional widget enhancements.
  *
  * Feature-flagged from Settings via the localized `resellerIntentWidget`
  * object: skeleton loading rows and a floating query-aware "Clear All".
- * Pure presentation — tracking lives in tracker.js and works without this.
+ * Pure presentation, tracking lives in tracker.js and works without this.
  */
 (function($) {
 	'use strict';

@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * [rintent_price] — live "starting at" price pulled from Reseller Store
+ * [rintent_price], live "starting at" price pulled from Reseller Store
  * product meta (rstore_salePrice / rstore_listPrice), which GoDaddy's own
  * catalog sync keeps fresh. Pass every plan of a family and the cheapest one
  * is shown, so the number stays correct even if GoDaddy reprices a different

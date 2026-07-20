@@ -4,11 +4,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * [rintent_phone] — geo-aware support phone number.
+ * [rintent_phone], geo-aware support phone number.
  *
  * GoDaddy resellers get white-label support numbers per market; configure
  * them under Settings → Support numbers (label, number, target countries).
- * The shortcode renders the default number server-side — page-cache safe —
+ * The shortcode renders the default number server-side, page-cache safe -
  * and a tiny script swaps in the visitor's regional number client-side
  * using the browser timezone (no IP, no external calls).
  *
@@ -26,7 +26,7 @@ final class Reseller_Intent_Phone {
 	}
 
 	/**
-	 * @return array[] Each: ['label' => '', 'number' => '', 'countries' => ['IN', ...]] — empty countries = default.
+	 * @return array[] Each: ['label' => '', 'number' => '', 'countries' => ['IN', ...]], empty countries = default.
 	 */
 	public static function numbers() {
 		$numbers = Reseller_Intent_Settings::get( 'support_numbers' );

@@ -63,7 +63,7 @@ final class Reseller_Intent_Digest {
 
 		$subject = sprintf(
 			/* translators: %s: site name */
-			__( '[%s] Domain search digest — last 7 days', 'reseller-intent' ),
+			__( '[%s] Domain search digest, last 7 days', 'reseller-intent' ),
 			wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES )
 		);
 
@@ -150,7 +150,7 @@ final class Reseller_Intent_Digest {
 		$accent = (string) Reseller_Intent_Settings::get( 'accent_color' );
 
 		$html  = '<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:560px;margin:0 auto;color:#1d2327;">';
-		$html .= '<h2 style="border-bottom:3px solid ' . esc_attr( $accent ) . ';padding-bottom:8px;">' . esc_html( get_bloginfo( 'name' ) ) . ' — ' . esc_html__( 'Domain search digest', 'reseller-intent' ) . '</h2>';
+		$html .= '<h2 style="border-bottom:3px solid ' . esc_attr( $accent ) . ';padding-bottom:8px;">' . esc_html( get_bloginfo( 'name' ) ) . ', ' . esc_html__( 'Domain search digest', 'reseller-intent' ) . '</h2>';
 		$html .= '<p style="color:#646970;">' . esc_html( wp_date( 'M j' , time() - ( 6 * DAY_IN_SECONDS ) ) . ' – ' . wp_date( 'M j, Y' ) ) . '</p>';
 
 		$html .= '<table role="presentation" style="width:100%;border-collapse:collapse;margin:16px 0;">';

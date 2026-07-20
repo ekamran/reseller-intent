@@ -208,12 +208,12 @@ final class Reseller_Intent_Tracker {
 	}
 
 	/**
-	 * Country, privacy-safe, in priority order — no IP is ever read:
+	 * Country, privacy-safe, in priority order, no IP is ever read:
 	 *
-	 * 1. Edge/proxy geo headers (Cloudflare, Vercel, generic) — exact.
+	 * 1. Edge/proxy geo headers (Cloudflare, Vercel, generic), exact.
 	 * 2. Server geo variables some hosts set (mod_geoip / LiteSpeed).
 	 * 3. The visitor's browser timezone (sent by tracker.js), mapped to a
-	 *    country with PHP's native timezone_location_get() — works on any
+	 *    country with PHP's native timezone_location_get(), works on any
 	 *    plain hosting with no CDN and no geo database. Approximate but
 	 *    right for the vast majority of visitors.
 	 *

@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Reseller Intent — analytics dashboard for the Reseller Store domain search.
+ * Reseller Intent, analytics dashboard for the Reseller Store domain search.
  *
  * The page is a React app (wp-element) fed by a single AJAX endpoint that
  * returns every panel's data for one selected range, so the whole dashboard
@@ -63,7 +63,7 @@ final class Reseller_Intent_Admin {
 
 	/**
 	 * Shortcode generator: build [rintent_tld_strip] and [rintent_price]
-	 * visually, copy the result. No page reloads, no AJAX — plain JS.
+	 * visually, copy the result. No page reloads, no AJAX, plain JS.
 	 */
 	public function render_shortcodes_page() {
 		if ( ! current_user_can( self::capability() ) ) {
@@ -81,7 +81,7 @@ final class Reseller_Intent_Admin {
 		);
 		?>
 		<div class="wrap rintent-shortcodes">
-			<h1><?php esc_html_e( 'Reseller Intent — Shortcodes', 'reseller-intent' ); ?></h1>
+			<h1><?php esc_html_e( 'Reseller Intent, Shortcodes', 'reseller-intent' ); ?></h1>
 
 			<h2><?php esc_html_e( 'TLD price strip', 'reseller-intent' ); ?></h2>
 			<p class="description"><?php esc_html_e( 'Live TLD price pills, matching checkout prices. Cached 12h and kept warm by a background refresh.', 'reseller-intent' ); ?></p>
@@ -118,9 +118,9 @@ final class Reseller_Intent_Admin {
 			<p class="description"><?php esc_html_e( 'Prints the cheapest current price across the selected products, straight from Reseller Store product data. Select every plan of a family so the number stays correct when prices change.', 'reseller-intent' ); ?></p>
 
 			<?php if ( empty( $products ) ) : ?>
-				<p><em><?php esc_html_e( 'No published Reseller Store products found — import products in Reseller Store first.', 'reseller-intent' ); ?></em></p>
+				<p><em><?php esc_html_e( 'No published Reseller Store products found, import products in Reseller Store first.', 'reseller-intent' ); ?></em></p>
 			<?php else : ?>
-				<p><input type="search" id="rintent-gen-filter" class="regular-text" placeholder="<?php esc_attr_e( 'Filter products…', 'reseller-intent' ); ?>" /></p>
+				<p><input type="search" id="rintent-gen-filter" class="regular-text" placeholder="<?php esc_attr_e( 'Filter products...', 'reseller-intent' ); ?>" /></p>
 				<div id="rintent-gen-products" style="max-height:260px;overflow:auto;border:1px solid #dcdcde;border-radius:4px;padding:8px 12px;max-width:640px;background:#fff;">
 					<?php foreach ( $products as $product ) :
 						$sale  = (string) get_post_meta( $product->ID, 'rstore_salePrice', true );
@@ -130,7 +130,7 @@ final class Reseller_Intent_Admin {
 						<label style="display:block;padding:3px 0;">
 							<input type="checkbox" class="rintent-gen-product" value="<?php echo esc_attr( $product->ID ); ?>" data-title="<?php echo esc_attr( strtolower( $product->post_title ) ); ?>" />
 							<?php echo esc_html( $product->post_title ); ?>
-							<span style="color:#787c82;">— <?php echo esc_html( '' !== trim( $price ) ? $price : __( 'no price', 'reseller-intent' ) ); ?> · ID <?php echo esc_html( $product->ID ); ?></span>
+							<span style="color:#787c82;">- <?php echo esc_html( '' !== trim( $price ) ? $price : __( 'no price', 'reseller-intent' ) ); ?> · ID <?php echo esc_html( $product->ID ); ?></span>
 						</label>
 					<?php endforeach; ?>
 				</div>
@@ -244,18 +244,18 @@ final class Reseller_Intent_Admin {
 		$notice = isset( $_GET['rintent_notice'] ) ? sanitize_key( wp_unslash( $_GET['rintent_notice'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Reseller Intent — Settings', 'reseller-intent' ); ?></h1>
+			<h1><?php esc_html_e( 'Reseller Intent, Settings', 'reseller-intent' ); ?></h1>
 
 			<?php if ( 'settings_saved' === $notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Settings saved.', 'reseller-intent' ); ?></p></div>
 			<?php elseif ( preg_match( '/^imported_(\d+)$/', $notice, $import_match ) ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php echo esc_html( sprintf( /* translators: %s: number of events */ __( '%s legacy events imported.', 'reseller-intent' ), number_format_i18n( (int) $import_match[1] ) ) ); ?></p></div>
 			<?php elseif ( 'import_skipped' === $notice ) : ?>
-				<div class="notice notice-info is-dismissible"><p><?php esc_html_e( 'Import skipped — already imported or no legacy table found.', 'reseller-intent' ); ?></p></div>
+				<div class="notice notice-info is-dismissible"><p><?php esc_html_e( 'Import skipped, already imported or no legacy table found.', 'reseller-intent' ); ?></p></div>
 			<?php elseif ( 'digest_sent' === $notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Test digest sent.', 'reseller-intent' ); ?></p></div>
 			<?php elseif ( 'digest_failed' === $notice ) : ?>
-				<div class="notice notice-error is-dismissible"><p><?php esc_html_e( 'Sending failed — check that your site can send email (an SMTP plugin usually fixes this).', 'reseller-intent' ); ?></p></div>
+				<div class="notice notice-error is-dismissible"><p><?php esc_html_e( 'Sending failed, check that your site can send email (an SMTP plugin usually fixes this).', 'reseller-intent' ); ?></p></div>
 			<?php endif; ?>
 
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
@@ -303,10 +303,10 @@ final class Reseller_Intent_Admin {
 									<input type="checkbox" id="rintent-clear-all" name="widget_clear_all" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'widget_clear_all' ) ); ?> />
 									<?php esc_html_e( 'Floating "Clear All" button under the search bar', 'reseller-intent' ); ?>
 								</label>
-								<p class="description"><?php esc_html_e( 'Wrap a dark page section in a .rintent-dark class to switch the widget to light-on-dark colors. If styling conflicts with your theme, turn the first toggle off — tracking is unaffected.', 'reseller-intent' ); ?></p>
+								<p class="description"><?php esc_html_e( 'Wrap a dark page section in a .rintent-dark class to switch the widget to light-on-dark colors. If styling conflicts with your theme, turn the first toggle off, tracking is unaffected.', 'reseller-intent' ); ?></p>
 
 								<details class="rintent-theming-ref" style="margin-top:12px;max-width:640px;">
-									<summary style="cursor:pointer;font-weight:600;"><?php esc_html_e( 'Theming reference — CSS classes & variables', 'reseller-intent' ); ?></summary>
+									<summary style="cursor:pointer;font-weight:600;"><?php esc_html_e( 'Theming reference, CSS classes & variables', 'reseller-intent' ); ?></summary>
 									<p class="description"><?php esc_html_e( 'Target these from your theme or Appearance → Customize → Additional CSS to restyle any part of the widget.', 'reseller-intent' ); ?></p>
 									<table class="widefat striped" style="margin-top:8px;">
 										<thead><tr><th><?php esc_html_e( 'Element', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'CSS class / variable', 'reseller-intent' ); ?></th></tr></thead>
@@ -342,7 +342,7 @@ final class Reseller_Intent_Admin {
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Support numbers', 'reseller-intent' ); ?></th>
 						<td>
-							<p class="description" style="margin-bottom:8px;"><?php esc_html_e( 'Regional support phone numbers for the [rintent_phone] shortcode. Countries = comma-separated 2-letter codes (IN, US, AE…); leave empty for the default number shown to everyone else. Visitors see their region\'s number automatically — page-cache safe.', 'reseller-intent' ); ?></p>
+							<p class="description" style="margin-bottom:8px;"><?php esc_html_e( 'Regional support phone numbers for the [rintent_phone] shortcode. Countries = comma-separated 2-letter codes (IN, US, AE...); leave empty for the default number shown to everyone else. Visitors see their region\'s number automatically, page-cache safe.', 'reseller-intent' ); ?></p>
 							<table id="rintent-support-rows" class="widefat striped" style="max-width:640px;">
 								<thead><tr><th><?php esc_html_e( 'Label', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'Phone number', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'Countries', 'reseller-intent' ); ?></th><th></th></tr></thead>
 								<tbody>
@@ -381,7 +381,7 @@ final class Reseller_Intent_Admin {
 						<th scope="row"><label for="rintent-blocklist"><?php esc_html_e( 'Ignore searches', 'reseller-intent' ); ?></label></th>
 						<td>
 							<textarea id="rintent-blocklist" name="blocklist" rows="4" class="large-text code" placeholder="mytestdomain.com&#10;*.internal&#10;staging*"><?php echo esc_textarea( implode( "\n", (array) Reseller_Intent_Settings::get( 'blocklist' ) ) ); ?></textarea>
-							<p class="description"><?php esc_html_e( 'One pattern per line, matched against searched domains. Use * as a wildcard — handy for ignoring your own test searches.', 'reseller-intent' ); ?></p>
+							<p class="description"><?php esc_html_e( 'One pattern per line, matched against searched domains. Use * as a wildcard, handy for ignoring your own test searches.', 'reseller-intent' ); ?></p>
 						</td>
 					</tr>
 					<tr>
@@ -797,7 +797,7 @@ final class Reseller_Intent_Admin {
 	 * Searches and cart clicks grouped by the page the widget sits on.
 	 *
 	 * page_url stores the full URL (query strings included), so rows are
-	 * grouped in SQL first, then merged by normalized path here — UTM
+	 * grouped in SQL first, then merged by normalized path here, UTM
 	 * variants of the same page collapse into one row.
 	 */
 	private function get_page_breakdown( $table_name, $where ) {

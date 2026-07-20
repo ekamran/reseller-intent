@@ -1,9 +1,9 @@
 /**
- * Reseller Intent — geo-aware support number swap.
+ * Reseller Intent, geo-aware support number swap.
  *
  * The shortcode renders the default number (page-cache safe). This swaps
  * in the visitor's regional number using only the browser timezone mapped
- * against the countries the site owner configured — no IP, no lookups.
+ * against the countries the site owner configured, no IP, no lookups.
  */
 (function() {
 	'use strict';

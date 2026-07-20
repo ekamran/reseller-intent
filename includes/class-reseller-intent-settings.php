@@ -69,7 +69,7 @@ final class Reseller_Intent_Settings {
 
 	/**
 	 * Keep the daily purge cron in sync with the retention setting:
-	 * scheduled only while retention is enabled — zero cron noise otherwise.
+	 * scheduled only while retention is enabled, zero cron noise otherwise.
 	 */
 	public function sync_purge_schedule() {
 		$enabled   = (int) self::get( 'retention_days' ) > 0;

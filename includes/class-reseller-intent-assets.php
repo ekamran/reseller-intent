@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class Reseller_Intent_Assets {
 	/**
 	 * Load frontend assets only on pages where the Reseller Store widget
-	 * script is actually enqueued — zero footprint everywhere else.
+	 * script is actually enqueued, zero footprint everywhere else.
 	 */
 	public function enqueue_assets() {
 		if ( ! wp_script_is( 'reseller-store-js', 'enqueued' ) ) {

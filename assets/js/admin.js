@@ -55,7 +55,7 @@
 		if (previous === null) {
 			text = 'All time';
 		} else if (previous <= 0 && current <= 0) {
-			return null; // no data either side — a badge is just noise
+			return null; // no data either side, a badge is just noise
 		} else if (previous <= 0) {
 			cls = 'ri-delta is-up';
 			text = 'New';
@@ -168,7 +168,7 @@
 			el('text', { key: 'y0', x: padX - 6, y: padY + plotH + 3, fontSize: 9, textAnchor: 'end', fill: '#64748b' }, '0')
 		];
 
-		// sparse data renders as a near-invisible sliver — mark the active days
+		// sparse data renders as a near-invisible sliver, mark the active days
 		var dots = null;
 		var activeDays = searches.filter(function(v) { return v > 0; }).length;
 		if (activeDays > 0 && activeDays <= 30) {
@@ -272,7 +272,7 @@
 		var repeats = (props.repeats || []).map(function(row) {
 			return [row.domain, fmt(row.hits)];
 		});
-		return el(Panel, { title: 'Repeat Demand', note: 'Domains searched 2+ times — buyers circling.' },
+		return el(Panel, { title: 'Repeat Demand', note: 'Domains searched 2+ times, buyers circling.' },
 			el(MiniTable, { columns: ['Domain', 'Searches'], rows: repeats, empty: 'No repeated searches in this range.' })
 		);
 	}
@@ -426,13 +426,13 @@
 		var totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
 		var safePage = Math.min(page, totalPages);
 		var pageRows = filtered.slice((safePage - 1) * perPage, safePage * perPage).map(function(row) {
-			var availCell = '—';
+			var availCell = '-';
 			if (row.available === true) {
 				availCell = el('span', { className: 'ri-tag is-good' }, 'free');
 			} else if (row.available === false) {
 				availCell = el('span', { className: 'ri-tag is-bad' }, 'taken');
 			}
-			return [row.domain, availCell, row.device || '—', row.time];
+			return [row.domain, availCell, row.device || '-', row.time];
 		});
 
 		var noteText = rows.length === 1
@@ -444,7 +444,7 @@
 				el('input', {
 					type: 'search',
 					className: 'ri-log-filter',
-					placeholder: 'Filter domains…',
+					placeholder: 'Filter domains...',
 					value: filter,
 					onChange: function(event) {
 						setFilter(event.target.value);
@@ -583,7 +583,7 @@
 				})),
 				el('p', { className: 'ri-clear-preview' },
 					count === null
-						? 'Counting…'
+						? 'Counting...'
 						: (count === 0 ? 'No events in this window.' : fmt(count) + ' event' + (count === 1 ? '' : 's') + ' will be permanently deleted.')
 				),
 				el('div', { className: 'ri-modal-actions' },
@@ -760,7 +760,7 @@
 					),
 					el(RecentLog, { recent: data.recent })
 				)
-				: (loading ? el('div', { className: 'ri-loading' }, 'Loading…') : null),
+				: (loading ? el('div', { className: 'ri-loading' }, 'Loading...') : null),
 
 			showClear ? el(ClearDataModal, {
 				onCancel: function() { setShowClear(false); },

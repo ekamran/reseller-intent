@@ -8,11 +8,11 @@ Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Domain search analytics and buyer intent for GoDaddy Reseller Store — see what visitors search, select, and carry to cart.
+Domain search analytics for GoDaddy Reseller Store. See what visitors search, what they select and what they take to cart.
 
 == Description ==
 
-Your Reseller Store domain search is where buying decisions happen — and by default you can't see any of it. Reseller Intent records what visitors search, whether their domain was available, what they select instead, and what they carry to cart, then turns it into a clean dashboard.
+Your Reseller Store domain search is where buying decisions happen, but by default you cannot see any of it. Reseller Intent records what visitors search, whether their domain was available, what they select instead and what they take to cart. Then it turns all of this into a clean dashboard.
 
 **Dashboard**
 
@@ -29,15 +29,15 @@ Your Reseller Store domain search is where buying decisions happen — and by de
 
 **Data controls**
 
-* Browser-style "Clear data" — delete the last hour, 24 hours, 7 days, 30 days, 6 months, year, or everything, with a preview count before you confirm
+* Browser-style "Clear data", delete the last hour, 24 hours, 7 days, 30 days, 6 months, year, or everything, with a preview count before you confirm
 * Optional automatic retention (30 days – 2 years, off by default)
 * Optional full cleanup on uninstall
 
 **Privacy by design**
 
-* No cookies, no fingerprinting, no IP addresses stored, no user accounts recorded — events are anonymous interaction counts
+* No cookies, no fingerprinting, no IP addresses stored, no user accounts recorded, events are anonymous interaction counts
 * Known bots and crawlers are ignored by default
-* Country stats without IPs — CDN geo headers when available (Cloudflare, host GeoIP), otherwise the visitor's browser timezone mapped to a country. Works on plain shared hosting with no CDN.
+* Country stats without IPs, CDN geo headers when available (Cloudflare, host GeoIP), otherwise the visitor's browser timezone mapped to a country. Works on plain shared hosting with no CDN.
 * Ignore-list for your own test searches (wildcards supported)
 * `rintent_should_track` filter lets consent plugins pause tracking until consent is given
 
@@ -53,11 +53,11 @@ Requires the free [Reseller Store](https://wordpress.org/plugins/reseller-store/
 
 = Does this plugin make any external API calls? =
 
-Tracking and the dashboard talk only to your own WordPress site. The optional TLD price strip shortcode fetches prices server-side from GoDaddy's storefront API (secureserver.net) using your reseller ID and a static probe domain — no visitor data is ever sent. Prices are cached for 12 hours and refreshed by a background task.
+Tracking and the dashboard talk only to your own WordPress site. The optional TLD price strip shortcode fetches prices server-side from GoDaddy's storefront API (secureserver.net) using your reseller ID and a static probe domain, no visitor data is ever sent. Prices are cached for 12 hours and refreshed by a background task.
 
 = Is visitor data personal data under GDPR? =
 
-Reseller Intent stores no IP addresses, cookies, identifiers, or user accounts — only anonymous events like "someone searched example.com on a mobile device". Searched domain names are stored as typed; add your own note to your privacy policy if you want to disclose the tracking. Retention and clear-data controls are built in.
+Reseller Intent stores no IP addresses, cookies, identifiers, or user accounts, only anonymous events like "someone searched example.com on a mobile device". Searched domain names are stored as typed; add your own note to your privacy policy if you want to disclose the tracking. Retention and clear-data controls are built in.
 
 = My dashboard shows no data. =
 
@@ -65,15 +65,15 @@ Data starts collecting from activation. Make sure the Reseller Store domain sear
 
 = Can I import data from the Reseller Store Add-On? =
 
-Yes — if the legacy table exists, Settings shows a one-click importer.
+Yes, if the legacy table exists, Settings shows a one-click importer.
 
 == Shortcodes ==
 
 Build both visually under Reseller Intent → Shortcodes.
 
-* `[rintent_tld_strip tlds=".com,.in,.io" theme="light|dark" more_url="" more_label=""]` — live TLD price pills matching checkout prices (12h cache + background refresh).
-* `[rintent_price ids="12,14,15" fallback="$3.99"]` — cheapest current price across the selected Reseller Store products, e.g. "Starting at [rintent_price ids=…]/mo".
-* `[rintent_phone format="link|text" prefix="Call "]` — geo-aware support number. Configure regional numbers (label, number, countries) in Settings; visitors see their region's number via a page-cache-safe client-side swap based on the browser timezone. No IPs, no lookup services.
+* `[rintent_tld_strip tlds=".com,.in,.io" theme="light|dark" more_url="" more_label=""]`, live TLD price pills matching checkout prices (12h cache + background refresh).
+* `[rintent_price ids="12,14,15" fallback="$3.99"]`, cheapest current price across the selected Reseller Store products, e.g. "Starting at [rintent_price ids=...]/mo".
+* `[rintent_phone format="link|text" prefix="Call "]`, geo-aware support number. Configure regional numbers (label, number, countries) in Settings; visitors see their region's number via a page-cache-safe client-side swap based on the browser timezone. No IPs, no lookup services.
 
 == Changelog ==
 

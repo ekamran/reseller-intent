@@ -1,5 +1,5 @@
 /**
- * Reseller Intent — frontend tracker.
+ * Reseller Intent, frontend tracker.
  *
  * Listens to the GoDaddy Reseller Store domain-search widget (React 18) and
  * records four anonymous events: domain_search, search_result (availability

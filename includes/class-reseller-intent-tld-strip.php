@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * [rintent_tld_strip] — TLD price pills fed by the same GoDaddy storefront
+ * [rintent_tld_strip], TLD price pills fed by the same GoDaddy storefront
  * API the domain search widget uses, so displayed prices always match
  * checkout.
  *
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * pill renders without a price rather than showing a stale or wrong number.
  *
  * Privacy note (disclosed in readme): the server-side price lookup calls
- * secureserver.net with a static probe name — no visitor data is sent.
+ * secureserver.net with a static probe name, no visitor data is sent.
  */
 final class Reseller_Intent_TLD_Strip {
 
@@ -66,7 +66,7 @@ final class Reseller_Intent_TLD_Strip {
 	/**
 	 * Cron: re-fetch every TLD set the shortcode has rendered and refresh its
 	 * transient before the 12h TTL lapses. A failed sweep never clobbers a
-	 * good cache — the frontend fallback in get_prices() still covers that.
+	 * good cache, the frontend fallback in get_prices() still covers that.
 	 */
 	public function prefetch() {
 		foreach ( (array) get_option( self::SETS_OPTION, array() ) as $tlds ) {

@@ -1,0 +1,43 @@
+{
+	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
+	"meta": {
+		"title": "Reseller Intent demo",
+		"description": "Reseller Intent with the GoDaddy Reseller Store plugin and sample analytics data.",
+		"author": "kamranaziz"
+	},
+	"landingPage": "/wp-admin/admin.php?page=reseller-intent",
+	"preferredVersions": {
+		"php": "8.2",
+		"wp": "latest"
+	},
+	"features": {
+		"networking": true
+	},
+	"login": true,
+	"steps": [
+		{
+			"step": "installPlugin",
+			"pluginData": {
+				"resource": "wordpress.org/plugins",
+				"slug": "reseller-store"
+			},
+			"options": {
+				"activate": true
+			}
+		},
+		{
+			"step": "installPlugin",
+			"pluginData": {
+				"resource": "wordpress.org/plugins",
+				"slug": "reseller-intent"
+			},
+			"options": {
+				"activate": true
+			}
+		},
+		{
+			"step": "runPHP",
+			"code": "<?php require_once '/wordpress/wp-load.php'; update_option( 'rstore_pl_id', 487116 ); $product_id = wp_insert_post( array( 'post_type' => 'reseller_product', 'post_status' => 'publish', 'post_title' => 'Websites + Marketing' ) ); update_post_meta( $product_id, 'rstore_salePrice', '$6.99' ); update_post_meta( $product_id, 'rstore_listPrice', '$9.99' ); $page_id = wp_insert_post( array( 'post_type' => 'page', 'post_status' => 'publish', 'post_title' => 'Domain Search', 'post_content' => '<!-- wp:shortcode -->[rstore_domain_search]<!-- /wp:shortcode -->' ) ); global $wpdb; $table = $wpdb->prefix . 'rintent_events'; $now = strtotime( current_time( 'mysql' ) ); $samples = array( array( 'myshop.com', 1, 'mobile', 'IN', 2 ), array( 'myshop.in', 1, 'mobile', 'IN', 26 ), array( 'coolstartup.io', 1, 'desktop', 'US', 3 ), array( 'coolstartup.com', 0, 'desktop', 'US', 4 ), array( 'freshbrand.com', 1, 'desktop', 'AE', 30 ), array( 'freshbrand.shop', 1, 'mobile', 'AE', 52 ), array( 'bestcafe.in', 1, 'mobile', 'IN', 8 ), array( 'bestcafe.com', 0, 'mobile', 'IN', 9 ), array( 'travelblog.net', 1, 'desktop', 'GB', 55 ), array( 'mydomain.org', 1, 'desktop', 'DE', 80 ) ); foreach ( $samples as $s ) { $wpdb->insert( $table, array( 'event_type' => 'domain_search', 'domain_query' => $s[0], 'event_count' => 1, 'is_available' => $s[1], 'device' => $s[2], 'country' => $s[3], 'page_url' => home_url( '/domain-search/' ), 'created_at' => gmdate( 'Y-m-d H:i:s', $now - $s[4] * 3600 ) ) ); } $wpdb->insert( $table, array( 'event_type' => 'continue_to_cart', 'domain_query' => '', 'event_count' => 1, 'items_count' => 2, 'items_json' => '[{\"domain\":\"myshop.in\"},{\"domain\":\"bestcafe.in\"}]', 'device' => 'mobile', 'country' => 'IN', 'page_url' => home_url( '/domain-search/' ), 'created_at' => gmdate( 'Y-m-d H:i:s', $now - 3600 ) ) );"
+		}
+	]
+}

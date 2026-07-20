@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * WP-CLI: wp rintent <command>
  *
  * stats [--days=<n>]        Event counts and conversion for the window.
+ * export [--days=<n>] [--format=<csv|json>] [--output=<file>]
  * clear --range=<range>     Delete events (hour|day|week|month|6months|year|all).
  * refresh-tld               Fetch fresh TLD strip prices right now.
  */
@@ -59,6 +60,84 @@ final class Reseller_Intent_CLI {
 			),
 			array( 'metric', 'value' )
 		);
+	}
+
+	/**
+	 * Export events as CSV or JSON, to stdout or a file.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--days=<days>]
+	 * : Window in days. 0 = everything. Default 0.
+	 *
+	 * [--format=<format>]
+	 * : csv (default) or json.
+	 *
+	 * [--output=<file>]
+	 * : Write to this file instead of stdout.
+	 */
+	public function export( $args, $assoc_args ) {
+		global $wpdb;
+
+		$days   = max( 0, (int) ( $assoc_args['days'] ?? 0 ) );
+		$format = 'json' === ( $assoc_args['format'] ?? 'csv' ) ? 'json' : 'csv';
+		$output = (string) ( $assoc_args['output'] ?? '' );
+
+		$table_name = Reseller_Intent_DB::table_name();
+		$where      = '';
+
+		if ( $days > 0 ) {
+			$cutoff = gmdate( 'Y-m-d H:i:s', strtotime( current_time( 'mysql' ) ) - $days * DAY_IN_SECONDS );
+			$where  = $wpdb->prepare( ' WHERE created_at >= %s', $cutoff );
+		}
+
+		$handle = $output ? fopen( $output, 'w' ) : fopen( 'php://output', 'w' );
+
+		if ( ! $handle ) {
+			WP_CLI::error( 'Could not open the output file for writing.' );
+		}
+
+		$columns = array( 'id', 'event_type', 'domain_query', 'related_query', 'event_count', 'items_count', 'items_json', 'is_available', 'device', 'country', 'page_url', 'created_at' );
+		$total   = 0;
+		$last_id = 0;
+
+		if ( 'csv' === $format ) {
+			fputcsv( $handle, $columns );
+		} else {
+			fwrite( $handle, '{"generated":' . wp_json_encode( gmdate( 'c' ) ) . ',"timezone":' . wp_json_encode( wp_timezone_string() ) . ',"events":[' );
+		}
+
+		do {
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					'SELECT ' . implode( ',', $columns ) . " FROM {$table_name}{$where}" . ( $where ? ' AND' : ' WHERE' ) . ' id > %d ORDER BY id ASC LIMIT 5000', // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					$last_id
+				),
+				ARRAY_A
+			);
+
+			foreach ( $rows as $row ) {
+				$last_id = (int) $row['id'];
+
+				if ( 'csv' === $format ) {
+					fputcsv( $handle, $row );
+				} else {
+					fwrite( $handle, ( $total ? ',' : '' ) . wp_json_encode( $row ) );
+				}
+
+				$total++;
+			}
+		} while ( count( $rows ) === 5000 );
+
+		if ( 'json' === $format ) {
+			fwrite( $handle, ']}' );
+		}
+
+		fclose( $handle );
+
+		if ( $output ) {
+			WP_CLI::success( sprintf( '%d events exported to %s.', $total, $output ) );
+		}
 	}
 
 	/**

@@ -23,6 +23,39 @@
 		{ key: 'all', label: __( 'Lifetime', 'reseller-intent' ) }
 	];
 
+	var PANELS = [
+		{ key: 'trend', label: __( 'Search vs Cart Trend', 'reseller-intent' ) },
+		{ key: 'funnel', label: __( 'Conversion Funnel', 'reseller-intent' ) },
+		{ key: 'tlds', label: __( 'Searched TLDs', 'reseller-intent' ) },
+		{ key: 'carted', label: __( 'Carted Domains', 'reseller-intent' ) },
+		{ key: 'opportunities', label: __( 'Missed Opportunities', 'reseller-intent' ) },
+		{ key: 'repeats', label: __( 'Repeat Demand', 'reseller-intent' ) },
+		{ key: 'selection', label: __( 'Selection Behavior', 'reseller-intent' ) },
+		{ key: 'quality', label: __( 'Availability & Devices', 'reseller-intent' ) },
+		{ key: 'pages', label: __( 'Search by Page', 'reseller-intent' ) },
+		{ key: 'countries', label: __( 'Top Countries', 'reseller-intent' ) },
+		{ key: 'recent', label: __( 'Recent Searches', 'reseller-intent' ) }
+	];
+
+	var PANELS_STORAGE = 'rintentHiddenPanels';
+
+	function loadHiddenPanels() {
+		try {
+			var raw = window.localStorage.getItem(PANELS_STORAGE);
+			return raw ? JSON.parse(raw) : {};
+		} catch (e) {
+			return {};
+		}
+	}
+
+	function saveHiddenPanels(hidden) {
+		try {
+			window.localStorage.setItem(PANELS_STORAGE, JSON.stringify(hidden));
+		} catch (e) {
+			// Private mode etc., preference just will not stick.
+		}
+	}
+
 	var CLEAR_RANGES = [
 		{ key: 'hour', label: __( 'Last hour', 'reseller-intent' ) },
 		{ key: 'day', label: __( 'Last 24 hours', 'reseller-intent' ) },
@@ -92,6 +125,13 @@
 	}
 
 	function MiniTable(props) {
+		var expandState = useState(false);
+		var expanded = expandState[0];
+		var setExpanded = expandState[1];
+		var maxRows = props.maxRows || 6;
+		var visible = expanded ? props.rows : props.rows.slice(0, maxRows);
+		var hidden = props.rows.length - maxRows;
+
 		return el('div', { className: 'ri-table-shell' },
 			el('table', { className: 'ri-table' },
 				el('thead', null,
@@ -100,15 +140,23 @@
 					}))
 				),
 				el('tbody', null,
-					props.rows.length
-						? props.rows.map(function(cells, r) {
+					visible.length
+						? visible.map(function(cells, r) {
 							return el('tr', { key: r }, cells.map(function(cell, c) {
 								return el('td', { key: c }, cell);
 							}));
 						})
 						: el('tr', null, el('td', { className: 'ri-empty', colSpan: props.columns.length }, props.empty))
 				)
-			)
+			),
+			hidden > 0 ? el('button', {
+				className: 'ri-showmore',
+				'aria-expanded': expanded,
+				onClick: function() { setExpanded(!expanded); }
+			}, expanded
+				? __( 'Show less', 'reseller-intent' )
+				: sprintf( /* translators: %s: number of hidden rows */ __( 'Show %s more', 'reseller-intent' ), fmt(hidden) )
+			) : null
 		);
 	}
 
@@ -621,6 +669,24 @@
 		var _l = useState(true), loading = _l[0], setLoading = _l[1];
 		var _e = useState(''), error = _e[0], setError = _e[1];
 		var _m = useState(false), showClear = _m[0], setShowClear = _m[1];
+		var _h = useState(loadHiddenPanels), hiddenPanels = _h[0], setHiddenPanels = _h[1];
+		var _pp = useState(false), showPanelsMenu = _pp[0], setShowPanelsMenu = _pp[1];
+
+		function isShown(key) {
+			return !hiddenPanels[key];
+		}
+
+		function togglePanel(key) {
+			var next = {};
+			Object.keys(hiddenPanels).forEach(function(k) { next[k] = hiddenPanels[k]; });
+			if (next[key]) {
+				delete next[key];
+			} else {
+				next[key] = true;
+			}
+			setHiddenPanels(next);
+			saveHiddenPanels(next);
+		}
 		var _n = useState(resellerIntentAdmin.notice || ''), notice = _n[0], setNotice = _n[1];
 		var today = new Date().toISOString().slice(0, 10);
 		var _cf = useState(today), customFrom = _cf[0], setCustomFrom = _cf[1];
@@ -729,7 +795,28 @@
 						el('a', { className: 'button ri-export', href: exportHref }, __( 'Export CSV', 'reseller-intent' )),
 						el('a', { className: 'button ri-export', href: exportJsonHref, title: __( 'Export JSON', 'reseller-intent' ) }, __( 'JSON', 'reseller-intent' ))
 					),
-					el('button', { className: 'button ri-danger-ghost', onClick: function() { setShowClear(true); } }, __( 'Clear data', 'reseller-intent' ))
+					el('button', { className: 'button ri-danger-ghost', onClick: function() { setShowClear(true); } }, __( 'Clear data', 'reseller-intent' )),
+					el('span', { className: 'ri-panels-menu' },
+						el('button', {
+							className: 'button ri-panels-toggle',
+							'aria-expanded': showPanelsMenu,
+							'aria-haspopup': 'true',
+							title: __( 'Choose which panels to show', 'reseller-intent' ),
+							onClick: function() { setShowPanelsMenu(!showPanelsMenu); }
+						}, __( 'Panels', 'reseller-intent' )),
+						showPanelsMenu ? el('div', { className: 'ri-panels-pop', role: 'group', 'aria-label': __( 'Visible panels', 'reseller-intent' ) },
+							PANELS.map(function(panel) {
+								return el('label', { key: panel.key, className: 'ri-panels-item' },
+									el('input', {
+										type: 'checkbox',
+										checked: isShown(panel.key),
+										onChange: function() { togglePanel(panel.key); }
+									}),
+									panel.label
+								);
+							})
+						) : null
+					)
 				)
 			),
 
@@ -756,31 +843,31 @@
 			data
 				? el(Fragment, null,
 					el(KpiGrid, { now: data.kpis.now, prev: data.kpis.prev }),
-					el('div', { className: 'ri-grid ri-grid--2' },
-						el(Panel, { title: __( 'Search vs Cart Trend', 'reseller-intent' ), note: data.bounded ? 'Daily activity in this range.' : 'Monthly activity, all time.' },
+					isShown('trend') || isShown('funnel') ? el('div', { className: 'ri-grid ri-grid--2' },
+						isShown('trend') ? el(Panel, { title: __( 'Search vs Cart Trend', 'reseller-intent' ), note: data.bounded ? __( 'Daily activity in this range.', 'reseller-intent' ) : __( 'Monthly activity, all time.', 'reseller-intent' ) },
 							el(TrendChart, data.trend),
 							el('div', { className: 'ri-legend' },
-								el('span', null, el('i', { className: 'ri-dot', style: { background: ACCENT } }), 'Searches'),
-								el('span', null, el('i', { className: 'ri-dot', style: { background: INK } }), 'Cart clicks')
+								el('span', null, el('i', { className: 'ri-dot', style: { background: ACCENT } }), __( 'Searches', 'reseller-intent' )),
+								el('span', null, el('i', { className: 'ri-dot', style: { background: INK } }), __( 'Cart clicks', 'reseller-intent' ))
 							)
-						),
-						el(FunnelPanel, { now: data.kpis.now, cartSizes: data.cartSizes })
-					),
-					el('div', { className: 'ri-grid ri-grid--3' },
-						el(TldPanel, { items: data.tlds.items, total: data.tlds.total }),
-						el(CartedPanel, { carted: data.carted }),
-					el(OpportunitiesPanel, { items: data.opportunities }),
-						el(DemandPanel, { repeats: data.repeats })
-					),
-					el('div', { className: 'ri-grid ri-grid--2' },
-						el(SelectionPanel, { selection: data.selection }),
+						) : null,
+						isShown('funnel') ? el(FunnelPanel, { now: data.kpis.now, cartSizes: data.cartSizes }) : null
+					) : null,
+					isShown('tlds') || isShown('carted') || isShown('opportunities') || isShown('repeats') ? el('div', { className: 'ri-grid ri-grid--3' },
+						isShown('tlds') ? el(TldPanel, { items: data.tlds.items, total: data.tlds.total }) : null,
+						isShown('carted') ? el(CartedPanel, { carted: data.carted }) : null,
+						isShown('opportunities') ? el(OpportunitiesPanel, { items: data.opportunities }) : null,
+						isShown('repeats') ? el(DemandPanel, { repeats: data.repeats }) : null
+					) : null,
+					isShown('selection') || isShown('quality') || isShown('pages') || isShown('countries') ? el('div', { className: 'ri-grid ri-grid--2' },
+						isShown('selection') ? el(SelectionPanel, { selection: data.selection }) : null,
 						el('div', { className: 'ri-stack' },
-							el(QualityPanel, { availability: data.availability, devices: data.devices }),
-							el(PagesPanel, { pages: data.pages }),
-							el(CountriesPanel, { countries: data.countries })
+							isShown('quality') ? el(QualityPanel, { availability: data.availability, devices: data.devices }) : null,
+							isShown('pages') ? el(PagesPanel, { pages: data.pages }) : null,
+							isShown('countries') ? el(CountriesPanel, { countries: data.countries }) : null
 						)
-					),
-					el(RecentLog, { recent: data.recent })
+					) : null,
+					isShown('recent') ? el(RecentLog, { recent: data.recent }) : null
 				)
 				: (loading ? el('div', { className: 'ri-loading' }, __( 'Loading...', 'reseller-intent' )) : null),
 

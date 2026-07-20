@@ -823,7 +823,7 @@ final class Reseller_Intent_Admin {
 			GROUP BY domain_query
 			HAVING hits >= 2
 			ORDER BY hits DESC
-			LIMIT 8"
+			LIMIT 25"
 		);
 		$repeats     = array();
 		foreach ( $repeat_rows as $repeat_row ) {
@@ -882,7 +882,7 @@ final class Reseller_Intent_Admin {
 			WHERE event_type = 'domain_search' AND country <> ''{$where}
 			GROUP BY country
 			ORDER BY hits DESC
-			LIMIT 8",
+			LIMIT 20",
 			ARRAY_A
 		);
 		$countries       = array();
@@ -1168,7 +1168,7 @@ final class Reseller_Intent_Admin {
 				),
 			);
 
-			if ( count( $items ) >= 10 ) {
+			if ( count( $items ) >= 15 ) {
 				break;
 			}
 		}
@@ -1206,7 +1206,7 @@ final class Reseller_Intent_Admin {
 		arsort( $tld_counts );
 
 		$domains = array();
-		foreach ( array_slice( $domain_counts, 0, 10, true ) as $domain => $count ) {
+		foreach ( array_slice( $domain_counts, 0, 15, true ) as $domain => $count ) {
 			$domains[] = array(
 				'domain' => (string) $domain,
 				'count'  => (int) $count,
@@ -1245,7 +1245,7 @@ final class Reseller_Intent_Admin {
 			WHERE event_type = 'domain_select' AND domain_query <> ''{$where}
 			GROUP BY domain_query
 			ORDER BY hits DESC
-			LIMIT 8"
+			LIMIT 25"
 		);
 		$top      = array();
 		foreach ( $top_rows as $top_row ) {
@@ -1262,7 +1262,7 @@ final class Reseller_Intent_Admin {
 				AND related_query <> domain_query AND domain_query NOT LIKE CONCAT(related_query, '.%'){$where}
 			GROUP BY related_query, domain_query
 			ORDER BY hits DESC
-			LIMIT 8"
+			LIMIT 25"
 		);
 		$pairs     = array();
 		foreach ( $pair_rows as $pair_row ) {

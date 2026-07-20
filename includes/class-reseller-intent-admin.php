@@ -112,6 +112,25 @@ final class Reseller_Intent_Admin {
 									<?php esc_html_e( 'Floating "Clear All" button under the search bar', 'reseller-intent' ); ?>
 								</label>
 								<p class="description"><?php esc_html_e( 'Wrap a dark page section in a .rintent-dark class to switch the widget to light-on-dark colors. If styling conflicts with your theme, turn the first toggle off — tracking is unaffected.', 'reseller-intent' ); ?></p>
+
+								<details class="rintent-theming-ref" style="margin-top:12px;max-width:640px;">
+									<summary style="cursor:pointer;font-weight:600;"><?php esc_html_e( 'Theming reference — CSS classes & variables', 'reseller-intent' ); ?></summary>
+									<p class="description"><?php esc_html_e( 'Target these from your theme or Appearance → Customize → Additional CSS to restyle any part of the widget.', 'reseller-intent' ); ?></p>
+									<table class="widefat striped" style="margin-top:8px;">
+										<thead><tr><th><?php esc_html_e( 'Element', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'CSS class / variable', 'reseller-intent' ); ?></th></tr></thead>
+										<tbody>
+											<tr><td><?php esc_html_e( 'Domain name in results', 'reseller-intent' ); ?></td><td><code>.rstore-domain-search .domain-name</code><br /><code>--rintent-domain-size</code> · <code>--rintent-domain-color</code> · <code>--rintent-domain-font</code> · <code>--rintent-domain-weight</code></td></tr>
+											<tr><td><?php esc_html_e( 'Price', 'reseller-intent' ); ?></td><td><code>.rstore-message .salePrice</code> / <code>.listPrice</code><br /><code>--rintent-price-size</code> · <code>--rintent-price-color</code> · <code>--rintent-price-font</code> · <code>--rintent-price-weight</code></td></tr>
+											<tr><td><?php esc_html_e( 'Clear All button', 'reseller-intent' ); ?></td><td><code>.rintent-clear-btn</code><br /><code>--rintent-clear-color</code> · <code>--rintent-clear-size</code></td></tr>
+											<tr><td><?php esc_html_e( 'Result row card', 'reseller-intent' ); ?></td><td><code>.rstore-domain-search .domain-result</code></td></tr>
+											<tr><td><?php esc_html_e( 'Search button / Continue to cart', 'reseller-intent' ); ?></td><td><code>.search-form input[type=submit]</code> · <code>.rstore-domain-continue-button</code></td></tr>
+											<tr><td><?php esc_html_e( 'Select / Selected links', 'reseller-intent' ); ?></td><td><code>.rstore-domain-buy-button.select</code> · <code>.rstore-domain-buy-button.selected</code></td></tr>
+											<tr><td><?php esc_html_e( 'Accent (buttons, focus ring)', 'reseller-intent' ); ?></td><td><code>--rintent-accent</code> <?php esc_html_e( '(set by the color picker above)', 'reseller-intent' ); ?></td></tr>
+											<tr><td><?php esc_html_e( 'Dark section context', 'reseller-intent' ); ?></td><td><code>.rintent-dark</code> <?php esc_html_e( '(wrapper class)', 'reseller-intent' ); ?></td></tr>
+										</tbody>
+									</table>
+									<p class="description" style="margin-top:8px;"><?php esc_html_e( 'Example:', 'reseller-intent' ); ?> <code>body{--rintent-domain-size:18px;--rintent-price-color:#0a7d5c;}</code></p>
+								</details>
 							</fieldset>
 						</td>
 					</tr>

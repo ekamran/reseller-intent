@@ -11,6 +11,22 @@ body {
 	--rintent-widget-muted: #3f556b;
 	--rintent-widget-accent: var(--rintent-accent, #3858e9);
 	--rintent-widget-accent-hover: var(--rintent-accent-hover, #26429c);
+
+	/*
+	 * Theming knobs — override these (or target the classes listed in
+	 * Settings → Widget styling) from your theme/customizer CSS.
+	 * Defaults inherit from your theme, so nothing changes until you set them.
+	 */
+	--rintent-domain-font: inherit;
+	--rintent-domain-size: inherit;
+	--rintent-domain-color: inherit;
+	--rintent-domain-weight: inherit;
+	--rintent-price-font: inherit;
+	--rintent-price-size: inherit;
+	--rintent-price-color: inherit;
+	--rintent-price-weight: inherit;
+	--rintent-clear-color: var(--rintent-widget-muted);
+	--rintent-clear-size: 12px;
 }
 
 /* ---------- Layout: one shared axis per result row (GD core floats them) ---------- */
@@ -47,6 +63,18 @@ body {
 	flex: 1 1 auto;
 	min-width: 0;
 	padding: 10px 0;
+	font-family: var(--rintent-domain-font);
+	font-size: var(--rintent-domain-size);
+	font-weight: var(--rintent-domain-weight);
+	color: var(--rintent-domain-color);
+}
+
+.rstore-domain-search .rstore-message .salePrice,
+.rstore-domain-search .rstore-message .listPrice {
+	font-family: var(--rintent-price-font);
+	font-size: var(--rintent-price-size);
+	font-weight: var(--rintent-price-weight);
+	color: var(--rintent-price-color);
 }
 
 .rstore-domain-search .rstore-message {
@@ -101,7 +129,7 @@ body {
 	padding: 14px 28px !important;
 	margin: 0 !important;
 	border: 1px solid var(--rintent-widget-accent) !important;
-	border-radius: 0 8px 8px 0 !important;
+	border-radius: 8px !important;
 	font-size: 16px !important;
 	font-weight: 500 !important;
 	line-height: 1 !important;
@@ -155,6 +183,20 @@ body {
 
 .rstore-domain-search .search-form input[type="search"] {
 	border-radius: 8px 0 0 8px !important;
+}
+
+/* Clean focus: one accent ring instead of stacked theme outlines. Focus
+ * stays clearly visible (a11y) — just not doubled. */
+.rstore-domain-search .search-form .search-field:focus,
+.rstore-domain-search .search-form .search-field:focus-visible {
+	outline: none !important;
+	border-color: var(--rintent-widget-accent) !important;
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--rintent-widget-accent) 30%, transparent) !important;
+}
+
+.rstore-domain-search .search-form input[type="submit"]:focus-visible {
+	outline: 2px solid var(--rintent-widget-accent-hover);
+	outline-offset: 2px;
 }
 
 /* ---------- Select / Selected as quiet text actions ---------- */
@@ -256,8 +298,8 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 	border: 0 !important;
 	border-radius: 0;
 	background: transparent !important;
-	color: var(--rintent-widget-muted);
-	font-size: 12px;
+	color: var(--rintent-clear-color);
+	font-size: var(--rintent-clear-size);
 	font-weight: 600;
 	line-height: 1;
 	cursor: pointer;

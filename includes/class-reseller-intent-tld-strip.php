@@ -79,7 +79,7 @@ final class Reseller_Intent_TLD_Strip {
 
 		wp_safe_redirect(
 			add_query_arg(
-				array( 'page' => 'reseller-intent-settings', 'rintent_notice' => $notice ),
+				array( 'page' => 'reseller-intent-shortcodes', 'rintent_notice' => $notice ),
 				admin_url( 'admin.php' )
 			)
 		);

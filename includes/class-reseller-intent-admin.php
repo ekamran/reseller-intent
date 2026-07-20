@@ -96,9 +96,20 @@ final class Reseller_Intent_Admin {
 			)
 		);
 		?>
+		<?php $notice = isset( $_GET['rintent_notice'] ) ? sanitize_key( wp_unslash( $_GET['rintent_notice'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 		<div class="wrap rintent-pages rintent-shortcodes">
 			<h1><?php esc_html_e( 'Shortcodes', 'reseller-intent' ); ?></h1>
-			<p class="rintent-intro"><?php esc_html_e( 'Build a shortcode below, copy it and paste it into any page or block.', 'reseller-intent' ); ?></p>
+			<p class="rintent-intro"><?php esc_html_e( 'Everything for each shortcode lives on its card: options, prices or numbers, and the code to copy.', 'reseller-intent' ); ?></p>
+
+			<?php if ( 'numbers_saved' === $notice ) : ?>
+				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Support numbers saved.', 'reseller-intent' ); ?></p></div>
+			<?php elseif ( 'numbers_reset' === $notice ) : ?>
+				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Support numbers reset to the GoDaddy defaults.', 'reseller-intent' ); ?></p></div>
+			<?php elseif ( 'tld_refreshed' === $notice ) : ?>
+				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'TLD prices refreshed from the storefront API.', 'reseller-intent' ); ?></p></div>
+			<?php elseif ( 'tld_refresh_none' === $notice ) : ?>
+				<div class="notice notice-info is-dismissible"><p><?php esc_html_e( 'Nothing to refresh yet. Prices are cached after the TLD strip renders for the first time.', 'reseller-intent' ); ?></p></div>
+			<?php endif; ?>
 
 			<div class="rintent-card">
 				<h2><?php esc_html_e( 'TLD price strip', 'reseller-intent' ); ?></h2>
@@ -130,6 +141,17 @@ final class Reseller_Intent_Admin {
 					<span class="rintent-output">
 						<code id="rintent-gen-tld-out"></code>
 						<button type="button" class="button" id="rintent-gen-tld-copy"><?php esc_html_e( 'Copy', 'reseller-intent' ); ?></button>
+					</span>
+				</div>
+				<div class="rintent-field">
+					<span class="rintent-label"><?php esc_html_e( 'Price cache', 'reseller-intent' ); ?></span>
+					<span>
+						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="rintent-inline-form">
+							<input type="hidden" name="action" value="rintent_refresh_tld" />
+							<?php wp_nonce_field( 'rintent_refresh_tld' ); ?>
+							<?php submit_button( __( 'Refresh prices now', 'reseller-intent' ), 'secondary', 'submit', false ); ?>
+						</form>
+						<p class="description"><?php esc_html_e( 'Prices refresh in the background every 11 hours and after a Reseller Store product import. Use this after a price change you want live right away.', 'reseller-intent' ); ?></p>
 					</span>
 				</div>
 			</div>
@@ -179,8 +201,45 @@ final class Reseller_Intent_Admin {
 
 			<div class="rintent-card">
 				<h2><?php esc_html_e( 'Support phone number', 'reseller-intent' ); ?></h2>
-				<p class="rintent-card-desc"><?php esc_html_e( 'Shows the right regional support number to each visitor. Add your numbers under Settings first, then use this shortcode anywhere.', 'reseller-intent' ); ?></p>
-				<div class="rintent-field">
+				<p class="rintent-card-desc"><?php esc_html_e( 'Shows the right regional support number to each visitor, based on their browser timezone. Page-cache safe. Numbers, shortcode, everything is right here.', 'reseller-intent' ); ?></p>
+
+				<?php if ( Reseller_Intent_Phone::is_customized() ) : ?>
+					<p class="rintent-numbers-status rintent-numbers-status--custom">
+						<span class="dashicons dashicons-edit" aria-hidden="true"></span>
+						<?php esc_html_e( 'Your own list is saved. Plugin updates will never change it.', 'reseller-intent' ); ?>
+						<a class="rintent-numbers-reset" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=rintent_reset_numbers' ), 'rintent_reset_numbers' ) ); ?>" onclick="return confirm('<?php echo esc_js( __( 'Replace your list with the GoDaddy default numbers? Your custom entries will be removed.', 'reseller-intent' ) ); ?>');"><?php esc_html_e( 'Reset to GoDaddy defaults', 'reseller-intent' ); ?></a>
+					</p>
+				<?php else : ?>
+					<p class="rintent-numbers-status rintent-numbers-status--default">
+						<span class="dashicons dashicons-yes-alt" aria-hidden="true"></span>
+						<?php esc_html_e( 'Using the built-in GoDaddy support numbers. Edit anything and save to make the list your own. Once you do, updates will not touch it.', 'reseller-intent' ); ?>
+					</p>
+				<?php endif; ?>
+
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<input type="hidden" name="action" value="rintent_save_numbers" />
+					<?php wp_nonce_field( 'rintent_save_numbers' ); ?>
+					<table id="rintent-support-rows" class="widefat striped">
+						<thead><tr><th><?php esc_html_e( 'Label', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'Phone number', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'Countries', 'reseller-intent' ); ?></th><th></th></tr></thead>
+						<tbody>
+							<?php foreach ( Reseller_Intent_Phone::numbers() as $support_entry ) : ?>
+								<tr>
+									<td><input type="text" name="support_label[]" value="<?php echo esc_attr( $support_entry['label'] ); ?>" placeholder="<?php esc_attr_e( 'US Support', 'reseller-intent' ); ?>" /></td>
+									<td><input type="text" name="support_number[]" value="<?php echo esc_attr( $support_entry['number'] ); ?>" placeholder="+1-480-000-0000" /></td>
+									<td><input type="text" name="support_countries[]" value="<?php echo esc_attr( implode( ',', (array) $support_entry['countries'] ) ); ?>" placeholder="US,CA" /></td>
+									<td><button type="button" class="button-link-delete rintent-support-remove" aria-label="<?php esc_attr_e( 'Remove row', 'reseller-intent' ); ?>">&times;</button></td>
+								</tr>
+							<?php endforeach; ?>
+						</tbody>
+					</table>
+					<p class="description" style="margin:8px 0 12px;"><?php esc_html_e( 'Countries: comma-separated 2-letter codes like IN, US, AE. Leave empty on one row to make it the default for everyone else.', 'reseller-intent' ); ?></p>
+					<p class="rintent-inline-actions">
+						<button type="button" class="button" id="rintent-support-add"><?php esc_html_e( 'Add number', 'reseller-intent' ); ?></button>
+						<?php submit_button( __( 'Save numbers', 'reseller-intent' ), 'primary', 'submit', false ); ?>
+					</p>
+				</form>
+
+				<div class="rintent-field" style="border-top:1px solid #f0f3f8;margin-top:4px;">
 					<span class="rintent-label"><?php esc_html_e( 'Shortcode', 'reseller-intent' ); ?></span>
 					<span class="rintent-output">
 						<code>[rintent_phone prefix="Call "]</code>
@@ -301,12 +360,6 @@ final class Reseller_Intent_Admin {
 				<div class="notice notice-success is-dismissible"><p><?php echo esc_html( sprintf( /* translators: %s: number of events */ __( '%s legacy events imported.', 'reseller-intent' ), number_format_i18n( (int) $import_match[1] ) ) ); ?></p></div>
 			<?php elseif ( 'import_skipped' === $notice ) : ?>
 				<div class="notice notice-info is-dismissible"><p><?php esc_html_e( 'Import skipped. Already imported or no legacy table found.', 'reseller-intent' ); ?></p></div>
-			<?php elseif ( 'tld_refreshed' === $notice ) : ?>
-				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'TLD prices refreshed from the storefront API.', 'reseller-intent' ); ?></p></div>
-			<?php elseif ( 'tld_refresh_none' === $notice ) : ?>
-				<div class="notice notice-info is-dismissible"><p><?php esc_html_e( 'Nothing to refresh yet. Prices are cached after the TLD strip shortcode renders for the first time.', 'reseller-intent' ); ?></p></div>
-			<?php elseif ( 'numbers_reset' === $notice ) : ?>
-				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Support numbers reset to the GoDaddy defaults.', 'reseller-intent' ); ?></p></div>
 			<?php elseif ( 'digest_sent' === $notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Test digest sent.', 'reseller-intent' ); ?></p></div>
 			<?php elseif ( 'digest_failed' === $notice ) : ?>
@@ -368,38 +421,6 @@ final class Reseller_Intent_Admin {
 							</details>
 						</span>
 					</div>
-				</div>
-
-				<div class="rintent-card">
-					<h2><?php esc_html_e( 'Support numbers', 'reseller-intent' ); ?></h2>
-					<p class="rintent-card-desc"><?php esc_html_e( 'Regional phone numbers for the [rintent_phone] shortcode. Each visitor sees the number for their region automatically. Page-cache safe.', 'reseller-intent' ); ?></p>
-					<?php if ( Reseller_Intent_Phone::is_customized() ) : ?>
-						<p class="rintent-numbers-status rintent-numbers-status--custom">
-							<span class="dashicons dashicons-edit" aria-hidden="true"></span>
-							<?php esc_html_e( 'Your own list is saved. Plugin updates will never change it.', 'reseller-intent' ); ?>
-							<a class="rintent-numbers-reset" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=rintent_reset_numbers' ), 'rintent_reset_numbers' ) ); ?>" onclick="return confirm('<?php echo esc_js( __( 'Replace your list with the GoDaddy default numbers? Your custom entries will be removed.', 'reseller-intent' ) ); ?>');"><?php esc_html_e( 'Reset to GoDaddy defaults', 'reseller-intent' ); ?></a>
-						</p>
-					<?php else : ?>
-						<p class="rintent-numbers-status rintent-numbers-status--default">
-							<span class="dashicons dashicons-yes-alt" aria-hidden="true"></span>
-							<?php esc_html_e( 'Using the built-in GoDaddy support numbers. Edit anything and save to make the list your own. Once you do, updates will not touch it.', 'reseller-intent' ); ?>
-						</p>
-					<?php endif; ?>
-					<table id="rintent-support-rows" class="widefat striped">
-						<thead><tr><th><?php esc_html_e( 'Label', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'Phone number', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'Countries', 'reseller-intent' ); ?></th><th></th></tr></thead>
-						<tbody>
-							<?php foreach ( Reseller_Intent_Phone::numbers() as $support_entry ) : ?>
-								<tr>
-									<td><input type="text" name="support_label[]" value="<?php echo esc_attr( $support_entry['label'] ); ?>" placeholder="<?php esc_attr_e( 'US Support', 'reseller-intent' ); ?>" /></td>
-									<td><input type="text" name="support_number[]" value="<?php echo esc_attr( $support_entry['number'] ); ?>" placeholder="+1-480-000-0000" /></td>
-									<td><input type="text" name="support_countries[]" value="<?php echo esc_attr( implode( ',', (array) $support_entry['countries'] ) ); ?>" placeholder="US,CA" /></td>
-									<td><button type="button" class="button-link-delete rintent-support-remove" aria-label="<?php esc_attr_e( 'Remove row', 'reseller-intent' ); ?>">&times;</button></td>
-								</tr>
-							<?php endforeach; ?>
-						</tbody>
-					</table>
-					<p style="margin-bottom:0;"><button type="button" class="button" id="rintent-support-add"><?php esc_html_e( 'Add number', 'reseller-intent' ); ?></button></p>
-					<p class="description"><?php esc_html_e( 'Countries: comma-separated 2-letter codes like IN, US, AE. Leave empty on one row to make it the default for everyone else.', 'reseller-intent' ); ?></p>
 				</div>
 
 				<div class="rintent-card">
@@ -474,11 +495,6 @@ final class Reseller_Intent_Admin {
 						<?php wp_nonce_field( 'rintent_send_digest_test' ); ?>
 						<?php submit_button( __( 'Send test digest email', 'reseller-intent' ), 'secondary', 'submit', false ); ?>
 					</form>
-					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-						<input type="hidden" name="action" value="rintent_refresh_tld" />
-						<?php wp_nonce_field( 'rintent_refresh_tld' ); ?>
-						<?php submit_button( __( 'Refresh TLD prices now', 'reseller-intent' ), 'secondary', 'submit', false ); ?>
-					</form>
 					<?php if ( Reseller_Intent_Import::legacy_table_exists() && ! Reseller_Intent_Import::already_imported() ) : ?>
 						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 							<input type="hidden" name="action" value="rintent_import_legacy" />
@@ -489,24 +505,6 @@ final class Reseller_Intent_Admin {
 				</div>
 			</div>
 		</div>
-		<script>
-		(function() {
-			document.getElementById('rintent-support-add').addEventListener('click', function() {
-				var tbody = document.querySelector('#rintent-support-rows tbody');
-				var row = document.createElement('tr');
-				row.innerHTML = '<td><input type="text" name="support_label[]" /></td>'
-					+ '<td><input type="text" name="support_number[]" placeholder="+1-480-000-0000" /></td>'
-					+ '<td><input type="text" name="support_countries[]" placeholder="US,CA" /></td>'
-					+ '<td><button type="button" class="button-link-delete rintent-support-remove" aria-label="Remove row">&times;</button></td>';
-				tbody.appendChild(row);
-			});
-			document.addEventListener('click', function(event) {
-				if (event.target.classList && event.target.classList.contains('rintent-support-remove')) {
-					event.target.closest('tr').remove();
-				}
-			});
-		})();
-		</script>
 		<?php
 	}
 
@@ -525,6 +523,23 @@ final class Reseller_Intent_Admin {
 				$base_url . 'assets/css/admin-pages.css',
 				array(),
 				filemtime( $base_path . 'assets/css/admin-pages.css' )
+			);
+
+			wp_enqueue_script(
+				'rintent-admin-pages',
+				$base_url . 'assets/js/admin-pages.js',
+				array(),
+				filemtime( $base_path . 'assets/js/admin-pages.js' ),
+				true
+			);
+
+			wp_localize_script(
+				'rintent-admin-pages',
+				'rintentPages',
+				array(
+					'copied'      => __( 'Copied', 'reseller-intent' ),
+					'copyHint'    => __( 'Click to copy', 'reseller-intent' ),
+				)
 			);
 			return;
 		}

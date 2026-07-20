@@ -45,8 +45,22 @@
 	display: grid;
 	grid-template-columns: 190px minmax(0, 1fr);
 	gap: 4px 20px;
-	padding: 12px 0;
+	padding: 14px 0;
 	align-items: start;
+}
+
+/* Stacked controls inside one field breathe evenly */
+.rintent-field input.regular-text + input,
+.rintent-field input + input.regular-text,
+.rintent-field input.regular-text + select,
+.rintent-field select + input.regular-text {
+	margin-top: 8px;
+}
+
+.rintent-field input.regular-text,
+.rintent-field input[type='url'].regular-text {
+	display: block;
+	max-width: 100%;
 }
 
 .rintent-field + .rintent-field {
@@ -61,7 +75,7 @@
 }
 
 .rintent-field .description {
-	margin: 6px 0 0;
+	margin: 8px 0 0;
 	font-size: 12.5px;
 	color: #64748b;
 }
@@ -152,6 +166,10 @@
 	text-transform: uppercase;
 	letter-spacing: 0.4px;
 	color: #64748b;
+}
+
+.rintent-pages #rintent-support-rows td {
+	padding: 8px 10px;
 }
 
 .rintent-pages #rintent-support-rows td input {
@@ -254,4 +272,63 @@
 .rintent-theming-ref td,
 .rintent-theming-ref th {
 	font-size: 12.5px;
+	padding: 10px 12px;
+	vertical-align: top;
+	line-height: 1.9;
+}
+
+.rintent-theming-ref td:first-child {
+	width: 30%;
+	font-weight: 500;
+}
+
+/* Chips never break mid-token, wrap as whole units */
+.rintent-theming-ref code {
+	display: inline-block;
+	white-space: nowrap;
+	margin: 1px 2px 1px 0;
+	padding: 2px 6px;
+	border-radius: 4px;
+}
+
+/* Click-to-copy chips (admin-pages.js wires the behavior) */
+.rintent-pages code {
+	cursor: pointer;
+	position: relative;
+	transition: background 0.15s ease;
+}
+
+.rintent-pages code:hover {
+	background: #e8ecf3;
+}
+
+.rintent-pages code.is-copied::after {
+	content: attr(data-copied);
+	position: absolute;
+	top: -26px;
+	left: 50%;
+	transform: translateX(-50%);
+	background: #1d2327;
+	color: #fff;
+	font-size: 11px;
+	font-family: inherit;
+	line-height: 1;
+	padding: 4px 8px;
+	border-radius: 4px;
+	white-space: nowrap;
+	pointer-events: none;
+	z-index: 10;
+}
+
+/* Inline mini-forms and action rows inside cards */
+.rintent-inline-form {
+	display: inline-block;
+	margin: 0 0 4px;
+}
+
+.rintent-inline-actions {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	margin: 0;
 }

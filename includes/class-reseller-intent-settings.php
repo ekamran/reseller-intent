@@ -53,7 +53,39 @@ final class Reseller_Intent_Settings {
 
 	public function register() {
 		add_action( 'admin_post_rintent_save_settings', array( $this, 'handle_save' ) );
+		add_action( 'admin_post_rintent_save_numbers', array( $this, 'handle_save_numbers' ) );
 		add_action( 'admin_post_rintent_reset_numbers', array( $this, 'handle_reset_numbers' ) );
+	}
+
+	/**
+	 * Support numbers live on the Shortcodes page with the [rintent_phone]
+	 * builder, in their own form with their own save.
+	 */
+	public function handle_save_numbers() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Sorry, you are not allowed to do that.', 'reseller-intent' ) );
+		}
+
+		check_admin_referer( 'rintent_save_numbers' );
+
+		$numbers = $this->maybe_default_support_numbers( $this->sanitize_support_numbers(
+			isset( $_POST['support_label'] ) ? (array) wp_unslash( $_POST['support_label'] ) : array(),
+			isset( $_POST['support_number'] ) ? (array) wp_unslash( $_POST['support_number'] ) : array(),
+			isset( $_POST['support_countries'] ) ? (array) wp_unslash( $_POST['support_countries'] ) : array()
+		) );
+
+		$settings = (array) get_option( self::OPTION, array() );
+
+		$settings['support_numbers'] = $numbers;
+		update_option( self::OPTION, $settings );
+
+		wp_safe_redirect(
+			add_query_arg(
+				array( 'page' => 'reseller-intent-shortcodes', 'rintent_notice' => 'numbers_saved' ),
+				admin_url( 'admin.php' )
+			)
+		);
+		exit;
 	}
 
 	/**
@@ -73,7 +105,7 @@ final class Reseller_Intent_Settings {
 
 		wp_safe_redirect(
 			add_query_arg(
-				array( 'page' => 'reseller-intent-settings', 'rintent_notice' => 'numbers_reset' ),
+				array( 'page' => 'reseller-intent-shortcodes', 'rintent_notice' => 'numbers_reset' ),
 				admin_url( 'admin.php' )
 			)
 		);
@@ -98,12 +130,17 @@ final class Reseller_Intent_Settings {
 			'blocklist'           => $this->sanitize_blocklist( isset( $_POST['blocklist'] ) ? wp_unslash( $_POST['blocklist'] ) : '' ),
 			'digest_enabled'      => ! empty( $_POST['digest_enabled'] ),
 			'digest_email'        => sanitize_email( isset( $_POST['digest_email'] ) ? wp_unslash( $_POST['digest_email'] ) : '' ),
-			'support_numbers'     => $this->maybe_default_support_numbers( $this->sanitize_support_numbers(
-				isset( $_POST['support_label'] ) ? (array) wp_unslash( $_POST['support_label'] ) : array(),
-				isset( $_POST['support_number'] ) ? (array) wp_unslash( $_POST['support_number'] ) : array(),
-				isset( $_POST['support_countries'] ) ? (array) wp_unslash( $_POST['support_countries'] ) : array()
-			) ),
 		);
+
+		/*
+		 * Support numbers are saved from their own form on the Shortcodes
+		 * page. Carry the stored value through so this full-array write
+		 * never wipes them (absent key = defaults, keep it absent too).
+		 */
+		$stored = (array) get_option( self::OPTION, array() );
+		if ( array_key_exists( 'support_numbers', $stored ) ) {
+			$settings['support_numbers'] = $stored['support_numbers'];
+		}
 
 		update_option( self::OPTION, $settings );
 		$this->sync_purge_schedule();

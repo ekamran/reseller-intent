@@ -23,17 +23,16 @@ final class Reseller_Intent_Admin {
 	}
 
 	/**
-	 * Custom menu glyph: search lens with ascending bars, search analytics
-	 * in one shape. Fill-only paths in a neutral base color so WordPress
-	 * repaints it to match the active admin color scheme (svg-painter).
+	 * Custom menu glyph: radar scope, ring with a sweep wedge and a blip
+	 * dot. Reads as "detecting visitor intent", not another generic chart.
+	 * Fill-only paths in a neutral base color so WordPress repaints it to
+	 * match the active admin color scheme (svg-painter skips strokes).
 	 */
 	private static function menu_icon() {
 		$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">'
-			. '<path fill="#a7aaad" fill-rule="evenodd" d="M8.5 2.3a6.2 6.2 0 1 1 0 12.4 6.2 6.2 0 0 1 0-12.4Zm0 1.6a4.6 4.6 0 1 0 0 9.2 4.6 4.6 0 0 0 0-9.2Z"/>'
-			. '<rect fill="#a7aaad" x="5.9" y="8.6" width="1.5" height="2.6" rx="0.75"/>'
-			. '<rect fill="#a7aaad" x="7.95" y="7.4" width="1.5" height="3.8" rx="0.75"/>'
-			. '<rect fill="#a7aaad" x="10" y="6.2" width="1.5" height="5" rx="0.75"/>'
-			. '<path fill="#a7aaad" d="M12.6 14.08 14.08 12.6l2.98 2.98a1.046 1.046 0 0 1-1.48 1.48Z"/>'
+			. '<path fill="#a7aaad" fill-rule="evenodd" d="M10 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16Zm0 1.7a6.3 6.3 0 1 0 0 12.6 6.3 6.3 0 0 0 0-12.6Z"/>'
+			. '<path fill="#a7aaad" d="M10 10 11.08 3.89a6.2 6.2 0 0 1 4.54 3.49Z"/>'
+			. '<circle fill="#a7aaad" cx="6.4" cy="12.2" r="1.5"/>'
 			. '</svg>';
 
 		return 'data:image/svg+xml;base64,' . base64_encode( $svg );

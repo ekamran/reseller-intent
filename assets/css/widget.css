@@ -1,0 +1,482 @@
+/**
+ * Reseller Intent — optional styling for the Reseller Store domain-search
+ * widget (GD Reseller Store 3.x / domain-search v5).
+ *
+ * Loaded only when "Style the domain search widget" is enabled in Settings.
+ * Colors flow from one accent token so the widget matches your brand.
+ */
+
+body {
+	--rintent-widget-text: #2b4458;
+	--rintent-widget-muted: #3f556b;
+	--rintent-widget-accent: var(--rintent-accent, #3858e9);
+	--rintent-widget-accent-hover: var(--rintent-accent-hover, #26429c);
+}
+
+/* ---------- Layout: one shared axis per result row (GD core floats them) ---------- */
+
+.rstore-domain-search .form-container {
+	width: 100%;
+	position: relative;
+	--rintent-clear-left-offset: 0px;
+}
+
+.rstore-domain-search .form-container .search-form {
+	width: 100%;
+}
+
+.rstore-domain-search .form-container .search-form .search-field {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.rstore-domain-search .domain-result {
+	display: flex !important;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	float: none !important;
+	width: 100%;
+	min-width: 0;
+	border: 1px solid #8f8f8f33;
+	border-radius: 8px;
+	margin-bottom: 10px;
+}
+
+.rstore-domain-search .domain-name {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 10px 0;
+}
+
+.rstore-domain-search .rstore-message {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 14px;
+}
+
+.rstore-message span.dashicons {
+	margin: 0;
+	line-height: 1;
+}
+
+.rstore-domain-search .continue-form {
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	width: 100%;
+	margin: 0 0 0.85rem;
+}
+
+.rstore-domain-search .purchase-info {
+	display: grid !important;
+	grid-template-columns: auto max-content !important;
+	align-items: center !important;
+	column-gap: 0.85rem !important;
+	justify-content: end !important;
+	justify-self: end !important;
+	margin-left: auto !important;
+	float: none !important;
+}
+
+.rstore-domain-search .purchase-info .rstore-domain-buy-button {
+	justify-self: end !important;
+	margin-left: auto !important;
+	margin-right: 0 !important;
+}
+
+.rstore-disclaimer {
+	padding-top: 10px !important;
+}
+
+/* ---------- Primary buttons ---------- */
+
+.rstore-domain-search .continue-form .rstore-domain-continue-button,
+.rstore-domain-search .rstore-domain-buy-button {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	min-width: 188px !important;
+	padding: 14px 28px !important;
+	margin: 0 !important;
+	border: 1px solid var(--rintent-widget-accent) !important;
+	border-radius: 0 8px 8px 0 !important;
+	font-size: 16px !important;
+	font-weight: 500 !important;
+	line-height: 1 !important;
+	color: #ffffff !important;
+	background: var(--rintent-widget-accent) !important;
+	text-decoration: none !important;
+	box-shadow: 0 4px 10px -8px rgba(0, 0, 0, 0.2) !important;
+	float: none !important;
+}
+
+.rstore-domain-search .continue-form .rstore-domain-continue-button:hover,
+.rstore-domain-search .rstore-domain-buy-button:hover,
+.rstore-domain-search .continue-form .rstore-domain-continue-button:focus,
+.rstore-domain-search .rstore-domain-buy-button:focus {
+	background: var(--rintent-widget-accent-hover) !important;
+	border-color: var(--rintent-widget-accent-hover) !important;
+	transform: translateY(-1px);
+}
+
+.rstore-domain-search .continue-form .rstore-domain-continue-button {
+	margin-left: auto !important;
+	margin-right: 0 !important;
+}
+
+.rstore-domain-search button.rstore-domain-buy-button,
+.rstore-domain-search button.rstore-domain-continue-button {
+	float: none !important;
+	margin: 0 !important;
+}
+
+/* ---------- Search submit: defensive visibility + brand pairing ----------
+ * Some themes style generic `.search-form input[type=submit]` as an
+ * invisible icon overlay (opacity 0 / absolute), which hides the widget's
+ * submit entirely. Restore an owned, visible button.
+ */
+.rstore-domain-search .search-form input[type="submit"] {
+	opacity: 1 !important;
+	position: static !important;
+	left: auto !important;
+	width: auto !important;
+	height: 44px !important;
+	padding: 0 22px !important;
+	border: none !important;
+	border-radius: 0 8px 8px 0 !important;
+	background: var(--rintent-widget-accent) !important;
+	color: #ffffff !important;
+	font-weight: 700;
+	font-family: inherit;
+	cursor: pointer;
+}
+
+.rstore-domain-search .search-form input[type="search"] {
+	border-radius: 8px 0 0 8px !important;
+}
+
+/* ---------- Select / Selected as quiet text actions ---------- */
+
+.rstore-domain-search button.rstore-domain-buy-button.select.btn.btn-secondary {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	width: auto !important;
+	min-width: 0 !important;
+	height: auto !important;
+	padding: 0 0 2px !important;
+	margin: 0 !important;
+	border: 0 !important;
+	border-radius: 0 !important;
+	background: transparent !important;
+	color: var(--rintent-widget-muted) !important;
+	font-size: 12px !important;
+	font-weight: 600 !important;
+	line-height: 1 !important;
+	text-decoration: underline !important;
+	text-decoration-thickness: 1.5px !important;
+	text-underline-offset: 4px !important;
+	box-shadow: none !important;
+	cursor: pointer !important;
+	transition: color 140ms ease, opacity 140ms ease !important;
+}
+
+.rstore-domain-search button.rstore-domain-buy-button.select.btn.btn-secondary:hover,
+.rstore-domain-search button.rstore-domain-buy-button.select.btn.btn-secondary:focus {
+	background: transparent !important;
+	opacity: 0.92 !important;
+	outline: none !important;
+}
+
+/* GD core fades .selected to opacity .6 and it stays clickable — make the
+ * state readable and advertise that clicking again removes the domain. */
+.rstore-domain-search button.rstore-domain-buy-button.selected.btn.btn-default {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	width: auto !important;
+	min-width: 0 !important;
+	height: auto !important;
+	padding: 0 0 2px !important;
+	margin: 0 !important;
+	border: 0 !important;
+	border-radius: 0 !important;
+	background: transparent !important;
+	color: var(--rintent-widget-text) !important;
+	opacity: 1 !important;
+	font-size: 12px !important;
+	font-weight: 600 !important;
+	line-height: 1 !important;
+	text-decoration: none !important;
+	box-shadow: none !important;
+	cursor: pointer !important;
+	pointer-events: auto !important;
+}
+
+.rstore-domain-search button.rstore-domain-buy-button.selected.btn.btn-default:hover,
+.rstore-domain-search button.rstore-domain-buy-button.selected.btn.btn-default:focus {
+	font-size: 0 !important;
+	background: transparent !important;
+	outline: none !important;
+}
+
+.rstore-domain-search button.rstore-domain-buy-button.selected.btn.btn-default:hover::after,
+.rstore-domain-search button.rstore-domain-buy-button.selected.btn.btn-default:focus::after {
+	content: 'Remove';
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1;
+	color: #c04545;
+	text-decoration: underline;
+	text-decoration-thickness: 1.5px;
+	text-underline-offset: 4px;
+}
+
+button.rstore-domain-buy-button.selected.btn.btn-default,
+button.rstore-domain-buy-button.select.btn.btn-secondary {
+	width: auto !important;
+	min-width: 0 !important;
+	height: auto !important;
+	padding: 0 0 2px !important;
+	box-sizing: border-box !important;
+}
+
+/* ---------- Clear All (injected by widget.js, off = never rendered) ---------- */
+
+.rstore-domain-search .rintent-clear-btn {
+	display: none;
+	align-items: center;
+	justify-content: center;
+	width: auto !important;
+	height: auto;
+	min-width: 0 !important;
+	padding: 0 0 2px;
+	border: 0 !important;
+	border-radius: 0;
+	background: transparent !important;
+	color: var(--rintent-widget-muted);
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1;
+	cursor: pointer;
+	text-decoration: underline;
+	text-decoration-thickness: 1.5px;
+	text-underline-offset: 4px;
+	box-shadow: none !important;
+	transition: opacity 140ms ease, text-underline-offset 140ms ease;
+}
+
+.rstore-domain-search .rintent-clear-btn:hover,
+.rstore-domain-search .rintent-clear-btn:focus {
+	background: transparent !important;
+	opacity: 0.65;
+	text-underline-offset: 6px;
+	outline: none;
+}
+
+/* Floats under the bar so its appearance never shifts content. */
+.rstore-domain-search.rintent-has-query .rintent-clear-btn {
+	display: inline-flex;
+	position: absolute !important;
+	top: 100%;
+	left: var(--rintent-clear-left-offset, 0px);
+	margin: 6px 0 0 !important;
+	z-index: 62;
+}
+
+.rstore-domain-search.rintent-has-clear .form-container + * {
+	margin-top: 34px !important;
+}
+
+.rstore-domain-search.rintent-results-cleared .result-content,
+.rstore-domain-search.rintent-results-cleared .continue-form,
+.rstore-domain-search.rintent-results-cleared .rstore-loading,
+.rstore-domain-search.rintent-results-cleared p.available,
+.rstore-domain-search.rintent-results-cleared p.not-available {
+	display: none !important;
+}
+
+/* ---------- Skeleton loader (rows injected by widget.js) ---------- */
+
+.rstore-domain-search .rstore-loading:has(.rintent-skeleton-row) {
+	display: grid !important;
+	grid-template-columns: 1fr;
+	gap: 10px;
+	width: 100% !important;
+	height: auto !important;
+	margin: 10px 0 16px;
+	background: transparent !important;
+	background-image: none !important;
+}
+
+.rstore-domain-search .rintent-skeleton-row {
+	display: grid;
+	grid-template-columns: 1fr 110px 150px;
+	align-items: center;
+	column-gap: 22px;
+	min-height: 88px;
+	padding: 0 20px;
+	border: 1px solid #8f8f8f33;
+	border-radius: 8px;
+	background: #f7f9fc;
+}
+
+.rstore-domain-search .rintent-skeleton-row .sk-name,
+.rstore-domain-search .rintent-skeleton-row .sk-price,
+.rstore-domain-search .rintent-skeleton-row .sk-btn {
+	display: block;
+	border-radius: 8px;
+	background: linear-gradient(90deg, #e7edf5 25%, #f4f7fb 37%, #e7edf5 63%);
+	background-size: 300% 100%;
+	animation: rintentSkeletonShimmer 1.2s ease-in-out infinite;
+}
+
+.rstore-domain-search .rintent-skeleton-row .sk-name {
+	height: 22px;
+	max-width: 280px;
+}
+
+.rstore-domain-search .rintent-skeleton-row .sk-price {
+	height: 22px;
+	width: 100px;
+	justify-self: end;
+}
+
+.rstore-domain-search .rintent-skeleton-row .sk-btn {
+	height: 46px;
+	width: 150px;
+	justify-self: end;
+	border-radius: 8px;
+}
+
+@keyframes rintentSkeletonShimmer {
+	0% {
+		background-position: 100% 0;
+	}
+	100% {
+		background-position: -100% 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.rstore-domain-search .rintent-skeleton-row .sk-name,
+	.rstore-domain-search .rintent-skeleton-row .sk-price,
+	.rstore-domain-search .rintent-skeleton-row .sk-btn {
+		animation: none;
+	}
+}
+
+/* ---------- Dark context: wrap the widget area in .rintent-dark ---------- */
+
+.rintent-dark .rstore-domain-search .rstore-message,
+.rintent-dark .rstore-domain-search .rstore-message h1,
+.rintent-dark .rstore-domain-search .rstore-message h2,
+.rintent-dark .rstore-domain-search .rstore-message h3,
+.rintent-dark .rstore-domain-search .rstore-message h4 {
+	color: #ffffff !important;
+}
+
+.rintent-dark .rstore-domain-search .domain-result {
+	border-color: rgba(255, 255, 255, 0.12) !important;
+	background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.rintent-dark .rstore-domain-search .domain-name,
+.rintent-dark .rstore-domain-search .result-content {
+	color: #ffffff !important;
+}
+
+.rintent-dark .rstore-domain-search .purchase-info {
+	color: rgba(255, 255, 255, 0.66) !important;
+}
+
+.rintent-dark .rstore-domain-search button.rstore-domain-buy-button.select.btn.btn-secondary,
+.rintent-dark .rstore-domain-search .rintent-clear-btn {
+	color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.rintent-dark .rstore-domain-search button.rstore-domain-buy-button.selected.btn.btn-default {
+	color: #ffffff !important;
+}
+
+.rintent-dark .rstore-domain-search .rstore-disclaimer,
+.rintent-dark .rstore-domain-search .rstore-disclaimer p {
+	color: rgba(255, 255, 255, 0.66) !important;
+}
+
+.rintent-dark .rstore-domain-search .rintent-skeleton-row {
+	border-color: rgba(255, 255, 255, 0.1);
+	background: rgba(255, 255, 255, 0.04);
+}
+
+.rintent-dark .rstore-domain-search .rintent-skeleton-row .sk-name,
+.rintent-dark .rstore-domain-search .rintent-skeleton-row .sk-price,
+.rintent-dark .rstore-domain-search .rintent-skeleton-row .sk-btn {
+	background: linear-gradient(90deg, rgba(255, 255, 255, 0.08) 25%, rgba(255, 255, 255, 0.16) 37%, rgba(255, 255, 255, 0.08) 63%);
+	background-size: 300% 100%;
+}
+
+/* ---------- Mobile ---------- */
+
+@media (max-width: 860px) {
+	.rstore-domain-search .continue-form {
+		margin-top: 16px;
+	}
+
+	.rstore-domain-search .continue-form .rstore-domain-continue-button {
+		width: 100% !important;
+		min-width: 0 !important;
+	}
+
+	.rstore-domain-search .domain-result {
+		flex-wrap: wrap;
+		row-gap: 4px;
+	}
+
+	.rstore-domain-search .domain-name {
+		flex: 1 1 100%;
+		padding: 8px 0 0;
+	}
+
+	.rstore-domain-search .purchase-info {
+		display: block !important;
+		width: 100%;
+	}
+
+	.rstore-domain-search .rstore-message {
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.rstore-domain-search button.rstore-domain-buy-button.selected.btn.btn-default,
+	.rstore-domain-search button.rstore-domain-buy-button.select.btn.btn-secondary,
+	.rstore-domain-search .rstore-domain-buy-button {
+		width: 132px !important;
+		min-width: 132px !important;
+		height: 40px !important;
+		padding: 10px 14px !important;
+		font-size: 14px !important;
+		line-height: 1 !important;
+	}
+
+	.rstore-domain-search .rintent-skeleton-row {
+		grid-template-columns: 1fr;
+		row-gap: 10px;
+		padding: 14px;
+	}
+
+	.rstore-domain-search .rintent-skeleton-row .sk-name {
+		max-width: 70%;
+	}
+
+	.rstore-domain-search .rintent-skeleton-row .sk-price,
+	.rstore-domain-search .rintent-skeleton-row .sk-btn {
+		justify-self: start;
+	}
+
+	.rstore-domain-search .rintent-skeleton-row .sk-btn {
+		width: 130px;
+	}
+}

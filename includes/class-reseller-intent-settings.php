@@ -11,6 +11,9 @@ final class Reseller_Intent_Settings {
 		'retention_days'      => 0,     // 0 = keep forever.
 		'delete_on_uninstall' => false,
 		'track_bots'          => false, // Bot filtering ON by default (track_bots=false).
+		'style_widget'        => true,
+		'widget_skeletons'    => true,
+		'widget_clear_all'    => true,
 	);
 
 	public static function get( $key ) {
@@ -35,6 +38,9 @@ final class Reseller_Intent_Settings {
 			'retention_days'      => $this->sanitize_retention( isset( $_POST['retention_days'] ) ? wp_unslash( $_POST['retention_days'] ) : '0' ),
 			'delete_on_uninstall' => ! empty( $_POST['delete_on_uninstall'] ),
 			'track_bots'          => ! empty( $_POST['track_bots'] ),
+			'style_widget'        => ! empty( $_POST['style_widget'] ),
+			'widget_skeletons'    => ! empty( $_POST['widget_skeletons'] ),
+			'widget_clear_all'    => ! empty( $_POST['widget_clear_all'] ),
 		);
 
 		update_option( self::OPTION, $settings );

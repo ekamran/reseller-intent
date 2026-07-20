@@ -94,6 +94,28 @@ final class Reseller_Intent_Admin {
 						</td>
 					</tr>
 					<tr>
+						<th scope="row"><?php esc_html_e( 'Widget styling', 'reseller-intent' ); ?></th>
+						<td>
+							<fieldset>
+								<label for="rintent-style-widget">
+									<input type="checkbox" id="rintent-style-widget" name="style_widget" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'style_widget' ) ); ?> />
+									<?php esc_html_e( 'Style the domain search widget (accent buttons, aligned result rows, mobile layout)', 'reseller-intent' ); ?>
+								</label>
+								<br />
+								<label for="rintent-skeletons">
+									<input type="checkbox" id="rintent-skeletons" name="widget_skeletons" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'widget_skeletons' ) ); ?> />
+									<?php esc_html_e( 'Skeleton loading rows while results load', 'reseller-intent' ); ?>
+								</label>
+								<br />
+								<label for="rintent-clear-all">
+									<input type="checkbox" id="rintent-clear-all" name="widget_clear_all" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'widget_clear_all' ) ); ?> />
+									<?php esc_html_e( 'Floating "Clear All" button under the search bar', 'reseller-intent' ); ?>
+								</label>
+								<p class="description"><?php esc_html_e( 'Wrap a dark page section in a .rintent-dark class to switch the widget to light-on-dark colors. If styling conflicts with your theme, turn the first toggle off — tracking is unaffected.', 'reseller-intent' ); ?></p>
+							</fieldset>
+						</td>
+					</tr>
+					<tr>
 						<th scope="row"><?php esc_html_e( 'Bots', 'reseller-intent' ); ?></th>
 						<td>
 							<label for="rintent-bots">

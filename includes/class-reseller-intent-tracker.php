@@ -16,9 +16,14 @@ final class Reseller_Intent_Tracker {
 			wp_send_json_success( array( 'ignored' => true, 'reason' => 'bot' ) );
 		}
 
-		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
-		if ( ! wp_verify_nonce( $nonce, 'rintent-track' ) ) {
-			wp_send_json_error( array( 'message' => 'Invalid nonce' ), 403 );
+		/*
+		 * No nonce on purpose. Nonces live in page markup, so any page cache
+		 * older than the nonce lifetime (24h) would silently kill tracking
+		 * for every visitor. This endpoint is anonymous and non-privileged;
+		 * a same-origin check plus the rate limiter is the right guard.
+		 */
+		if ( ! $this->is_same_origin() ) {
+			wp_send_json_error( array( 'message' => 'Cross-origin request rejected' ), 403 );
 		}
 
 		$event_type = isset( $_POST['event_type'] ) ? sanitize_key( wp_unslash( $_POST['event_type'] ) ) : '';
@@ -298,6 +303,27 @@ final class Reseller_Intent_Tracker {
 			'/bot|crawl|spider|slurp|headless|lighthouse|pingdom|gtmetrix|pagespeed|prerender|scrapy|python-requests|curl\/|wget\//i',
 			$user_agent
 		);
+	}
+
+	/**
+	 * Reject only on a clear cross-origin signal. Origin (sent on all
+	 * modern POSTs) is checked first, then Referer. Both absent = allow,
+	 * privacy tools strip these and that should not break tracking.
+	 */
+	private function is_same_origin() {
+		$home_host = wp_parse_url( home_url(), PHP_URL_HOST );
+
+		foreach ( array( 'HTTP_ORIGIN', 'HTTP_REFERER' ) as $header ) {
+			if ( empty( $_SERVER[ $header ] ) ) {
+				continue;
+			}
+
+			$host = wp_parse_url( sanitize_text_field( wp_unslash( $_SERVER[ $header ] ) ), PHP_URL_HOST );
+
+			return is_string( $host ) && 0 === strcasecmp( $host, (string) $home_host );
+		}
+
+		return true;
 	}
 
 	private function is_rate_limited( $event_type, $domain_query, $items_count ) {

@@ -30,7 +30,6 @@ final class Reseller_Intent_Assets {
 			'resellerIntent',
 			array(
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'rintent-track' ),
 			)
 		);
 
@@ -51,8 +50,9 @@ final class Reseller_Intent_Assets {
 		wp_add_inline_style(
 			'reseller-intent-widget',
 			sprintf(
-				'body{--rintent-accent:%1$s;--rintent-accent-hover:color-mix(in srgb, %1$s 78%%, #000);}',
-				$accent
+				'body{--rintent-accent:%1$s;--rintent-accent-hover:color-mix(in srgb, %1$s 78%%, #000);--rintent-accent-text:%2$s;}',
+				$accent,
+				Reseller_Intent_Settings::accent_text_color()
 			)
 		);
 

@@ -26,6 +26,31 @@ final class Reseller_Intent_Settings {
 		return isset( $settings[ $key ] ) ? $settings[ $key ] : null;
 	}
 
+	/**
+	 * Readable text color for anything sitting on the accent color. A light
+	 * accent (yellow, mint) makes white labels unreadable, so pick dark ink
+	 * when the accent is bright.
+	 */
+	public static function accent_text_color() {
+		$hex = ltrim( (string) self::get( 'accent_color' ), '#' );
+
+		if ( 3 === strlen( $hex ) ) {
+			$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+		}
+
+		if ( 6 !== strlen( $hex ) ) {
+			return '#ffffff';
+		}
+
+		$r = hexdec( substr( $hex, 0, 2 ) ) / 255;
+		$g = hexdec( substr( $hex, 2, 2 ) ) / 255;
+		$b = hexdec( substr( $hex, 4, 2 ) ) / 255;
+
+		$luminance = 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
+
+		return $luminance > 0.6 ? '#1d2327' : '#ffffff';
+	}
+
 	public function register() {
 		add_action( 'admin_post_rintent_save_settings', array( $this, 'handle_save' ) );
 		add_action( 'admin_post_rintent_reset_numbers', array( $this, 'handle_reset_numbers' ) );

@@ -11,6 +11,7 @@ body {
 	--rintent-widget-muted: #3f556b;
 	--rintent-widget-accent: var(--rintent-accent, #3858e9);
 	--rintent-widget-accent-hover: var(--rintent-accent-hover, #26429c);
+	--rintent-widget-accent-text: var(--rintent-accent-text, #ffffff);
 
 	/*
 	 * Theming knobs, override these (or target the classes listed in
@@ -133,7 +134,7 @@ body {
 	font-size: 16px !important;
 	font-weight: 500 !important;
 	line-height: 1 !important;
-	color: #ffffff !important;
+	color: var(--rintent-widget-accent-text) !important;
 	background: var(--rintent-widget-accent) !important;
 	text-decoration: none !important;
 	box-shadow: 0 4px 10px -8px rgba(0, 0, 0, 0.2) !important;
@@ -175,7 +176,7 @@ body {
 	border: none !important;
 	border-radius: 0 8px 8px 0 !important;
 	background: var(--rintent-widget-accent) !important;
-	color: #ffffff !important;
+	color: var(--rintent-widget-accent-text) !important;
 	font-weight: 700;
 	font-family: inherit;
 	cursor: pointer;

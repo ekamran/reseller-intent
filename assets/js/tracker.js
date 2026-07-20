@@ -30,7 +30,6 @@
 		var data = $.extend(
 			{
 				action: 'rintent_track',
-				nonce: window.resellerIntent && window.resellerIntent.nonce ? window.resellerIntent.nonce : '',
 				event_type: eventType,
 				device: getDeviceType(),
 				tz: getTimezone(),

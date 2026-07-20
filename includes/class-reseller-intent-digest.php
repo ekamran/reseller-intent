@@ -13,7 +13,7 @@ final class Reseller_Intent_Digest {
 	const CRON_HOOK = 'rintent_weekly_digest';
 
 	public function register() {
-		add_action( self::CRON_HOOK, array( $this, 'send' ) );
+		add_action( self::CRON_HOOK, array( $this, 'send_weekly' ) );
 		add_action( 'admin_post_rintent_send_digest_test', array( $this, 'handle_send_test' ) );
 		add_action( 'init', array( $this, 'sync_schedule' ) );
 	}
@@ -49,6 +49,24 @@ final class Reseller_Intent_Digest {
 			)
 		);
 		exit;
+	}
+
+	/**
+	 * Weekly cron: skip quiet weeks, a "0 searches" email every Monday is
+	 * just inbox noise. The test button still always sends via send().
+	 */
+	public function send_weekly() {
+		global $wpdb;
+
+		$table_name = Reseller_Intent_DB::table_name();
+		$cutoff     = gmdate( 'Y-m-d H:i:s', strtotime( current_time( 'mysql' ) ) - 7 * DAY_IN_SECONDS );
+		$events     = (int) $wpdb->get_var(
+			$wpdb->prepare( "SELECT COUNT(*) FROM {$table_name} WHERE created_at >= %s", $cutoff ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		);
+
+		if ( $events > 0 ) {
+			$this->send();
+		}
 	}
 
 	/**

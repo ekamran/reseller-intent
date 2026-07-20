@@ -22,6 +22,23 @@ final class Reseller_Intent_Admin {
 		return (string) apply_filters( 'rintent_dashboard_capability', 'manage_options' );
 	}
 
+	/**
+	 * Custom menu glyph: search lens with ascending bars, search analytics
+	 * in one shape. Fill-only paths in a neutral base color so WordPress
+	 * repaints it to match the active admin color scheme (svg-painter).
+	 */
+	private static function menu_icon() {
+		$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">'
+			. '<path fill="#a7aaad" fill-rule="evenodd" d="M8.5 2.3a6.2 6.2 0 1 1 0 12.4 6.2 6.2 0 0 1 0-12.4Zm0 1.6a4.6 4.6 0 1 0 0 9.2 4.6 4.6 0 0 0 0-9.2Z"/>'
+			. '<rect fill="#a7aaad" x="5.9" y="8.6" width="1.5" height="2.6" rx="0.75"/>'
+			. '<rect fill="#a7aaad" x="7.95" y="7.4" width="1.5" height="3.8" rx="0.75"/>'
+			. '<rect fill="#a7aaad" x="10" y="6.2" width="1.5" height="5" rx="0.75"/>'
+			. '<path fill="#a7aaad" d="M12.6 14.08 14.08 12.6l2.98 2.98a1.046 1.046 0 0 1-1.48 1.48Z"/>'
+			. '</svg>';
+
+		return 'data:image/svg+xml;base64,' . base64_encode( $svg );
+	}
+
 	public function register_admin_menu() {
 		add_menu_page(
 			__( 'Reseller Intent', 'reseller-intent' ),
@@ -29,7 +46,7 @@ final class Reseller_Intent_Admin {
 			self::capability(),
 			self::PAGE_SLUG,
 			array( $this, 'render_admin_page' ),
-			'dashicons-chart-area',
+			self::menu_icon(),
 			58
 		);
 
@@ -258,6 +275,8 @@ final class Reseller_Intent_Admin {
 			return;
 		}
 
+		Reseller_Intent_DB::ensure_table();
+
 		$accent    = (string) Reseller_Intent_Settings::get( 'accent_color' );
 		$retention = (int) Reseller_Intent_Settings::get( 'retention_days' );
 		$uninstall = (bool) Reseller_Intent_Settings::get( 'delete_on_uninstall' );
@@ -283,6 +302,10 @@ final class Reseller_Intent_Admin {
 				<div class="notice notice-success is-dismissible"><p><?php echo esc_html( sprintf( /* translators: %s: number of events */ __( '%s legacy events imported.', 'reseller-intent' ), number_format_i18n( (int) $import_match[1] ) ) ); ?></p></div>
 			<?php elseif ( 'import_skipped' === $notice ) : ?>
 				<div class="notice notice-info is-dismissible"><p><?php esc_html_e( 'Import skipped. Already imported or no legacy table found.', 'reseller-intent' ); ?></p></div>
+			<?php elseif ( 'tld_refreshed' === $notice ) : ?>
+				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'TLD prices refreshed from the storefront API.', 'reseller-intent' ); ?></p></div>
+			<?php elseif ( 'tld_refresh_none' === $notice ) : ?>
+				<div class="notice notice-info is-dismissible"><p><?php esc_html_e( 'Nothing to refresh yet. Prices are cached after the TLD strip shortcode renders for the first time.', 'reseller-intent' ); ?></p></div>
 			<?php elseif ( 'numbers_reset' === $notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Support numbers reset to the GoDaddy defaults.', 'reseller-intent' ); ?></p></div>
 			<?php elseif ( 'digest_sent' === $notice ) : ?>
@@ -387,7 +410,7 @@ final class Reseller_Intent_Admin {
 						<span>
 							<label for="rintent-digest">
 								<input type="checkbox" id="rintent-digest" name="digest_enabled" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'digest_enabled' ) ); ?> />
-								<?php esc_html_e( 'Send a weekly summary (searches, conversion, top domains and TLDs)', 'reseller-intent' ); ?>
+								<?php esc_html_e( 'Send a weekly summary (searches, conversion, top domains and TLDs). Weeks with no activity are skipped.', 'reseller-intent' ); ?>
 							</label>
 							<p style="margin:8px 0 0;">
 								<input type="email" name="digest_email" class="regular-text" value="<?php echo esc_attr( (string) Reseller_Intent_Settings::get( 'digest_email' ) ); ?>" placeholder="<?php echo esc_attr( get_option( 'admin_email' ) ); ?>" />
@@ -451,6 +474,11 @@ final class Reseller_Intent_Admin {
 						<input type="hidden" name="action" value="rintent_send_digest_test" />
 						<?php wp_nonce_field( 'rintent_send_digest_test' ); ?>
 						<?php submit_button( __( 'Send test digest email', 'reseller-intent' ), 'secondary', 'submit', false ); ?>
+					</form>
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+						<input type="hidden" name="action" value="rintent_refresh_tld" />
+						<?php wp_nonce_field( 'rintent_refresh_tld' ); ?>
+						<?php submit_button( __( 'Refresh TLD prices now', 'reseller-intent' ), 'secondary', 'submit', false ); ?>
 					</form>
 					<?php if ( Reseller_Intent_Import::legacy_table_exists() && ! Reseller_Intent_Import::already_imported() ) : ?>
 						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
@@ -537,6 +565,7 @@ final class Reseller_Intent_Admin {
 				'notice'      => isset( $_GET['rintent_notice'] ) ? sanitize_key( wp_unslash( $_GET['rintent_notice'] ) ) : '',
 				'tzLabel'     => wp_timezone_string(),
 				'accentColor' => (string) Reseller_Intent_Settings::get( 'accent_color' ),
+				'accentText'  => Reseller_Intent_Settings::accent_text_color(),
 			)
 		);
 	}
@@ -545,6 +574,9 @@ final class Reseller_Intent_Admin {
 		if ( ! current_user_can( self::capability() ) ) {
 			return;
 		}
+
+		Reseller_Intent_DB::ensure_table();
+
 		echo '<div class="wrap rintent-wrap"><div id="rintent-root"></div></div>';
 	}
 
@@ -766,9 +798,23 @@ final class Reseller_Intent_Admin {
 			);
 		}
 
+		// Tracking health: time since the newest event, any range. Surfaces
+		// silent breakage (JS error, markup drift, blocked AJAX) at a glance.
+		$last_event_at  = $wpdb->get_var( "SELECT MAX(created_at) FROM {$table_name}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// created_at is stored in site-local time, so diff against local now.
+		$last_event_ts  = $last_event_at ? (int) strtotime( $last_event_at ) : 0;
+		$last_event_age = $last_event_ts ? max( 0, strtotime( current_time( 'mysql' ) ) - $last_event_ts ) : 0;
+
 		return array(
 			'range'      => $range_key,
 			'bounded'    => $bounded,
+			'lastEvent'  => array(
+				'ago'   => $last_event_ts
+					/* translators: %s: human readable time difference */
+					? sprintf( __( 'Last event %s ago', 'reseller-intent' ), human_time_diff( $last_event_ts, strtotime( current_time( 'mysql' ) ) ) )
+					: __( 'No events yet', 'reseller-intent' ),
+				'stale' => $last_event_ts ? ( $last_event_age > 3 * DAY_IN_SECONDS ) : false,
+			),
 			'rangeLabel' => $custom
 				? sprintf( '%s – %s', wp_date( 'M j, Y', strtotime( $from . ' 12:00:00' ) ), wp_date( 'M j, Y', strtotime( $to . ' 12:00:00' ) ) )
 				: ( $bounded

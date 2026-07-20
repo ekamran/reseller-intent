@@ -27,6 +27,7 @@ final class Reseller_Intent_TLD_Strip {
 	const CACHE_TTL     = 12 * HOUR_IN_SECONDS;
 	const PROBE_NAME    = 'rintent-tld-pricecheck-77341';
 	const SETS_OPTION   = 'rintent_tld_strip_sets';
+	const LAST_GOOD     = 'rintent_tld_last_good';
 	const CRON_HOOK     = 'rintent_tld_prefetch';
 
 	public function register() {
@@ -35,6 +36,54 @@ final class Reseller_Intent_TLD_Strip {
 		add_filter( 'cron_schedules', array( $this, 'add_cron_interval' ) );
 		add_action( self::CRON_HOOK, array( $this, 'prefetch' ) );
 		add_action( 'init', array( $this, 'maybe_schedule' ) );
+
+		// GD Reseller Store product import/sync touches reseller_product
+		// posts; refresh our price cache shortly after (debounced, one
+		// single event no matter how many products the import saves).
+		add_action( 'save_post_reseller_product', array( $this, 'schedule_refresh' ) );
+
+		add_action( 'admin_post_rintent_refresh_tld', array( $this, 'handle_manual_refresh' ) );
+	}
+
+	/**
+	 * Queue a one-off prefetch a couple of minutes out. Uses a cron arg so
+	 * the guard is independent of the recurring 11h event.
+	 */
+	public function schedule_refresh() {
+		if ( empty( get_option( self::SETS_OPTION, array() ) ) ) {
+			return;
+		}
+
+		if ( ! wp_next_scheduled( self::CRON_HOOK, array( 'refresh' ) ) ) {
+			wp_schedule_single_event( time() + 2 * MINUTE_IN_SECONDS, self::CRON_HOOK, array( 'refresh' ) );
+		}
+	}
+
+	/**
+	 * Settings → Tools: fetch fresh prices right now.
+	 */
+	public function handle_manual_refresh() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Sorry, you are not allowed to do that.', 'reseller-intent' ) );
+		}
+
+		check_admin_referer( 'rintent_refresh_tld' );
+
+		$sets   = (array) get_option( self::SETS_OPTION, array() );
+		$notice = 'tld_refresh_none';
+
+		if ( ! empty( $sets ) ) {
+			$this->prefetch();
+			$notice = 'tld_refreshed';
+		}
+
+		wp_safe_redirect(
+			add_query_arg(
+				array( 'page' => 'reseller-intent-settings', 'rintent_notice' => $notice ),
+				admin_url( 'admin.php' )
+			)
+		);
+		exit;
 	}
 
 	public function add_cron_interval( $schedules ) {
@@ -61,6 +110,7 @@ final class Reseller_Intent_TLD_Strip {
 
 	public static function unschedule() {
 		wp_clear_scheduled_hook( self::CRON_HOOK );
+		wp_clear_scheduled_hook( self::CRON_HOOK, array( 'refresh' ) );
 	}
 
 	/**
@@ -80,6 +130,7 @@ final class Reseller_Intent_TLD_Strip {
 
 			if ( array_filter( $prices ) ) {
 				set_transient( $this->cache_key( $tlds ), $prices, self::CACHE_TTL );
+				$this->remember_last_good( $tlds, $prices );
 			}
 		}
 	}
@@ -162,13 +213,45 @@ final class Reseller_Intent_TLD_Strip {
 			return $cached;
 		}
 
+		/*
+		 * Transient gone (expired, or an object-cache flush wiped it).
+		 * Never make the visitor wait on N remote calls: serve the last
+		 * known good prices and let a one-off cron refresh in background.
+		 * Only the very first render of a set ever fetches inline.
+		 */
+		$last_good = (array) get_option( self::LAST_GOOD, array() );
+		$key       = md5( implode( ',', $tlds ) );
+
+		if ( isset( $last_good[ $key ] ) && is_array( $last_good[ $key ] ) ) {
+			set_transient( $this->cache_key( $tlds ), $last_good[ $key ], 15 * MINUTE_IN_SECONDS );
+			$this->schedule_refresh();
+
+			return $last_good[ $key ];
+		}
+
 		$prices = $this->fetch_set( $tlds );
 
 		// Cache short on total failure so one bad window doesn't stick for 12h.
 		$got_any = (bool) array_filter( $prices );
 		set_transient( $this->cache_key( $tlds ), $prices, $got_any ? self::CACHE_TTL : 15 * MINUTE_IN_SECONDS );
 
+		if ( $got_any ) {
+			$this->remember_last_good( $tlds, $prices );
+		}
+
 		return $prices;
+	}
+
+	/**
+	 * Keep the newest successful fetch per set in a non-autoloaded option,
+	 * survives transient wipes (object-cache flushes) with zero page cost.
+	 */
+	private function remember_last_good( array $tlds, array $prices ) {
+		$last_good = (array) get_option( self::LAST_GOOD, array() );
+
+		$last_good[ md5( implode( ',', $tlds ) ) ] = $prices;
+
+		update_option( self::LAST_GOOD, $last_good, false );
 	}
 
 	/**

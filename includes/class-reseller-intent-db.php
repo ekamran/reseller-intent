@@ -61,6 +61,25 @@ final class Reseller_Intent_DB {
 	}
 
 	/**
+	 * Self-heal: recreate the table if it vanished while the version option
+	 * survived (host migration that skipped custom tables, manual drop, DB
+	 * restore). Called from the plugin's own admin pages only, so the extra
+	 * SHOW TABLES query never runs on the frontend.
+	 */
+	public static function ensure_table() {
+		global $wpdb;
+
+		$table_name = self::table_name();
+
+		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) ) === $table_name ) {
+			return;
+		}
+
+		delete_option( self::DB_VERSION_OPTION );
+		self::maybe_create_table();
+	}
+
+	/**
 	 * Count events newer than the given cutoff (or all events).
 	 *
 	 * @param int $seconds Look-back window in seconds; 0 = all time.

@@ -79,6 +79,26 @@
 	font-size: 13px;
 }
 
+/* Tracking health chip in the header note */
+.ri-health {
+	display: inline-block;
+	margin-left: 8px;
+	padding: 1px 8px;
+	border-radius: 999px;
+	background: #f0fdf4;
+	border: 1px solid #bbf7d0;
+	color: #166534;
+	font-size: 11.5px;
+	font-weight: 600;
+}
+
+.ri-health.is-stale {
+	background: #fffbeb;
+	border-color: #fde68a;
+	color: #92400e;
+	cursor: help;
+}
+
 .ri-header-actions {
 	display: flex;
 	align-items: center;
@@ -114,7 +134,7 @@
 
 .ri-range.is-active {
 	background: var(--ri-accent, #3858e9);
-	color: #fff;
+	color: var(--ri-accent-text, #fff);
 }
 
 .ri-export-group {

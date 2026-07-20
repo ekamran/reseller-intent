@@ -9,6 +9,7 @@
 	var Fragment = wp.element.Fragment;
 
 	var ACCENT = (window.resellerIntentAdmin && resellerIntentAdmin.accentColor) || '#3858e9';
+	var ACCENT_TEXT = (window.resellerIntentAdmin && resellerIntentAdmin.accentText) || '#ffffff';
 	var INK = '#1d2327';
 	var TZ_LABEL = (window.resellerIntentAdmin && resellerIntentAdmin.tzLabel) || '';
 
@@ -687,14 +688,18 @@
 		var exportHref = resellerIntentAdmin.exportUrl + rangeQuery;
 		var exportJsonHref = resellerIntentAdmin.exportUrl + rangeQuery + '&format=json';
 
-		return el('div', { className: 'ri-app' + (loading ? ' is-loading' : ''), 'aria-busy': loading ? 'true' : 'false', style: { '--ri-accent': ACCENT } },
+		return el('div', { className: 'ri-app' + (loading ? ' is-loading' : ''), 'aria-busy': loading ? 'true' : 'false', style: { '--ri-accent': ACCENT, '--ri-accent-text': ACCENT_TEXT } },
 			loading ? el('div', { className: 'ri-progress', role: 'status', 'aria-label': 'Loading' }) : null,
 			el('div', { className: 'ri-header' },
 				el('div', null,
 					el('h1', null, 'Reseller Intent'),
 					el('p', { className: 'ri-note' },
 						'Domain search analytics · v' + resellerIntentAdmin.version +
-						(data ? ' · ' + data.rangeLabel : '')
+						(data ? ' · ' + data.rangeLabel : ''),
+						data && data.lastEvent ? el('span', {
+							className: 'ri-health' + (data.lastEvent.stale ? ' is-stale' : ''),
+							title: data.lastEvent.stale ? 'No recent events. Check that the search widget is live and tracking is not blocked.' : null
+						}, data.lastEvent.ago) : null
 					)
 				),
 				el('div', { className: 'ri-header-actions' },

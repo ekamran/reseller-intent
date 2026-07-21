@@ -41,12 +41,27 @@ body {
 }
 
 .rstore-domain-search .form-container .search-form {
+	display: flex;
+	align-items: stretch;
 	width: 100%;
+	border-radius: 8px;
+}
+
+/* One ring around the joined input + button control, never bleeding past
+ * the button edge like a shadow on the input alone would. */
+.rstore-domain-search .form-container .search-form:focus-within {
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--rintent-widget-accent) 28%, transparent);
+}
+
+.rintent-dark .rstore-domain-search .form-container .search-form:focus-within {
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--rintent-widget-accent-dark) 32%, transparent);
 }
 
 .rstore-domain-search .form-container .search-form .search-field {
 	flex: 1 1 auto;
 	min-width: 0;
+	box-sizing: border-box;
+	margin: 0;
 }
 
 .rstore-domain-search .domain-result {
@@ -173,7 +188,11 @@ body {
 	position: static !important;
 	left: auto !important;
 	width: auto !important;
-	height: 44px !important;
+	height: auto !important;
+	min-height: 44px !important;
+	align-self: stretch !important;
+	margin: 0 !important;
+	box-sizing: border-box !important;
 	padding: 0 22px !important;
 	border: none !important;
 	border-radius: 0 8px 8px 0 !important;
@@ -194,7 +213,7 @@ body {
 .rstore-domain-search .search-form .search-field:focus-visible {
 	outline: none !important;
 	border-color: var(--rintent-widget-accent) !important;
-	box-shadow: 0 0 0 3px color-mix(in srgb, var(--rintent-widget-accent) 30%, transparent) !important;
+	box-shadow: none !important;
 }
 
 .rstore-domain-search .search-form input[type="submit"]:focus-visible {
@@ -327,7 +346,7 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 	position: absolute !important;
 	top: 100%;
 	left: var(--rintent-clear-left-offset, 0px);
-	margin: 6px 0 0 !important;
+	margin: 11px 0 0 !important;
 	z-index: 62;
 }
 
@@ -548,7 +567,7 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 .rintent-dark .rstore-domain-search .search-form .search-field:focus,
 .rintent-dark .rstore-domain-search .search-form .search-field:focus-visible {
 	border-color: var(--rintent-widget-accent-dark) !important;
-	box-shadow: 0 0 0 3px color-mix(in srgb, var(--rintent-widget-accent-dark) 35%, transparent) !important;
+	box-shadow: none !important;
 }
 
 .rintent-dark .rstore-domain-search .search-form input[type="submit"]:focus-visible {

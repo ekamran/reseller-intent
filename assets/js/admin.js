@@ -154,28 +154,45 @@
 		var extra = extraState[0];
 		var setExtra = extraState[1];
 		var maxRows = props.maxRows || 6;
+		var PAGE_SIZE = 15;
+		var pageState = useState(1);
+		var page = pageState[0];
+		var setPage = pageState[1];
 
-		// New base rows mean the range changed: drop server-fetched extras.
+		// New base rows mean the range changed: drop everything fetched.
 		useEffect(function() {
 			setExtra({ rows: [], hasMore: null, loading: false });
+			setPage(1);
+			setExpanded(false);
 		}, [props.rows]);
 
 		var allRows = props.rows.concat(extra.rows);
-		var visible = expanded ? allRows : allRows.slice(0, maxRows);
+		// Expanded view is PAGED at a fixed height instead of growing
+		// forever: 15 rows per page, next fetches quietly when needed.
+		var visible = expanded ? allRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) : allRows.slice(0, maxRows);
 		var hidden = allRows.length - maxRows;
 		// Until the server says otherwise, a full first slice means there
 		// is probably more on the server.
 		var hasMore = extra.hasMore === null
 			? !!(props.loadMore && props.rows.length >= (props.initialFetched || 25))
 			: extra.hasMore;
+		var lastLoadedPage = Math.ceil(allRows.length / PAGE_SIZE);
+		var canNext = page < lastLoadedPage || hasMore;
 
-		function loadFromServer() {
-			if (extra.loading || !props.loadMore) {
+		function goNext() {
+			if (page < lastLoadedPage) {
+				setPage(page + 1);
+				return;
+			}
+			if (!hasMore || extra.loading || !props.loadMore) {
 				return;
 			}
 			setExtra({ rows: extra.rows, hasMore: extra.hasMore, loading: true });
 			props.loadMore(allRows.length).then(function(result) {
 				setExtra({ rows: extra.rows.concat(result.rows), hasMore: result.hasMore, loading: false });
+				if (result.rows.length) {
+					setPage(page + 1);
+				}
 			}).catch(function() {
 				setExtra({ rows: extra.rows, hasMore: false, loading: false });
 			});
@@ -202,17 +219,17 @@
 				hidden > 0 && ! expanded ? el('button', {
 					className: 'ri-showmore',
 					'aria-expanded': false,
-					onClick: function() { setExpanded(true); }
+					onClick: function() { setExpanded(true); setPage(1); }
 				}, sprintf( /* translators: %s: number of hidden rows */ __( 'Show %s more', 'reseller-intent' ), fmt(hidden) )) : null,
-				expanded && hasMore ? el('button', {
-					className: 'ri-showmore',
-					disabled: extra.loading,
-					onClick: loadFromServer
-				}, extra.loading ? __( 'Loading...', 'reseller-intent' ) : __( 'Load 25 more', 'reseller-intent' )) : null,
+				expanded && (canNext || page > 1) ? el('span', { className: 'ri-pager' },
+					el('button', { className: 'button', disabled: page <= 1, 'aria-label': __( 'Previous page', 'reseller-intent' ), onClick: function() { setPage(Math.max(1, page - 1)); } }, '\u2039'),
+					el('span', { className: 'ri-pager-state' }, extra.loading ? '\u2026' : fmt(page)),
+					el('button', { className: 'button', disabled: !canNext || extra.loading, 'aria-label': __( 'Next page', 'reseller-intent' ), onClick: goNext }, '\u203a')
+				) : null,
 				expanded ? el('button', {
 					className: 'ri-showmore',
 					'aria-expanded': true,
-					onClick: function() { setExpanded(false); }
+					onClick: function() { setExpanded(false); setPage(1); }
 				}, __( 'Show less', 'reseller-intent' )) : null
 			)
 		);

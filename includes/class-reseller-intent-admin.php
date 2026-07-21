@@ -434,7 +434,7 @@ final class Reseller_Intent_Admin {
 					<div class="rintent-field">
 						<span class="rintent-label"><label for="rintent-accent"><?php esc_html_e( 'Accent color', 'reseller-intent' ); ?></label></span>
 						<span>
-							<input type="color" id="rintent-accent" name="accent_color" value="<?php echo esc_attr( $accent ); ?>" />
+							<input type="text" id="rintent-accent" name="accent_color" class="rintent-colorpicker" value="<?php echo esc_attr( $accent ); ?>" />
 							<p class="description"><?php esc_html_e( 'Used on the dashboard, the styled widget and the TLD price strip.', 'reseller-intent' ); ?></p>
 						</span>
 					</div>
@@ -446,7 +446,7 @@ final class Reseller_Intent_Admin {
 								<input type="checkbox" id="rintent-accent-dark-custom" name="accent_dark_custom" value="1" <?php checked( $accent_dark_custom ); ?> />
 								<?php esc_html_e( 'Pick my own color for dark sections', 'reseller-intent' ); ?>
 							</label>
-							<input type="color" id="rintent-accent-dark" name="accent_dark" value="<?php echo esc_attr( Reseller_Intent_Settings::accent_dark_color() ); ?>" <?php disabled( ! $accent_dark_custom ); ?> />
+							<input type="text" id="rintent-accent-dark" name="accent_dark" class="rintent-colorpicker" value="<?php echo esc_attr( Reseller_Intent_Settings::accent_dark_color() ); ?>" <?php disabled( ! $accent_dark_custom ); ?> />
 							<p class="description"><?php esc_html_e( 'Used where the accent sits on dark surfaces, like the dark TLD strip. Auto lightens your accent just enough to stay readable and follows whenever the accent changes.', 'reseller-intent' ); ?></p>
 						</span>
 					</div>
@@ -470,10 +470,12 @@ final class Reseller_Intent_Admin {
 								<input type="checkbox" id="rintent-clear-all" name="widget_clear_all" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'widget_clear_all' ) ); ?> />
 								<?php esc_html_e( 'Floating "Clear All" button under the search bar', 'reseller-intent' ); ?>
 							</label>
-							<p style="margin:8px 0 0;">
-								<input type="text" name="clear_all_label" class="regular-text" maxlength="40" value="<?php echo esc_attr( (string) Reseller_Intent_Settings::get( 'clear_all_label' ) ); ?>" placeholder="<?php esc_attr_e( 'Clear All', 'reseller-intent' ); ?>" />
-							</p>
-							<p class="description"><?php esc_html_e( 'Its button text, any wording or language. Leave empty for the default.', 'reseller-intent' ); ?></p>
+							<span id="rintent-clear-label-row" <?php echo Reseller_Intent_Settings::get( 'widget_clear_all' ) ? '' : 'style="display:none;"'; ?>>
+								<p style="margin:8px 0 0;">
+									<input type="text" name="clear_all_label" class="regular-text" maxlength="40" value="<?php echo esc_attr( (string) Reseller_Intent_Settings::get( 'clear_all_label' ) ); ?>" placeholder="<?php esc_attr_e( 'Clear All', 'reseller-intent' ); ?>" />
+								</p>
+								<p class="description"><?php esc_html_e( 'Its button text, any wording or language. Leave empty for the default.', 'reseller-intent' ); ?></p>
+							</span>
 							<p class="description"><?php esc_html_e( 'Tip: wrap a dark page section in a .rintent-dark class for light-on-dark widget colors.', 'reseller-intent' ); ?></p>
 
 							<details class="rintent-theming-ref">
@@ -601,10 +603,12 @@ final class Reseller_Intent_Admin {
 				filemtime( $base_path . 'assets/css/admin-pages.css' )
 			);
 
+			wp_enqueue_style( 'wp-color-picker' );
+
 			wp_enqueue_script(
 				'rintent-admin-pages',
 				$base_url . 'assets/js/admin-pages.js',
-				array(),
+				array( 'jquery', 'wp-color-picker' ),
 				filemtime( $base_path . 'assets/js/admin-pages.js' ),
 				true
 			);

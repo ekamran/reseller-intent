@@ -70,14 +70,60 @@
 
 	function initDarkAccent() {
 		var toggle = document.getElementById('rintent-accent-dark-custom');
+
+		if (!toggle) {
+			return;
+		}
+
+		toggle.addEventListener('change', function() {
+			syncDarkAccentState();
+		});
+	}
+
+	/* WP color pickers (hex-first) on the accent fields */
+
+	function initColorPickers() {
+		if (typeof jQuery === 'undefined' || !jQuery.fn.wpColorPicker) {
+			return;
+		}
+
+		jQuery('.rintent-colorpicker').each(function() {
+			jQuery(this).wpColorPicker();
+		});
+
+		syncDarkAccentState();
+	}
+
+	function syncDarkAccentState() {
+		var toggle = document.getElementById('rintent-accent-dark-custom');
 		var picker = document.getElementById('rintent-accent-dark');
 
 		if (!toggle || !picker) {
 			return;
 		}
 
+		picker.disabled = !toggle.checked;
+
+		var container = picker.closest ? picker.closest('.wp-picker-container') : null;
+
+		if (container) {
+			container.style.opacity = toggle.checked ? '' : '0.45';
+			container.style.pointerEvents = toggle.checked ? '' : 'none';
+		}
+	}
+
+	/* Clear All label field follows its toggle */
+
+	function initClearLabelRow() {
+		var toggle = document.getElementById('rintent-clear-all');
+		var row = document.getElementById('rintent-clear-label-row');
+
+		if (!toggle || !row) {
+			return;
+		}
+
 		toggle.addEventListener('change', function() {
-			picker.disabled = !toggle.checked;
+			row.style.display = toggle.checked ? '' : 'none';
 		});
 	}
 
@@ -85,6 +131,8 @@
 		initChips();
 		initSupportRows();
 		initDarkAccent();
+		initColorPickers();
+		initClearLabelRow();
 	}
 
 	if (document.readyState === 'loading') {

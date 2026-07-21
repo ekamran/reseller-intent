@@ -46,7 +46,7 @@ Your Reseller Store domain search is where buying decisions happen, but by defau
 * Indexed custom table, zero queries on requests that don't involve tracking
 * Frontend script loads only on pages where the Reseller Store widget is present
 
-Requires the free [Reseller Store](https://wordpress.org/plugins/reseller-store/) plugin by GoDaddy Reseller Programs.
+Requires the free [Reseller Store](https://wordpress.org/plugins/reseller-store/) plugin by GoDaddy Reseller Programs. Tested with Reseller Store 3.0.1; if a newer Reseller Store version is detected, the plugin shows a friendly heads-up so you can double-check your dashboard.
 
 == Frequently Asked Questions ==
 

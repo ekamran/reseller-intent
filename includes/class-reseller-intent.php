@@ -6,6 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class Reseller_Intent {
 	const VERSION                  = '1.0.0';
 	const REQUIRED_PLUGIN_BASENAME = 'reseller-store/reseller-store.php';
+	const TESTED_RSTORE            = '3.0.1';
 
 	private $assets;
 	private $tracker;
@@ -32,6 +33,8 @@ final class Reseller_Intent {
 
 		add_action( 'plugins_loaded', array( $this, 'bootstrap' ) );
 		add_action( 'admin_notices', array( $this, 'show_dependency_notice' ) );
+		add_action( 'admin_notices', array( $this, 'show_compat_notice' ) );
+		add_action( 'admin_post_rintent_ack_rstore', array( $this, 'handle_ack_rstore' ) );
 	}
 
 	public function bootstrap() {
@@ -82,6 +85,76 @@ final class Reseller_Intent {
 			. '</strong> '
 			. esc_html__( 'Please install and activate Reseller Store to start tracking domain searches.', 'reseller-intent' )
 			. '</p></div>';
+	}
+
+	/**
+	 * Soft heads-up when Reseller Store runs a newer version than this
+	 * plugin was tested against. WordPress only checks compatibility with
+	 * core, never between plugins, so we do it ourselves. Informational
+	 * and dismissible per version, nothing is blocked.
+	 */
+	public function show_compat_notice() {
+		if ( ! current_user_can( 'activate_plugins' ) || ! $this->is_reseller_store_active() ) {
+			return;
+		}
+
+		$rstore_version = $this->reseller_store_version();
+
+		if ( ! $rstore_version || version_compare( $rstore_version, self::TESTED_RSTORE, '<=' ) ) {
+			return;
+		}
+
+		if ( get_option( 'rintent_rstore_ack' ) === $rstore_version ) {
+			return;
+		}
+
+		$ack_url = wp_nonce_url(
+			admin_url( 'admin-post.php?action=rintent_ack_rstore&v=' . rawurlencode( $rstore_version ) ),
+			'rintent_ack_rstore'
+		);
+
+		echo '<div class="notice notice-info"><p><strong>'
+			. esc_html__( 'Reseller Intent:', 'reseller-intent' )
+			. '</strong> '
+			. esc_html(
+				sprintf(
+					/* translators: 1: installed Reseller Store version, 2: tested version */
+					__( 'Reseller Store %1$s detected. This plugin was tested up to Reseller Store %2$s. Everything most likely works, just give the dashboard and the search widget a quick look.', 'reseller-intent' ),
+					$rstore_version,
+					self::TESTED_RSTORE
+				)
+			)
+			. ' <a href="' . esc_url( $ack_url ) . '">'
+			. esc_html__( 'Looks fine, dismiss', 'reseller-intent' )
+			. '</a></p></div>';
+	}
+
+	public function handle_ack_rstore() {
+		if ( ! current_user_can( 'activate_plugins' ) ) {
+			wp_die( esc_html__( 'Sorry, you are not allowed to do that.', 'reseller-intent' ) );
+		}
+
+		check_admin_referer( 'rintent_ack_rstore' );
+
+		update_option( 'rintent_rstore_ack', isset( $_GET['v'] ) ? sanitize_text_field( wp_unslash( $_GET['v'] ) ) : '', false );
+		wp_safe_redirect( wp_get_referer() ? wp_get_referer() : admin_url() );
+		exit;
+	}
+
+	private function reseller_store_version() {
+		if ( function_exists( 'rstore' ) && isset( rstore()->version ) ) {
+			return (string) rstore()->version;
+		}
+
+		$file = WP_PLUGIN_DIR . '/' . self::REQUIRED_PLUGIN_BASENAME;
+
+		if ( ! is_readable( $file ) ) {
+			return '';
+		}
+
+		$data = get_file_data( $file, array( 'Version' => 'Version' ) );
+
+		return (string) ( $data['Version'] ?? '' );
 	}
 
 	private function is_reseller_store_active() {

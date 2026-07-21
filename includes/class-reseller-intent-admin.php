@@ -126,7 +126,7 @@ final class Reseller_Intent_Admin {
 					<span class="rintent-label"><label for="rintent-gen-theme"><?php esc_html_e( 'Theme', 'reseller-intent' ); ?></label></span>
 					<span>
 						<select id="rintent-gen-theme"><option value="light"><?php esc_html_e( 'Light', 'reseller-intent' ); ?></option><option value="dark"><?php esc_html_e( 'Dark', 'reseller-intent' ); ?></option></select>
-						<p class="description"><?php esc_html_e( 'Dark is for dark page sections. Prices use your accent from Settings, auto-lightened on dark so they stay readable; set --rintent-accent-dark to pick that color yourself, and --rintent-tld-* to restyle the pills.', 'reseller-intent' ); ?></p>
+						<p class="description"><?php esc_html_e( 'Dark is for dark page sections. Prices use the Dark accent color from Settings (auto-lightened from your accent unless you pick one). CSS can still override anything: --rintent-accent-dark and the --rintent-tld-* variables.', 'reseller-intent' ); ?></p>
 					</span>
 				</div>
 				<div class="rintent-field">
@@ -442,6 +442,18 @@ final class Reseller_Intent_Admin {
 							<p class="description"><?php esc_html_e( 'Used on the dashboard, the styled widget and the TLD price strip.', 'reseller-intent' ); ?></p>
 						</span>
 					</div>
+					<div class="rintent-field">
+						<span class="rintent-label"><label for="rintent-accent-dark"><?php esc_html_e( 'Dark accent color', 'reseller-intent' ); ?></label></span>
+						<span>
+							<?php $accent_dark_custom = '' !== (string) Reseller_Intent_Settings::get( 'accent_dark' ); ?>
+							<label for="rintent-accent-dark-custom" style="display:block;margin-bottom:8px;">
+								<input type="checkbox" id="rintent-accent-dark-custom" name="accent_dark_custom" value="1" <?php checked( $accent_dark_custom ); ?> />
+								<?php esc_html_e( 'Pick my own color for dark sections', 'reseller-intent' ); ?>
+							</label>
+							<input type="color" id="rintent-accent-dark" name="accent_dark" value="<?php echo esc_attr( Reseller_Intent_Settings::accent_dark_color() ); ?>" <?php disabled( ! $accent_dark_custom ); ?> />
+							<p class="description"><?php esc_html_e( 'Used where the accent sits on dark surfaces, like the dark TLD strip. Auto lightens your accent just enough to stay readable and follows whenever the accent changes.', 'reseller-intent' ); ?></p>
+						</span>
+					</div>
 				</div>
 
 				<div class="rintent-card">
@@ -477,7 +489,7 @@ final class Reseller_Intent_Admin {
 										<tr><td><?php esc_html_e( 'Search button / Continue to cart', 'reseller-intent' ); ?></td><td><code>.search-form input[type=submit]</code> &middot; <code>.rstore-domain-continue-button</code></td></tr>
 										<tr><td><?php esc_html_e( 'Select / Selected links', 'reseller-intent' ); ?></td><td><code>.rstore-domain-buy-button.select</code> &middot; <code>.rstore-domain-buy-button.selected</code></td></tr>
 										<tr><td><?php esc_html_e( 'Accent (buttons, focus ring)', 'reseller-intent' ); ?></td><td><code>--rintent-accent</code> <?php esc_html_e( '(set by the color picker above)', 'reseller-intent' ); ?></td></tr>
-										<tr><td><?php esc_html_e( 'Accent on dark surfaces', 'reseller-intent' ); ?></td><td><code>--rintent-accent-dark</code> <?php esc_html_e( '(auto: your accent lightened for dark sections; set this to choose it yourself)', 'reseller-intent' ); ?></td></tr>
+										<tr><td><?php esc_html_e( 'Accent on dark surfaces', 'reseller-intent' ); ?></td><td><code>--rintent-accent-dark</code> <?php esc_html_e( '(set by the Dark accent picker above; this variable overrides it)', 'reseller-intent' ); ?></td></tr>
 										<tr><td><?php esc_html_e( 'Dark section context', 'reseller-intent' ); ?></td><td><code>.rintent-dark</code> <?php esc_html_e( '(wrapper class)', 'reseller-intent' ); ?></td></tr>
 									</tbody>
 								</table>

@@ -8,6 +8,7 @@ final class Reseller_Intent_Settings {
 
 	private static $defaults = array(
 		'accent_color'        => '#3858e9',
+		'accent_dark'         => '',    // '' = auto: the accent lightened for dark surfaces.
 		'retention_days'      => 0,     // 0 = keep forever.
 		'delete_on_uninstall' => false,
 		'track_bots'          => false, // Bot filtering ON by default (track_bots=false).
@@ -51,6 +52,36 @@ final class Reseller_Intent_Settings {
 		$luminance = 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
 
 		return $luminance > 0.6 ? '#1d2327' : '#ffffff';
+	}
+
+	/**
+	 * Accent for dark surfaces: the owner's picked color, or an automatic
+	 * 45/55 mix of the accent toward white (same hue, always readable).
+	 * The --rintent-accent-dark CSS variable can still override either.
+	 */
+	public static function accent_dark_color() {
+		$custom = sanitize_hex_color( (string) self::get( 'accent_dark' ) );
+
+		if ( $custom ) {
+			return $custom;
+		}
+
+		$hex = ltrim( (string) self::get( 'accent_color' ), '#' );
+
+		if ( 3 === strlen( $hex ) ) {
+			$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+		}
+
+		if ( 6 !== strlen( $hex ) ) {
+			return '#7b96ff';
+		}
+
+		$mix = array();
+		foreach ( array( 0, 2, 4 ) as $offset ) {
+			$mix[] = (int) round( hexdec( substr( $hex, $offset, 2 ) ) * 0.45 + 255 * 0.55 );
+		}
+
+		return sprintf( '#%02x%02x%02x', $mix[0], $mix[1], $mix[2] );
 	}
 
 	public function register() {
@@ -131,6 +162,7 @@ final class Reseller_Intent_Settings {
 
 		$settings = array(
 			'accent_color'        => $this->sanitize_color( isset( $_POST['accent_color'] ) ? sanitize_text_field( wp_unslash( $_POST['accent_color'] ) ) : '' ),
+			'accent_dark'         => empty( $_POST['accent_dark_custom'] ) ? '' : (string) sanitize_hex_color( isset( $_POST['accent_dark'] ) ? sanitize_text_field( wp_unslash( $_POST['accent_dark'] ) ) : '' ),
 			'retention_days'      => $this->sanitize_retention( isset( $_POST['retention_days'] ) ? sanitize_text_field( wp_unslash( $_POST['retention_days'] ) ) : '0' ),
 			'delete_on_uninstall' => ! empty( $_POST['delete_on_uninstall'] ),
 			'track_bots'          => ! empty( $_POST['track_bots'] ),

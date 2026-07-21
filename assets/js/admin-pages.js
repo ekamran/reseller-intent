@@ -66,9 +66,25 @@
 		}
 	});
 
+	/* Dark accent picker enables only when "pick my own" is checked */
+
+	function initDarkAccent() {
+		var toggle = document.getElementById('rintent-accent-dark-custom');
+		var picker = document.getElementById('rintent-accent-dark');
+
+		if (!toggle || !picker) {
+			return;
+		}
+
+		toggle.addEventListener('change', function() {
+			picker.disabled = !toggle.checked;
+		});
+	}
+
 	function init() {
 		initChips();
 		initSupportRows();
+		initDarkAccent();
 	}
 
 	if (document.readyState === 'loading') {

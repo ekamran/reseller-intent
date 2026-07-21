@@ -47,15 +47,6 @@ body {
 	border-radius: 8px;
 }
 
-/* One ring around the joined input + button control, never bleeding past
- * the button edge like a shadow on the input alone would. */
-.rstore-domain-search .form-container .search-form:focus-within {
-	box-shadow: 0 0 0 3px color-mix(in srgb, var(--rintent-widget-accent) 28%, transparent);
-}
-
-.rintent-dark .rstore-domain-search .form-container .search-form:focus-within {
-	box-shadow: 0 0 0 3px color-mix(in srgb, var(--rintent-widget-accent-dark) 32%, transparent);
-}
 
 .rstore-domain-search .form-container .search-form .search-field {
 	flex: 1 1 auto;
@@ -207,8 +198,8 @@ body {
 	border-radius: 8px 0 0 8px !important;
 }
 
-/* Clean focus: one accent ring instead of stacked theme outlines. Focus
- * stays clearly visible (a11y), just not doubled. */
+/* Quiet focus: just the input border turns accent, no glow anywhere.
+ * Keyboard users still get a real outline on the button below. */
 .rstore-domain-search .search-form .search-field:focus,
 .rstore-domain-search .search-form .search-field:focus-visible {
 	outline: none !important;

@@ -993,7 +993,7 @@ final class Reseller_Intent_Admin {
 		// Carted domains from items_json (bounded scan).
 		$carted = $this->get_carted_breakdown( $table_name, $where );
 
-		// Warm leads: searched, available, never taken to cart.
+		// Demand signals: searched, available, never taken to cart.
 		$opportunities = $this->get_opportunities( $table_name, $where );
 
 		// Selection behavior.

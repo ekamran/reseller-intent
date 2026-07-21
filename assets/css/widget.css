@@ -209,9 +209,28 @@ body {
 	box-shadow: none !important;
 }
 
+/* Mouse press and focus: kill every theme/GD outline, shadow and shift on
+ * the submit; the pair must not move or glow on click. */
+.rstore-domain-search .search-form input[type="submit"]:focus,
+.rstore-domain-search .search-form input[type="submit"]:active,
+.rstore-domain-search .search-form input[type="submit"]:hover {
+	outline: none !important;
+	box-shadow: none !important;
+	transform: none !important;
+	border: none !important;
+	height: 44px !important;
+	margin: 0 !important;
+}
+
+/* Keyboard focus stays clearly visible (declared after the reset above
+ * so it wins for focus-visible). */
 .rstore-domain-search .search-form input[type="submit"]:focus-visible {
-	outline: 2px solid var(--rintent-widget-accent-hover);
-	outline-offset: 2px;
+	outline: 2px solid var(--rintent-widget-accent-hover) !important;
+	outline-offset: -3px;
+}
+
+.rintent-dark .rstore-domain-search .search-form input[type="submit"]:focus-visible {
+	outline-color: var(--rintent-widget-accent-dark-text) !important;
 }
 
 /* ---------- Select / Selected as quiet text actions ---------- */

@@ -12,7 +12,6 @@ final class Reseller_Intent {
 	private $tracker;
 	private $admin;
 	private $settings;
-	private $import;
 	private $tld_strip;
 	private $price;
 	private $phone;
@@ -24,7 +23,6 @@ final class Reseller_Intent {
 		$this->assets    = new Reseller_Intent_Assets();
 		$this->tracker   = new Reseller_Intent_Tracker();
 		$this->admin     = new Reseller_Intent_Admin();
-		$this->import    = new Reseller_Intent_Import();
 		$this->tld_strip = new Reseller_Intent_TLD_Strip();
 		$this->price     = new Reseller_Intent_Price();
 		$this->phone     = new Reseller_Intent_Phone();
@@ -60,9 +58,8 @@ final class Reseller_Intent {
 		add_action( 'admin_post_rintent_export_csv', array( $this->admin, 'handle_export_domain_searches' ) );
 		add_action( 'admin_post_rintent_clear_data', array( $this->admin, 'handle_clear_data' ) );
 
-		// Settings + importer + shortcodes.
+		// Settings + shortcodes.
 		$this->settings->register();
-		$this->import->register();
 		$this->tld_strip->register();
 		$this->price->register();
 		$this->phone->register();

@@ -636,10 +636,6 @@ final class Reseller_Intent_Admin {
 
 			<?php if ( 'settings_saved' === $notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Settings saved.', 'reseller-intent' ); ?></p></div>
-			<?php elseif ( preg_match( '/^imported_(\d+)$/', $notice, $import_match ) ) : ?>
-				<div class="notice notice-success is-dismissible"><p><?php echo esc_html( sprintf( /* translators: %s: number of events */ __( '%s legacy events imported.', 'reseller-intent' ), number_format_i18n( (int) $import_match[1] ) ) ); ?></p></div>
-			<?php elseif ( 'import_skipped' === $notice ) : ?>
-				<div class="notice notice-info is-dismissible"><p><?php esc_html_e( 'Import skipped. Already imported or no legacy table found.', 'reseller-intent' ); ?></p></div>
 			<?php endif; ?>
 
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
@@ -788,18 +784,6 @@ final class Reseller_Intent_Admin {
 				<?php submit_button( __( 'Save Settings', 'reseller-intent' ) ); ?>
 			</form>
 
-			<?php if ( Reseller_Intent_Import::legacy_table_exists() && ! Reseller_Intent_Import::already_imported() ) : ?>
-				<div class="rintent-card">
-					<h2><?php esc_html_e( 'Tools', 'reseller-intent' ); ?></h2>
-					<div class="rintent-tools">
-						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-							<input type="hidden" name="action" value="rintent_import_legacy" />
-							<?php wp_nonce_field( 'rintent_import_legacy' ); ?>
-							<?php submit_button( __( 'Import Reseller Store Add-On data', 'reseller-intent' ), 'secondary', 'submit', false ); ?>
-						</form>
-					</div>
-				</div>
-			<?php endif; ?>
 		</div>
 		<?php
 	}

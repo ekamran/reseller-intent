@@ -23,7 +23,6 @@ $wpdb->query( "DROP TABLE IF EXISTS {$rintent_table}" ); // phpcs:ignore WordPre
 
 delete_option( 'rintent_settings' );
 delete_option( 'rintent_db_version' );
-delete_option( 'rintent_import_done' );
 delete_option( 'rintent_tld_strip_sets' );
 delete_option( 'rintent_tld_last_good' );
 delete_option( 'rintent_rstore_ack' );

@@ -62,10 +62,6 @@ Reseller Intent stores no IP addresses, cookies, identifiers, or user accounts, 
 
 Data starts collecting from activation. Make sure the Reseller Store domain search widget is actually on a page, and note that most page caches don't affect tracking (events post to admin-ajax).
 
-= Can I import data from the Reseller Store Add-On? =
-
-Yes, if the legacy table exists, Settings shows a one-click importer.
-
 == Shortcodes ==
 
 Build both visually under Reseller Intent → Shortcodes.
@@ -106,7 +102,7 @@ Built to stay out of your page speed score.
 == Changelog ==
 
 = 1.0.0 =
-* Initial release: anonymous domain-search tracking, intent dashboard, chunked CSV export, browser-style clear-data, retention controls, legacy importer.
+* Initial release: anonymous domain-search tracking, intent dashboard, chunked CSV export, browser-style clear-data, retention controls.
 * Widget style pack: accent-driven styling, skeleton loaders, floating Clear All, dark context, documented theming variables.
 * Shortcodes with generator UI: TLD price strip (cached + cron-warmed) and starting-at price.
 * Top Countries panel (privacy-safe geo headers), WP dashboard glance widget, search ignore-list, filterable dashboard capability.

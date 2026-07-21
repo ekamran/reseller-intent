@@ -241,10 +241,31 @@
 	white-space: nowrap;
 }
 
+/* Availability & Devices as a wide short strip: content is fixed size */
+.ri-quality-wide {
+	display: flex;
+	gap: 40px;
+	align-items: flex-start;
+	flex-wrap: wrap;
+}
+
+.ri-quality-wide .ri-quality-col {
+	flex: 1 1 320px;
+	min-width: 0;
+}
+
+.ri-quality-wide .ri-quality-col .ri-subhead {
+	margin-top: 0;
+}
+
+.ri-cell--short > .ri-panel {
+	height: auto;
+}
+
 /* Show more toggle under truncated tables */
 .ri-showmore {
 	display: block;
-	margin: 12px 2px 4px;
+	margin: 12px 0 4px 12px;
 	padding: 0;
 	border: 0;
 	background: none;

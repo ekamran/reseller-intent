@@ -409,21 +409,32 @@
 		var availRate = pct(availability.available, availTotal);
 		var deviceTotal = devices.mobile + devices.desktop;
 
+		/*
+		 * This panel's content is fixed size forever (3 chips, 2 device
+		 * bars), so it renders as a wide short strip instead of being
+		 * stretched down a tall column it can never fill.
+		 */
 		return el(Panel, { title: __( 'Availability & Devices', 'reseller-intent' ), note: __( 'How often the searched name is free, and who is searching.', 'reseller-intent' ) },
-			availTotal > 0
-				? el('div', { className: 'ri-chips' },
-					el(StatChip, { value: fmt(availRate, 1) + '%', label: __( 'Available', 'reseller-intent' ) }),
-					el(StatChip, { value: fmt(availability.available), label: __( 'Free', 'reseller-intent' ) }),
-					el(StatChip, { value: fmt(availability.taken), label: __( 'Taken', 'reseller-intent' ) })
+			el('div', { className: 'ri-quality-wide' },
+				el('div', { className: 'ri-quality-col' },
+					availTotal > 0
+						? el('div', { className: 'ri-chips' },
+							el(StatChip, { value: fmt(availRate, 1) + '%', label: __( 'Available', 'reseller-intent' ) }),
+							el(StatChip, { value: fmt(availability.available), label: __( 'Free', 'reseller-intent' ) }),
+							el(StatChip, { value: fmt(availability.taken), label: __( 'Taken', 'reseller-intent' ) })
+						)
+						: el('p', { className: 'ri-empty' }, 'No availability data in this range yet.')
+				),
+				el('div', { className: 'ri-quality-col' },
+					el('p', { className: 'ri-subhead' }, 'Searches by device'),
+					deviceTotal > 0
+						? el('div', { className: 'ri-bars' },
+							el(BarRow, { label: __( 'Desktop', 'reseller-intent' ), width: pct(devices.desktop, deviceTotal), value: fmt(devices.desktop) + ' (' + fmt(pct(devices.desktop, deviceTotal), 1) + '%)' }),
+							el(BarRow, { label: __( 'Mobile', 'reseller-intent' ), width: pct(devices.mobile, deviceTotal), value: fmt(devices.mobile) + ' (' + fmt(pct(devices.mobile, deviceTotal), 1) + '%)' })
+						)
+						: el('p', { className: 'ri-empty' }, 'No device data in this range yet.')
 				)
-				: el('p', { className: 'ri-empty' }, 'No availability data in this range yet.'),
-			el('p', { className: 'ri-subhead' }, 'Searches by device'),
-			deviceTotal > 0
-				? el('div', { className: 'ri-bars' },
-					el(BarRow, { label: __( 'Desktop', 'reseller-intent' ), width: pct(devices.desktop, deviceTotal), value: fmt(devices.desktop) + ' (' + fmt(pct(devices.desktop, deviceTotal), 1) + '%)' }),
-					el(BarRow, { label: __( 'Mobile', 'reseller-intent' ), width: pct(devices.mobile, deviceTotal), value: fmt(devices.mobile) + ' (' + fmt(pct(devices.mobile, deviceTotal), 1) + '%)' })
-				)
-				: el('p', { className: 'ri-empty' }, 'No device data in this range yet.')
+			)
 		);
 	}
 
@@ -852,6 +863,7 @@
 						 */
 						var now = data.kpis.now;
 						var defs = [
+							{ key: 'quality', span: 12, short: true, isEmpty: !(data.availability.available + data.availability.taken), node: el(QualityPanel, { availability: data.availability, devices: data.devices }) },
 							{ key: 'trend', span: 8, isEmpty: !(data.trend.labels || []).length, node: el(Panel, { title: __( 'Search vs Cart Trend', 'reseller-intent' ), note: data.bounded ? __( 'Daily activity in this range.', 'reseller-intent' ) : __( 'Monthly activity, all time.', 'reseller-intent' ) },
 								el(TrendChart, data.trend),
 								el('div', { className: 'ri-legend' },
@@ -865,7 +877,6 @@
 							{ key: 'opportunities', span: 4, isEmpty: !data.opportunities.length, node: el(OpportunitiesPanel, { items: data.opportunities }) },
 							{ key: 'repeats', span: 4, isEmpty: !data.repeats.length, node: el(DemandPanel, { repeats: data.repeats }) },
 							{ key: 'selection', span: 8, isEmpty: !data.selection.total, node: el(SelectionPanel, { selection: data.selection }) },
-							{ key: 'quality', span: 4, isEmpty: !(data.availability.available + data.availability.taken), node: el(QualityPanel, { availability: data.availability, devices: data.devices }) },
 							{ key: 'pages', span: 4, isEmpty: !data.pages.length, node: el(PagesPanel, { pages: data.pages }) },
 							{ key: 'countries', span: 4, isEmpty: !data.countries.items.length, node: el(CountriesPanel, { countries: data.countries }) },
 							{ key: 'recent', span: 12, isEmpty: !data.recent.length, node: el(RecentLog, { recent: data.recent }) }
@@ -876,7 +887,7 @@
 
 						return el('div', { className: 'ri-liquid' }, filled.concat(empties).map(function(d) {
 							var span = d.isEmpty ? 4 : d.span;
-							return el('div', { key: d.key, className: 'ri-cell ri-span-' + span + (d.isEmpty ? ' ri-cell--empty' : '') }, d.node);
+							return el('div', { key: d.key, className: 'ri-cell ri-span-' + span + (d.short ? ' ri-cell--short' : '') + (d.isEmpty ? ' ri-cell--empty' : '') }, d.node);
 						}));
 					})()
 				)

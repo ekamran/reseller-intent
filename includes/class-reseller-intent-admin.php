@@ -95,6 +95,56 @@ final class Reseller_Intent_Admin {
 				'order'          => 'ASC',
 			)
 		);
+
+		/*
+		 * Product families for range mode: GoDaddy's catalog names plans as
+		 * "Family + tier" (cPanel Starter/Economy/..., Web Hosting Plus
+		 * Launch/Grow/...). The family is the longest shared word prefix,
+		 * cut before the first numeric token (VPS sizes, backup GBs).
+		 */
+		$prefix_counts = array();
+		$product_meta  = array();
+		foreach ( $products as $product ) {
+			$words = preg_split( '/\s+/', trim( $product->post_title ) );
+			$stem  = array();
+			foreach ( $words as $word ) {
+				if ( preg_match( '/^\(?\d/', $word ) ) {
+					break;
+				}
+				$stem[] = $word;
+			}
+			if ( count( $stem ) === count( $words ) && count( $stem ) > 1 ) {
+				array_pop( $stem ); // full title is never its own family.
+			}
+			$prefixes = array();
+			for ( $k = count( $stem ); $k >= 1; $k-- ) {
+				$prefix                   = rtrim( implode( ' ', array_slice( $stem, 0, $k ) ), ' -' );
+				$prefixes[]               = $prefix;
+				$prefix_counts[ $prefix ] = ( $prefix_counts[ $prefix ] ?? 0 ) + 1;
+			}
+			$product_meta[ $product->ID ] = $prefixes;
+		}
+		$families = array();
+		foreach ( $products as $product ) {
+			$family = $product->post_title;
+			foreach ( $product_meta[ $product->ID ] as $prefix ) {
+				if ( ( $prefix_counts[ $prefix ] ?? 0 ) >= 2 ) {
+					$family = $prefix;
+					break;
+				}
+			}
+			if ( ! isset( $families[ $family ] ) ) {
+				$families[ $family ] = array();
+			}
+			$families[ $family ][] = (int) $product->ID;
+		}
+		$families = array_filter(
+			$families,
+			function ( $ids ) {
+				return count( $ids ) >= 2;
+			}
+		);
+		ksort( $families );
 		?>
 		<?php $notice = isset( $_GET['rintent_notice'] ) ? sanitize_key( wp_unslash( $_GET['rintent_notice'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 		<div class="wrap rintent-pages rintent-shortcodes">
@@ -171,7 +221,7 @@ final class Reseller_Intent_Admin {
 				<?php if ( empty( $products ) ) : ?>
 					<p><em><?php esc_html_e( 'No published Reseller Store products found. Import products in Reseller Store first.', 'reseller-intent' ); ?></em></p>
 				<?php else : ?>
-					<div class="rintent-field">
+					<div class="rintent-field" id="rintent-gen-products-row">
 						<span class="rintent-label"><label for="rintent-gen-filter"><?php esc_html_e( 'Products', 'reseller-intent' ); ?></label></span>
 						<span>
 							<input type="search" id="rintent-gen-filter" class="regular-text" placeholder="<?php esc_attr_e( 'Filter products...', 'reseller-intent' ); ?>" style="margin-bottom:8px;" />
@@ -199,6 +249,22 @@ final class Reseller_Intent_Admin {
 								<option value="max"><?php esc_html_e( 'Highest price', 'reseller-intent' ); ?></option>
 								<option value="range"><?php esc_html_e( 'Price range (cheapest to highest)', 'reseller-intent' ); ?></option>
 							</select>
+							<p class="description"><?php esc_html_e( 'Range always covers one product family, its cheapest to its highest plan.', 'reseller-intent' ); ?></p>
+						</span>
+					</div>
+					<div class="rintent-field" id="rintent-gen-family-row" style="display:none;">
+						<span class="rintent-label"><label for="rintent-gen-family"><?php esc_html_e( 'Product family', 'reseller-intent' ); ?></label></span>
+						<span>
+							<?php if ( empty( $families ) ) : ?>
+								<p class="description"><?php esc_html_e( 'No family with two or more plans found yet. Import your Reseller Store products first.', 'reseller-intent' ); ?></p>
+							<?php else : ?>
+								<select id="rintent-gen-family">
+									<?php foreach ( $families as $family_label => $family_ids ) : ?>
+										<option value="<?php echo esc_attr( implode( ',', $family_ids ) ); ?>"><?php echo esc_html( $family_label ); ?> (<?php echo esc_html( count( $family_ids ) ); ?>)</option>
+									<?php endforeach; ?>
+								</select>
+							<?php endif; ?>
+							<p class="description"><?php esc_html_e( 'All plans of the family are included automatically.', 'reseller-intent' ); ?></p>
 						</span>
 					</div>
 					<div class="rintent-field">
@@ -234,7 +300,6 @@ final class Reseller_Intent_Admin {
 						<span class="rintent-label"><?php esc_html_e( 'Live preview', 'reseller-intent' ); ?></span>
 						<span>
 							<div id="rintent-preview-price" class="rintent-preview rintent-preview--inline" data-empty="<?php esc_attr_e( 'Select products to see it.', 'reseller-intent' ); ?>"></div>
-							<p id="rintent-range-hint" class="description" style="display:none;"><?php esc_html_e( 'Range shows two prices only when the selected products have different prices. Pick at least two plans, like the cheapest and the highest of a family.', 'reseller-intent' ); ?></p>
 						</span>
 					</div>
 				<div class="rintent-field">
@@ -337,19 +402,31 @@ final class Reseller_Intent_Admin {
 				range: ['<?php echo esc_js( __( 'Plans from ', 'reseller-intent' ) ); ?>', '<?php echo esc_js( __( ' yearly', 'reseller-intent' ) ); ?>']
 			};
 
+			function priceIds(mode) {
+				if (mode === 'range') {
+					var fam = document.getElementById('rintent-gen-family');
+					return fam && fam.value ? fam.value.split(',') : [];
+				}
+				return Array.prototype.slice.call(document.querySelectorAll('.rintent-gen-product:checked')).map(function(cb) { return cb.value; });
+			}
+
 			function buildPrice() {
 				var outEl = document.getElementById('rintent-gen-price-out');
 				if (!outEl) {
 					return;
 				}
-				var ids = Array.prototype.slice.call(document.querySelectorAll('.rintent-gen-product:checked')).map(function(cb) { return cb.value; });
 				var mode = document.getElementById('rintent-gen-mode').value;
+				var ids = priceIds(mode);
 				var before = esc(document.getElementById('rintent-gen-before').value);
 				var after = esc(document.getElementById('rintent-gen-after').value);
 				var separator = esc(document.getElementById('rintent-gen-separator').value);
 				var fallback = esc(document.getElementById('rintent-gen-fallback').value);
 
 				document.getElementById('rintent-gen-sep-row').style.display = mode === 'range' ? '' : 'none';
+				var famRow = document.getElementById('rintent-gen-family-row');
+				var prodRow = document.getElementById('rintent-gen-products-row');
+				if (famRow) { famRow.style.display = mode === 'range' ? '' : 'none'; }
+				if (prodRow) { prodRow.style.display = mode === 'range' ? 'none' : ''; }
 				document.getElementById('rintent-gen-before').placeholder = PLACEHOLDERS[mode][0];
 				document.getElementById('rintent-gen-after').placeholder = PLACEHOLDERS[mode][1];
 
@@ -447,15 +524,8 @@ final class Reseller_Intent_Admin {
 			}
 
 			function previewPrice() {
-				var checked = Array.prototype.slice.call(document.querySelectorAll('.rintent-gen-product:checked'));
-				var ids = checked.map(function(cb) { return cb.value; }).join(',');
-				var hint = document.getElementById('rintent-range-hint');
-				if (hint) {
-					var distinct = {};
-					checked.forEach(function(cb) { if (cb.getAttribute('data-price')) { distinct[cb.getAttribute('data-price')] = 1; } });
-					var needHint = document.getElementById('rintent-gen-mode').value === 'range' && checked.length > 0 && Object.keys(distinct).length < 2;
-					hint.style.display = needHint ? '' : 'none';
-				}
+				var mode = document.getElementById('rintent-gen-mode').value;
+				var ids = priceIds(mode).join(',');
 				var target = document.getElementById('rintent-preview-price');
 				if (!ids) {
 					if (target) { target.innerHTML = '<em>' + (target.getAttribute('data-empty') || '') + '</em>'; }
@@ -486,6 +556,10 @@ final class Reseller_Intent_Admin {
 			document.querySelectorAll('.rintent-gen-product').forEach(function(cb) {
 				cb.addEventListener('change', previewPrice);
 			});
+			var famSel = document.getElementById('rintent-gen-family');
+			if (famSel) {
+				famSel.addEventListener('change', function() { buildPrice(); previewPrice(); });
+			}
 
 			previewTld();
 			previewPrice();

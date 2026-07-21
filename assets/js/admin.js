@@ -217,18 +217,32 @@
 			});
 		}
 
+		/*
+		 * Column sizing: the first column flexes and truncates long values
+		 * with a full-value tooltip; fixed-width columns (numbers, dates)
+		 * hug the right so a lone "1" never floats in a wide gap.
+		 */
+		var colWidths = props.colWidths || props.columns.map(function(c, i) { return i === 0 ? '' : '110px'; });
+
 		return el('div', { className: 'ri-table-shell', ref: shellRef },
-			el('table', { className: 'ri-table' },
+			el('table', { className: 'ri-table ri-table--fixed' },
+				el('colgroup', null, colWidths.map(function(w, i) {
+					return el('col', { key: i, style: w ? { width: w } : null });
+				})),
 				el('thead', null,
 					el('tr', null, props.columns.map(function(col, i) {
-						return el('th', { key: i }, col);
+						return el('th', { key: i, className: colWidths[i] ? 'ri-col-tight' : null }, col);
 					}))
 				),
 				el('tbody', null,
 					visible.length
 						? visible.map(function(cells, r) {
 							return el('tr', { key: r }, cells.map(function(cell, c) {
-								return el('td', { key: c }, cell);
+								return el('td', {
+									key: c,
+									className: colWidths[c] ? 'ri-col-tight' : null,
+									title: typeof cell === 'string' ? cell : null
+								}, cell);
 							}));
 						})
 						: el('tr', null, el('td', { className: 'ri-empty', colSpan: props.columns.length }, props.empty))
@@ -411,7 +425,7 @@
 		}
 		var rows = items.map(mapItem);
 		return el(Panel, { title: __( 'Searched TLDs', 'reseller-intent' ), note: __( 'Which extensions people look for.', 'reseller-intent' ) },
-			el(MiniTable, { columns: [__( 'TLD', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )], rows: rows, empty: __( 'No searches in this range.', 'reseller-intent' ), initialFetched: 25, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('tlds', offset, mapItem); } : null })
+			el(MiniTable, { columns: [__( 'TLD', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )], rows: rows, empty: __( 'No searches in this range.', 'reseller-intent' ), colWidths: ['', '200px'], initialFetched: 25, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('tlds', offset, mapItem); } : null })
 		);
 	}
 
@@ -421,7 +435,7 @@
 		}
 		var repeats = (props.repeats || []).map(mapItem);
 		return el(Panel, { title: __( 'Repeat Demand', 'reseller-intent' ), note: __( 'Domains searched 2+ times, buyers circling.', 'reseller-intent' ) },
-			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )], rows: repeats, empty: __( 'No repeated searches in this range.', 'reseller-intent' ), initialFetched: 25, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('repeats', offset, mapItem); } : null })
+			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )], rows: repeats, empty: __( 'No repeated searches in this range.', 'reseller-intent' ), colWidths: ['', '100px'], initialFetched: 25, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('repeats', offset, mapItem); } : null })
 		);
 	}
 
@@ -437,7 +451,7 @@
 					return el(StatChip, { key: i, value: fmt(tld.count), label: tld.label });
 				}))
 				: null,
-			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Added', 'reseller-intent' )], rows: rows, empty: __( 'No carted domains in this range.', 'reseller-intent' ), initialFetched: 15, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('carted', offset, mapItem); } : null })
+			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Added', 'reseller-intent' )], rows: rows, empty: __( 'No carted domains in this range.', 'reseller-intent' ), colWidths: ['', '80px'], initialFetched: 15, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('carted', offset, mapItem); } : null })
 		);
 	}
 
@@ -449,7 +463,7 @@
 		var rows = items.map(mapItem);
 
 		return el(Panel, { title: __( 'Missed Opportunities', 'reseller-intent' ), note: __( 'Searched and available, but never taken to cart. Warm leads.', 'reseller-intent' ) },
-			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Last seen', 'reseller-intent' )], rows: rows, empty: __( 'Nothing missed in this range. Every available search went to cart, or there were none.', 'reseller-intent' ), initialFetched: 15, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('opportunities', offset, mapItem); } : null })
+			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Last seen', 'reseller-intent' )], rows: rows, empty: __( 'Nothing missed in this range. Every available search went to cart, or there were none.', 'reseller-intent' ), colWidths: ['', '100px', '125px'], initialFetched: 15, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('opportunities', offset, mapItem); } : null })
 		);
 	}
 
@@ -472,11 +486,11 @@
 					el(StatChip, { value: fmt(exactRate, 1) + '%', label: __( 'Kept searched name', 'reseller-intent' ) })
 				)
 				: null,
-			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Selects', 'reseller-intent' )], rows: topRows, empty: __( 'No selection data in this range yet.', 'reseller-intent' ), initialFetched: 25, totalRows: (props.totals || {}).selectionTop, loadMore: props.loadRows ? function(offset) { return props.loadRows('selection_top', offset, mapTop); } : null }),
+			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Selects', 'reseller-intent' )], rows: topRows, empty: __( 'No selection data in this range yet.', 'reseller-intent' ), colWidths: ['', '95px'], initialFetched: 25, totalRows: (props.totals || {}).selectionTop, loadMore: props.loadRows ? function(offset) { return props.loadRows('selection_top', offset, mapTop); } : null }),
 			pairRows.length
 				? el(Fragment, null,
 					el('p', { className: 'ri-subhead' }, 'Searched → settled for'),
-					el(MiniTable, { columns: [__( 'Searched', 'reseller-intent' ), __( 'Selected instead', 'reseller-intent' ), __( 'Times', 'reseller-intent' )], rows: pairRows, empty: '', initialFetched: 25, totalRows: (props.totals || {}).selectionPairs, loadMore: props.loadRows ? function(offset) { return props.loadRows('selection_pairs', offset, mapPair); } : null })
+					el(MiniTable, { columns: [__( 'Searched', 'reseller-intent' ), __( 'Selected instead', 'reseller-intent' ), __( 'Times', 'reseller-intent' )], rows: pairRows, empty: '', colWidths: ['', '', '80px'], initialFetched: 25, totalRows: (props.totals || {}).selectionPairs, loadMore: props.loadRows ? function(offset) { return props.loadRows('selection_pairs', offset, mapPair); } : null })
 				)
 				: null
 		);
@@ -498,7 +512,7 @@
 			];
 		});
 		return el(Panel, { title: __( 'Search by Page', 'reseller-intent' ), note: __( 'Which page each search and cart click came from.', 'reseller-intent' ) },
-			el(MiniTable, { columns: [__( 'Page', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Cart clicks', 'reseller-intent' )], rows: rows, empty: __( 'No page data in this range.', 'reseller-intent' ) })
+			el(MiniTable, { columns: [__( 'Page', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Cart clicks', 'reseller-intent' )], rows: rows, colWidths: ['', '195px', '110px'], empty: __( 'No page data in this range.', 'reseller-intent' ) })
 		);
 	}
 
@@ -643,7 +657,7 @@
 					: null
 			),
 			el(MiniTable, {
-				columns: [__( 'Domain', 'reseller-intent' ), __( 'Result', 'reseller-intent' ), __( 'Device', 'reseller-intent' ), __( 'Searched At', 'reseller-intent' )],
+				columns: [__( 'Domain', 'reseller-intent' ), __( 'Result', 'reseller-intent' ), __( 'Device', 'reseller-intent' ), __( 'Searched At', 'reseller-intent' )], colWidths: ['', '90px', '95px', '155px'],
 				rows: pageRows,
 				empty: filter ? 'Nothing matches that filter.' : 'No searches in this range.'
 			})

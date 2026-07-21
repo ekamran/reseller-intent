@@ -275,11 +275,62 @@
 	height: auto;
 }
 
+/* Fixed-layout tables: first column flexes and truncates, tight columns
+ * hug their content on the right */
+.ri-table--fixed {
+	table-layout: fixed;
+	width: 100%;
+}
+
+.ri-table--fixed td,
+.ri-table--fixed th {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.ri-table--fixed .ri-col-tight {
+	text-align: right;
+}
+
+/* Quiet compact pager, shared by tables and the recent log */
+.ri-pager .button,
+.ri-pager button.button {
+	min-height: 24px;
+	height: 24px;
+	line-height: 22px;
+	padding: 0 9px;
+	border-radius: 6px;
+	border-color: #d9e2ec;
+	background: #fff;
+	color: #334155;
+	font-size: 14px;
+	box-shadow: none;
+}
+
+.ri-pager .button:hover:not(:disabled) {
+	border-color: #94a3b8;
+	color: #0f172a;
+	background: #fff;
+}
+
+.ri-pager .button:disabled {
+	opacity: 0.35;
+}
+
+.ri-pager-state {
+	min-width: 52px;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+}
+
 /* Show more / Load more / Show less row */
 .ri-showmore-row {
 	display: flex;
-	gap: 16px;
+	gap: 14px;
 	align-items: center;
+	flex-wrap: wrap;
+	margin-top: 10px;
 }
 
 /* Show more toggle under truncated tables */

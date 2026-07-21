@@ -231,7 +231,7 @@
 				})),
 				el('thead', null,
 					el('tr', null, props.columns.map(function(col, i) {
-						return el('th', { key: i, className: colWidths[i] ? 'ri-col-tight' : null }, col);
+						return el('th', { key: i, className: colWidths[i] ? 'ri-col-tight' : null, title: typeof col === 'string' ? col : null }, col);
 					}))
 				),
 				el('tbody', null,
@@ -841,11 +841,18 @@
 				});
 			}
 
-			window.addEventListener('resize', measureAll);
+			var resizeSettle = null;
+			function onResize() {
+				measureAll();
+				window.clearTimeout(resizeSettle);
+				resizeSettle = window.setTimeout(measureAll, 250);
+			}
+			window.addEventListener('resize', onResize);
 
 			return function() {
 				window.clearTimeout(late);
-				window.removeEventListener('resize', measureAll);
+				window.clearTimeout(resizeSettle);
+				window.removeEventListener('resize', onResize);
 				if (observer) {
 					observer.disconnect();
 				}

@@ -23,6 +23,28 @@
 		{ key: 'all', label: __( 'Lifetime', 'reseller-intent' ) }
 	];
 
+	function fetchPanelRows(panel, range, custom, offset, mapRow) {
+		var body = new window.FormData();
+		body.append('action', 'rintent_panel_rows');
+		body.append('nonce', resellerIntentAdmin.nonce);
+		body.append('panel', panel);
+		body.append('range', range);
+		if (range === 'custom' && custom) {
+			body.append('from', custom.from);
+			body.append('to', custom.to);
+		}
+		body.append('offset', String(offset));
+
+		return window.fetch(resellerIntentAdmin.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: body })
+			.then(function(response) { return response.json(); })
+			.then(function(json) {
+				if (!json || !json.success || !json.data) {
+					return { rows: [], hasMore: false };
+				}
+				return { rows: (json.data.items || []).map(mapRow), hasMore: !!json.data.hasMore };
+			});
+	}
+
 	var PANELS = [
 		{ key: 'trend', label: __( 'Search vs Cart Trend', 'reseller-intent' ) },
 		{ key: 'funnel', label: __( 'Conversion Funnel', 'reseller-intent' ) },
@@ -128,9 +150,36 @@
 		var expandState = useState(false);
 		var expanded = expandState[0];
 		var setExpanded = expandState[1];
+		var extraState = useState({ rows: [], hasMore: null, loading: false });
+		var extra = extraState[0];
+		var setExtra = extraState[1];
 		var maxRows = props.maxRows || 6;
-		var visible = expanded ? props.rows : props.rows.slice(0, maxRows);
-		var hidden = props.rows.length - maxRows;
+
+		// New base rows mean the range changed: drop server-fetched extras.
+		useEffect(function() {
+			setExtra({ rows: [], hasMore: null, loading: false });
+		}, [props.rows]);
+
+		var allRows = props.rows.concat(extra.rows);
+		var visible = expanded ? allRows : allRows.slice(0, maxRows);
+		var hidden = allRows.length - maxRows;
+		// Until the server says otherwise, a full first slice means there
+		// is probably more on the server.
+		var hasMore = extra.hasMore === null
+			? !!(props.loadMore && props.rows.length >= (props.initialFetched || 25))
+			: extra.hasMore;
+
+		function loadFromServer() {
+			if (extra.loading || !props.loadMore) {
+				return;
+			}
+			setExtra({ rows: extra.rows, hasMore: extra.hasMore, loading: true });
+			props.loadMore(allRows.length).then(function(result) {
+				setExtra({ rows: extra.rows.concat(result.rows), hasMore: result.hasMore, loading: false });
+			}).catch(function() {
+				setExtra({ rows: extra.rows, hasMore: false, loading: false });
+			});
+		}
 
 		return el('div', { className: 'ri-table-shell' },
 			el('table', { className: 'ri-table' },
@@ -149,14 +198,23 @@
 						: el('tr', null, el('td', { className: 'ri-empty', colSpan: props.columns.length }, props.empty))
 				)
 			),
-			hidden > 0 ? el('button', {
-				className: 'ri-showmore',
-				'aria-expanded': expanded,
-				onClick: function() { setExpanded(!expanded); }
-			}, expanded
-				? __( 'Show less', 'reseller-intent' )
-				: sprintf( /* translators: %s: number of hidden rows */ __( 'Show %s more', 'reseller-intent' ), fmt(hidden) )
-			) : null
+			el('span', { className: 'ri-showmore-row' },
+				hidden > 0 && ! expanded ? el('button', {
+					className: 'ri-showmore',
+					'aria-expanded': false,
+					onClick: function() { setExpanded(true); }
+				}, sprintf( /* translators: %s: number of hidden rows */ __( 'Show %s more', 'reseller-intent' ), fmt(hidden) )) : null,
+				expanded && hasMore ? el('button', {
+					className: 'ri-showmore',
+					disabled: extra.loading,
+					onClick: loadFromServer
+				}, extra.loading ? __( 'Loading...', 'reseller-intent' ) : __( 'Load 25 more', 'reseller-intent' )) : null,
+				expanded ? el('button', {
+					className: 'ri-showmore',
+					'aria-expanded': true,
+					onClick: function() { setExpanded(false); }
+				}, __( 'Show less', 'reseller-intent' )) : null
+			)
 		);
 	}
 
@@ -304,7 +362,7 @@
 	function TldPanel(props) {
 		var items = props.items || [];
 		var total = props.total || 0;
-		var rows = items.map(function(item) {
+		function mapItem(item) {
 			return [
 				item.label,
 				el(Fragment, null,
@@ -314,56 +372,62 @@
 					fmt(item.count) + ' (' + fmt(pct(item.count, total), 1) + '%)'
 				)
 			];
-		});
+		}
+		var rows = items.map(mapItem);
 		return el(Panel, { title: __( 'Searched TLDs', 'reseller-intent' ), note: __( 'Which extensions people look for.', 'reseller-intent' ) },
-			el(MiniTable, { columns: [__( 'TLD', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )], rows: rows, empty: __( 'No searches in this range.', 'reseller-intent' ) })
+			el(MiniTable, { columns: [__( 'TLD', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )], rows: rows, empty: __( 'No searches in this range.', 'reseller-intent' ), initialFetched: 25, loadMore: props.loadRows ? function(offset) { return props.loadRows('tlds', offset, mapItem); } : null })
 		);
 	}
 
 	function DemandPanel(props) {
-		var repeats = (props.repeats || []).map(function(row) {
+		function mapItem(row) {
 			return [row.domain, fmt(row.hits)];
-		});
+		}
+		var repeats = (props.repeats || []).map(mapItem);
 		return el(Panel, { title: __( 'Repeat Demand', 'reseller-intent' ), note: __( 'Domains searched 2+ times, buyers circling.', 'reseller-intent' ) },
-			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )], rows: repeats, empty: __( 'No repeated searches in this range.', 'reseller-intent' ) })
+			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )], rows: repeats, empty: __( 'No repeated searches in this range.', 'reseller-intent' ), initialFetched: 25, loadMore: props.loadRows ? function(offset) { return props.loadRows('repeats', offset, mapItem); } : null })
 		);
 	}
 
 	function CartedPanel(props) {
 		var carted = props.carted || { domains: [], tlds: [] };
-		var rows = carted.domains.slice(0, 8).map(function(row) {
+		function mapItem(row) {
 			return [row.domain, fmt(row.count)];
-		});
+		}
+		var rows = carted.domains.map(mapItem);
 		return el(Panel, { title: __( 'Carted Domains', 'reseller-intent' ), note: __( 'What shoppers actually sent to cart.', 'reseller-intent' ) },
 			carted.tlds.length
 				? el('div', { className: 'ri-chips' }, carted.tlds.map(function(tld, i) {
 					return el(StatChip, { key: i, value: fmt(tld.count), label: tld.label });
 				}))
 				: null,
-			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Added', 'reseller-intent' )], rows: rows, empty: __( 'No carted domains in this range.', 'reseller-intent' ) })
+			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Added', 'reseller-intent' )], rows: rows, empty: __( 'No carted domains in this range.', 'reseller-intent' ), initialFetched: 15, loadMore: props.loadRows ? function(offset) { return props.loadRows('carted', offset, mapItem); } : null })
 		);
 	}
 
 	function OpportunitiesPanel(props) {
 		var items = props.items || [];
-		var rows = items.map(function(row) {
+		function mapItem(row) {
 			return [row.domain, fmt(row.count), row.last];
-		});
+		}
+		var rows = items.map(mapItem);
 
 		return el(Panel, { title: __( 'Missed Opportunities', 'reseller-intent' ), note: __( 'Searched and available, but never taken to cart. Warm leads.', 'reseller-intent' ) },
-			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Last seen', 'reseller-intent' )], rows: rows, empty: __( 'Nothing missed in this range. Every available search went to cart, or there were none.', 'reseller-intent' ) })
+			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Last seen', 'reseller-intent' )], rows: rows, empty: __( 'Nothing missed in this range. Every available search went to cart, or there were none.', 'reseller-intent' ), initialFetched: 15, loadMore: props.loadRows ? function(offset) { return props.loadRows('opportunities', offset, mapItem); } : null })
 		);
 	}
 
 	function SelectionPanel(props) {
 		var selection = props.selection || { total: 0, exact: 0, top: [], pairs: [] };
 		var exactRate = pct(selection.exact, selection.total);
-		var topRows = selection.top.map(function(row) {
+		function mapTop(row) {
 			return [row.domain, fmt(row.hits)];
-		});
-		var pairRows = selection.pairs.map(function(row) {
+		}
+		function mapPair(row) {
 			return [row.searched, row.selected, fmt(row.hits)];
-		});
+		}
+		var topRows = selection.top.map(mapTop);
+		var pairRows = selection.pairs.map(mapPair);
 
 		return el(Panel, { title: __( 'Selection Behavior', 'reseller-intent' ), note: __( 'What gets picked, and what taken searches settle for.', 'reseller-intent' ) },
 			selection.total > 0
@@ -372,11 +436,11 @@
 					el(StatChip, { value: fmt(exactRate, 1) + '%', label: __( 'Kept searched name', 'reseller-intent' ) })
 				)
 				: null,
-			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Selects', 'reseller-intent' )], rows: topRows, empty: __( 'No selection data in this range yet.', 'reseller-intent' ) }),
+			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Selects', 'reseller-intent' )], rows: topRows, empty: __( 'No selection data in this range yet.', 'reseller-intent' ), initialFetched: 25, loadMore: props.loadRows ? function(offset) { return props.loadRows('selection_top', offset, mapTop); } : null }),
 			pairRows.length
 				? el(Fragment, null,
 					el('p', { className: 'ri-subhead' }, 'Searched → settled for'),
-					el(MiniTable, { columns: [__( 'Searched', 'reseller-intent' ), __( 'Selected instead', 'reseller-intent' ), __( 'Times', 'reseller-intent' )], rows: pairRows, empty: '' })
+					el(MiniTable, { columns: [__( 'Searched', 'reseller-intent' ), __( 'Selected instead', 'reseller-intent' ), __( 'Times', 'reseller-intent' )], rows: pairRows, empty: '', initialFetched: 25, loadMore: props.loadRows ? function(offset) { return props.loadRows('selection_pairs', offset, mapPair); } : null })
 				)
 				: null
 		);
@@ -863,6 +927,9 @@
 						 * end, so no range ever leaves holes in the middle.
 						 */
 						var now = data.kpis.now;
+						var loadRows = function(panel, offset, mapRow) {
+							return fetchPanelRows(panel, range, customApplied, offset, mapRow);
+						};
 						var defs = [
 							{ key: 'quality', span: 12, short: true, isEmpty: !(data.availability.available + data.availability.taken), node: el(QualityPanel, { availability: data.availability, devices: data.devices }) },
 							{ key: 'trend', span: 8, isEmpty: !((data.trend.searches || []).some(function(v) { return v > 0; }) || (data.trend.carts || []).some(function(v) { return v > 0; })), node: el(Panel, { title: __( 'Search vs Cart Trend', 'reseller-intent' ), note: data.bounded ? __( 'Daily activity in this range.', 'reseller-intent' ) : __( 'Monthly activity, all time.', 'reseller-intent' ) },
@@ -873,11 +940,11 @@
 								)
 							) },
 							{ key: 'funnel', span: 4, short: true, isEmpty: !now.searches, node: el(FunnelPanel, { now: now, cartSizes: data.cartSizes }) },
-							{ key: 'tlds', span: 4, isEmpty: !data.tlds.items.length, node: el(TldPanel, { items: data.tlds.items, total: data.tlds.total }) },
-							{ key: 'carted', span: 4, isEmpty: !data.carted.domains.length, node: el(CartedPanel, { carted: data.carted }) },
-							{ key: 'opportunities', span: 4, isEmpty: !data.opportunities.length, node: el(OpportunitiesPanel, { items: data.opportunities }) },
-							{ key: 'repeats', span: 4, isEmpty: !data.repeats.length, node: el(DemandPanel, { repeats: data.repeats }) },
-							{ key: 'selection', span: 8, isEmpty: !data.selection.total, node: el(SelectionPanel, { selection: data.selection }) },
+							{ key: 'tlds', span: 4, isEmpty: !data.tlds.items.length, node: el(TldPanel, { items: data.tlds.items, total: data.tlds.total, loadRows: loadRows }) },
+							{ key: 'carted', span: 4, isEmpty: !data.carted.domains.length, node: el(CartedPanel, { carted: data.carted, loadRows: loadRows }) },
+							{ key: 'opportunities', span: 4, isEmpty: !data.opportunities.length, node: el(OpportunitiesPanel, { items: data.opportunities, loadRows: loadRows }) },
+							{ key: 'repeats', span: 4, isEmpty: !data.repeats.length, node: el(DemandPanel, { repeats: data.repeats, loadRows: loadRows }) },
+							{ key: 'selection', span: 8, isEmpty: !data.selection.total, node: el(SelectionPanel, { selection: data.selection, loadRows: loadRows }) },
 							{ key: 'pages', span: 4, short: true, isEmpty: !data.pages.length, node: el(PagesPanel, { pages: data.pages }) },
 							{ key: 'countries', span: 4, short: true, isEmpty: !data.countries.items.length, node: el(CountriesPanel, { countries: data.countries }) },
 							{ key: 'recent', span: 12, isEmpty: !data.recent.length, node: el(RecentLog, { recent: data.recent }) }

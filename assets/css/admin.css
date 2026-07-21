@@ -262,6 +262,13 @@
 	height: auto;
 }
 
+/* Show more / Load more / Show less row */
+.ri-showmore-row {
+	display: flex;
+	gap: 16px;
+	align-items: center;
+}
+
 /* Show more toggle under truncated tables */
 .ri-showmore {
 	display: block;

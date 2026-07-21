@@ -732,6 +732,173 @@ final class Reseller_Intent_Admin {
 		return $from_ts && $to_ts && $from_ts <= $to_ts && ( $to_ts - $from_ts ) <= 2 * YEAR_IN_SECONDS;
 	}
 
+	/**
+	 * Shared range condition for panel queries.
+	 */
+	private function range_where( $range_key, $from = '', $to = '' ) {
+		global $wpdb;
+
+		if ( 'custom' === $range_key ) {
+			return $wpdb->prepare(
+				' AND created_at >= %s AND created_at < %s',
+				$from . ' 00:00:00',
+				gmdate( 'Y-m-d', strtotime( $to . ' +1 day' ) ) . ' 00:00:00'
+			);
+		}
+
+		if ( 'all' === $range_key ) {
+			return '';
+		}
+
+		$len = (int) $range_key;
+
+		return $wpdb->prepare( ' AND created_at >= %s', wp_date( 'Y-m-d 00:00:00', time() - ( ( $len - 1 ) * DAY_IN_SECONDS ) ) );
+	}
+
+	/**
+	 * Deeper rows for one list panel: the dashboard ships the top slice,
+	 * Show more pages the rest 25 at a time so Lifetime views can reach
+	 * every row without a giant initial payload.
+	 */
+	public function ajax_panel_rows() {
+		global $wpdb;
+
+		if ( ! current_user_can( self::capability() ) ) {
+			wp_send_json_error( array( 'message' => 'Forbidden' ), 403 );
+		}
+		check_ajax_referer( 'rintent_dashboard_data', 'nonce' );
+
+		$panel     = isset( $_POST['panel'] ) ? sanitize_key( wp_unslash( $_POST['panel'] ) ) : '';
+		$range_key = isset( $_POST['range'] ) ? sanitize_key( wp_unslash( $_POST['range'] ) ) : '90';
+		$from      = isset( $_POST['from'] ) ? sanitize_text_field( wp_unslash( $_POST['from'] ) ) : '';
+		$to        = isset( $_POST['to'] ) ? sanitize_text_field( wp_unslash( $_POST['to'] ) ) : '';
+		$offset    = isset( $_POST['offset'] ) ? min( 10000, absint( $_POST['offset'] ) ) : 0;
+		$limit     = 25;
+
+		if ( ! in_array( $range_key, array( '7', '30', '90', 'all', 'custom' ), true ) ) {
+			$range_key = '90';
+		}
+		if ( 'custom' === $range_key && ! self::valid_custom_range( $from, $to ) ) {
+			$range_key = '90';
+		}
+
+		$where      = $this->range_where( $range_key, $from, $to );
+		$table_name = Reseller_Intent_DB::table_name();
+		$fetch      = $limit + 1;
+		$items      = array();
+
+		switch ( $panel ) {
+			case 'tlds':
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT LOWER(SUBSTRING_INDEX(domain_query, '.', -1)) AS tld, SUM(event_count) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s{$where} GROUP BY tld ORDER BY hits DESC LIMIT %d OFFSET %d", '%' . $wpdb->esc_like( '.' ) . '%', $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				foreach ( $rows as $row ) {
+					$items[] = array(
+						'label' => '.' . (string) $row->tld,
+						'count' => (int) $row->hits,
+					);
+				}
+				break;
+
+			case 'repeats':
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT domain_query AS domain, SUM(event_count) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> ''{$where} GROUP BY domain_query HAVING hits >= 2 ORDER BY hits DESC LIMIT %d OFFSET %d", $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				foreach ( $rows as $row ) {
+					$items[] = array(
+						'domain' => (string) $row->domain,
+						'hits'   => (int) $row->hits,
+					);
+				}
+				break;
+
+			case 'selection_top':
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT domain_query AS domain, SUM(event_count) AS hits FROM {$table_name} WHERE event_type = 'domain_select' AND domain_query <> ''{$where} GROUP BY domain_query ORDER BY hits DESC LIMIT %d OFFSET %d", $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				foreach ( $rows as $row ) {
+					$items[] = array(
+						'domain' => (string) $row->domain,
+						'hits'   => (int) $row->hits,
+					);
+				}
+				break;
+
+			case 'selection_pairs':
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT related_query AS searched, domain_query AS selected, COUNT(*) AS hits FROM {$table_name} WHERE event_type = 'domain_select' AND domain_query <> '' AND related_query <> '' AND related_query <> domain_query AND domain_query NOT LIKE CONCAT(related_query, '.%'){$where} GROUP BY related_query, domain_query ORDER BY hits DESC LIMIT %d OFFSET %d", $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.LikeWildcardsInQuery -- wildcard is part of a CONCAT against a column, not user input.
+				foreach ( $rows as $row ) {
+					$items[] = array(
+						'searched' => (string) $row->searched,
+						'selected' => (string) $row->selected,
+						'hits'     => (int) $row->hits,
+					);
+				}
+				break;
+
+			case 'countries':
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT country, COALESCE(SUM(event_count),0) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND country <> ''{$where} GROUP BY country ORDER BY hits DESC LIMIT %d OFFSET %d", $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				foreach ( $rows as $row ) {
+					$items[] = array(
+						'code'  => (string) $row->country,
+						'count' => (int) $row->hits,
+					);
+				}
+				break;
+
+			case 'carted':
+				// Aggregated from items_json, so paging slices the aggregate.
+				$json_rows     = $wpdb->get_results( "SELECT items_json FROM {$table_name} WHERE event_type = 'continue_to_cart' AND items_json IS NOT NULL AND items_json <> ''{$where} ORDER BY id DESC LIMIT 2000" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$domain_counts = array();
+				foreach ( $json_rows as $json_row ) {
+					foreach ( $this->extract_carted_domains( (string) $json_row->items_json ) as $domain ) {
+						$domain_counts[ $domain ] = isset( $domain_counts[ $domain ] ) ? $domain_counts[ $domain ] + 1 : 1;
+					}
+				}
+				arsort( $domain_counts );
+				foreach ( array_slice( $domain_counts, $offset, $fetch, true ) as $domain => $count ) {
+					$items[] = array(
+						'domain' => (string) $domain,
+						'count'  => (int) $count,
+					);
+				}
+				break;
+
+			case 'opportunities':
+				$carted    = array();
+				$json_rows = $wpdb->get_results( "SELECT items_json FROM {$table_name} WHERE event_type = 'continue_to_cart' AND items_json IS NOT NULL AND items_json <> '' ORDER BY id DESC LIMIT 800" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				foreach ( $json_rows as $json_row ) {
+					foreach ( $this->extract_carted_domains( (string) $json_row->items_json ) as $domain ) {
+						$carted[ strtolower( $domain ) ] = true;
+					}
+				}
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT domain_query, COALESCE(SUM(event_count),0) AS hits, MAX(created_at) AS last_seen FROM {$table_name} WHERE event_type = 'domain_search' AND is_available = 1 AND domain_query <> ''{$where} GROUP BY domain_query ORDER BY hits DESC, last_seen DESC LIMIT %d OFFSET %d", $fetch + 60, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				foreach ( $rows as $row ) {
+					if ( isset( $carted[ strtolower( (string) $row->domain_query ) ] ) ) {
+						continue;
+					}
+					$items[] = array(
+						'domain' => (string) $row->domain_query,
+						'count'  => (int) $row->hits,
+						'last'   => sprintf(
+							/* translators: %s: human readable time difference */
+							__( '%s ago', 'reseller-intent' ),
+							human_time_diff( (int) strtotime( (string) $row->last_seen ), strtotime( current_time( 'mysql' ) ) )
+						),
+					);
+					if ( count( $items ) > $limit ) {
+						break;
+					}
+				}
+				break;
+
+			default:
+				wp_send_json_error( array( 'message' => 'Unknown panel' ), 400 );
+		}
+
+		$has_more = count( $items ) > $limit;
+
+		wp_send_json_success(
+			array(
+				'items'   => array_slice( $items, 0, $limit ),
+				'hasMore' => $has_more,
+			)
+		);
+	}
+
 	private function get_dashboard_data( $range_key, $from = '', $to = '' ) {
 		global $wpdb;
 

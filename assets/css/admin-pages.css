@@ -320,6 +320,38 @@
 	z-index: 10;
 }
 
+/* Live shortcode previews: real frontend render inside a framed box */
+.rintent-preview {
+	padding: 18px;
+	border: 1px dashed #cfd7e3;
+	border-radius: 10px;
+	background: #fafbfd;
+	min-height: 30px;
+	transition: background 0.2s ease;
+}
+
+.rintent-preview:empty::before {
+	content: attr(data-empty);
+	color: #94a3b8;
+	font-size: 12.5px;
+}
+
+.rintent-preview--dark {
+	background: #0f1226;
+	border-color: #2a2f4a;
+}
+
+.rintent-preview--inline {
+	padding: 12px 16px;
+	font-size: 15px;
+}
+
+.rintent-preview--inline em {
+	color: #94a3b8;
+	font-size: 12.5px;
+	font-style: normal;
+}
+
 /* Inline mini-forms and action rows inside cards */
 .rintent-inline-form {
 	display: inline-block;

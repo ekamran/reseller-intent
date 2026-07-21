@@ -145,6 +145,13 @@ final class Reseller_Intent_Admin {
 					</span>
 				</div>
 				<div class="rintent-field">
+					<span class="rintent-label"><?php esc_html_e( 'Live preview', 'reseller-intent' ); ?></span>
+					<span>
+						<div id="rintent-preview-tld" class="rintent-preview" data-empty="<?php esc_attr_e( 'Rendering...', 'reseller-intent' ); ?>"></div>
+						<p class="description"><?php esc_html_e( 'Exactly what visitors get, live prices included.', 'reseller-intent' ); ?></p>
+					</span>
+				</div>
+				<div class="rintent-field">
 					<span class="rintent-label"><?php esc_html_e( 'Price cache', 'reseller-intent' ); ?></span>
 					<span>
 						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="rintent-inline-form">
@@ -223,7 +230,13 @@ final class Reseller_Intent_Admin {
 							<button type="button" class="button" id="rintent-gen-price-copy"><?php esc_html_e( 'Copy', 'reseller-intent' ); ?></button>
 						</span>
 					</div>
-					<div class="rintent-field">
+						<div class="rintent-field">
+						<span class="rintent-label"><?php esc_html_e( 'Live preview', 'reseller-intent' ); ?></span>
+						<span>
+							<div id="rintent-preview-price" class="rintent-preview rintent-preview--inline" data-empty="<?php esc_attr_e( 'Select products to see it.', 'reseller-intent' ); ?>"></div>
+						</span>
+					</div>
+				<div class="rintent-field">
 						<span class="rintent-label"><?php esc_html_e( 'Styling', 'reseller-intent' ); ?></span>
 						<span>
 							<p class="description" style="margin:0;"><?php esc_html_e( 'Every part has its own class, style them from your theme:', 'reseller-intent' ); ?> <code>.rintent-price</code> <code>.rintent-price-before</code> <code>.rintent-price-amount</code> <code>.rintent-price-sep</code> <code>.rintent-price-after</code></p>
@@ -277,6 +290,13 @@ final class Reseller_Intent_Admin {
 					<span class="rintent-output">
 						<code>[rintent_phone prefix="Call "]</code>
 						<code>[rintent_phone format="text"]</code>
+					</span>
+				</div>
+				<div class="rintent-field">
+					<span class="rintent-label"><?php esc_html_e( 'Live preview', 'reseller-intent' ); ?></span>
+					<span>
+						<div id="rintent-preview-phone" class="rintent-preview rintent-preview--inline"></div>
+						<p class="description"><?php esc_html_e( 'Shows the default number here; each visitor sees their regional one.', 'reseller-intent' ); ?></p>
 					</span>
 				</div>
 			</div>
@@ -384,8 +404,78 @@ final class Reseller_Intent_Admin {
 				document.getElementById('rintent-gen-price-copy').addEventListener('click', function() { copy('rintent-gen-price-out', this); });
 			}
 
-			buildTld();
-			buildPrice();
+			var previewNonce = '<?php echo esc_js( wp_create_nonce( 'rintent_preview' ) ); ?>';
+			var previewTimers = {};
+
+			function fetchPreview(type, params, targetId) {
+				window.clearTimeout(previewTimers[type]);
+				previewTimers[type] = window.setTimeout(function() {
+					var target = document.getElementById(targetId);
+					if (!target) {
+						return;
+					}
+					var body = new window.FormData();
+					body.append('action', 'rintent_preview_shortcode');
+					body.append('nonce', previewNonce);
+					body.append('type', type);
+					Object.keys(params).forEach(function(k) { body.append(k, params[k]); });
+					window.fetch(ajaxurl, { method: 'POST', credentials: 'same-origin', body: body })
+						.then(function(r) { return r.json(); })
+						.then(function(json) {
+							if (json && json.success && json.data) {
+								target.innerHTML = json.data.html || '<em><?php echo esc_js( __( 'Nothing to show yet.', 'reseller-intent' ) ); ?></em>';
+								var dark = type === 'tld' && document.getElementById('rintent-gen-theme').value === 'dark';
+								target.classList.toggle('rintent-preview--dark', dark);
+							}
+						}).catch(function() {});
+				}, 350);
+			}
+
+			function previewTld() {
+				fetchPreview('tld', {
+					tlds: document.getElementById('rintent-gen-tlds').value,
+					theme: document.getElementById('rintent-gen-theme').value,
+					more_label: document.getElementById('rintent-gen-more-label').value,
+					more_url: document.getElementById('rintent-gen-more-url').value
+				}, 'rintent-preview-tld');
+			}
+
+			function previewPrice() {
+				var ids = Array.prototype.slice.call(document.querySelectorAll('.rintent-gen-product:checked')).map(function(cb) { return cb.value; }).join(',');
+				var target = document.getElementById('rintent-preview-price');
+				if (!ids) {
+					if (target) { target.innerHTML = '<em>' + (target.getAttribute('data-empty') || '') + '</em>'; }
+					return;
+				}
+				fetchPreview('price', {
+					ids: ids,
+					mode: document.getElementById('rintent-gen-mode').value,
+					before: document.getElementById('rintent-gen-before').value,
+					after: document.getElementById('rintent-gen-after').value,
+					separator: document.getElementById('rintent-gen-separator').value,
+					fallback: document.getElementById('rintent-gen-fallback').value
+				}, 'rintent-preview-price');
+			}
+
+			['rintent-gen-tlds', 'rintent-gen-theme', 'rintent-gen-more-label', 'rintent-gen-more-url'].forEach(function(id) {
+				var node = document.getElementById(id);
+				node.addEventListener('input', previewTld);
+				node.addEventListener('change', previewTld);
+			});
+			['rintent-gen-mode', 'rintent-gen-before', 'rintent-gen-after', 'rintent-gen-separator', 'rintent-gen-fallback'].forEach(function(id) {
+				var node = document.getElementById(id);
+				if (node) {
+					node.addEventListener('input', previewPrice);
+					node.addEventListener('change', previewPrice);
+				}
+			});
+			document.querySelectorAll('.rintent-gen-product').forEach(function(cb) {
+				cb.addEventListener('change', previewPrice);
+			});
+
+			previewTld();
+			previewPrice();
+			fetchPreview('phone', {}, 'rintent-preview-phone');
 		})();
 		</script>
 		<?php
@@ -606,6 +696,22 @@ final class Reseller_Intent_Admin {
 
 			wp_enqueue_style( 'wp-color-picker' );
 
+			// Shortcode previews use the real frontend strip styles.
+			wp_enqueue_style(
+				'reseller-intent-tld-strip',
+				$base_url . 'assets/css/tld-strip.css',
+				array(),
+				filemtime( $base_path . 'assets/css/tld-strip.css' )
+			);
+			wp_add_inline_style(
+				'reseller-intent-tld-strip',
+				sprintf(
+					'body{--rintent-accent:%s;--rintent-accent-dark:%s;}',
+					(string) Reseller_Intent_Settings::get( 'accent_color' ),
+					Reseller_Intent_Settings::accent_dark_color()
+				)
+			);
+
 			wp_enqueue_script(
 				'rintent-admin-pages',
 				$base_url . 'assets/js/admin-pages.js',
@@ -713,6 +819,67 @@ final class Reseller_Intent_Admin {
 		$to_ts   = strtotime( $to . ' 00:00:00' );
 
 		return $from_ts && $to_ts && $from_ts <= $to_ts && ( $to_ts - $from_ts ) <= 2 * YEAR_IN_SECONDS;
+	}
+
+	/**
+	 * Live preview for the shortcode builders: attrs come in structured
+	 * and whitelisted, the shortcode string is built server-side and
+	 * rendered with the site's real data, never from raw user markup.
+	 */
+	public function ajax_preview_shortcode() {
+		if ( ! current_user_can( self::capability() ) ) {
+			wp_send_json_error( array( 'message' => 'Forbidden' ), 403 );
+		}
+		check_ajax_referer( 'rintent_preview', 'nonce' );
+
+		$type = isset( $_POST['type'] ) ? sanitize_key( wp_unslash( $_POST['type'] ) ) : '';
+
+		switch ( $type ) {
+			case 'tld':
+				$tlds  = isset( $_POST['tlds'] ) ? sanitize_text_field( wp_unslash( $_POST['tlds'] ) ) : '';
+				$theme = ( isset( $_POST['theme'] ) && 'dark' === $_POST['theme'] ) ? 'dark' : 'light';
+				$label = isset( $_POST['more_label'] ) ? sanitize_text_field( wp_unslash( $_POST['more_label'] ) ) : '';
+				$url   = isset( $_POST['more_url'] ) ? esc_url_raw( wp_unslash( $_POST['more_url'] ) ) : '';
+				$html  = do_shortcode(
+					sprintf(
+						'[rintent_tld_strip tlds="%s" theme="%s" more_url="%s" more_label="%s"]',
+						esc_attr( $tlds ),
+						esc_attr( $theme ),
+						esc_attr( $url ),
+						esc_attr( $label )
+					)
+				);
+				break;
+
+			case 'price':
+				$ids    = isset( $_POST['ids'] ) ? implode( ',', wp_parse_id_list( wp_unslash( $_POST['ids'] ) ) ) : '';
+				$mode   = isset( $_POST['mode'] ) && in_array( $_POST['mode'], array( 'min', 'max', 'range' ), true ) ? sanitize_key( wp_unslash( $_POST['mode'] ) ) : 'min';
+				$before = isset( $_POST['before'] ) ? sanitize_text_field( wp_unslash( $_POST['before'] ) ) : '';
+				$after  = isset( $_POST['after'] ) ? sanitize_text_field( wp_unslash( $_POST['after'] ) ) : '';
+				$sep    = isset( $_POST['separator'] ) ? sanitize_text_field( wp_unslash( $_POST['separator'] ) ) : '';
+				$fall   = isset( $_POST['fallback'] ) ? sanitize_text_field( wp_unslash( $_POST['fallback'] ) ) : '';
+				$html   = do_shortcode(
+					sprintf(
+						'[rintent_price ids="%s" mode="%s" before="%s" after="%s" separator="%s" fallback="%s"]',
+						esc_attr( $ids ),
+						esc_attr( $mode ),
+						esc_attr( $before ),
+						esc_attr( $after ),
+						esc_attr( '' !== $sep ? $sep : ' to ' ),
+						esc_attr( $fall )
+					)
+				);
+				break;
+
+			case 'phone':
+				$html = do_shortcode( '[rintent_phone prefix="Call "]' );
+				break;
+
+			default:
+				wp_send_json_error( array( 'message' => 'Unknown type' ), 400 );
+		}
+
+		wp_send_json_success( array( 'html' => $html ) );
 	}
 
 	/**

@@ -55,6 +55,7 @@ final class Reseller_Intent {
 		add_action( 'wp_dashboard_setup', array( $this->admin, 'register_glance_widget' ) );
 		add_action( 'wp_ajax_rintent_dashboard_data', array( $this->admin, 'ajax_dashboard_data' ) );
 		add_action( 'wp_ajax_rintent_panel_rows', array( $this->admin, 'ajax_panel_rows' ) );
+		add_action( 'wp_ajax_rintent_preview_shortcode', array( $this->admin, 'ajax_preview_shortcode' ) );
 		add_action( 'wp_ajax_rintent_clear_preview', array( $this->admin, 'ajax_clear_preview' ) );
 		add_action( 'admin_post_rintent_export_csv', array( $this->admin, 'handle_export_domain_searches' ) );
 		add_action( 'admin_post_rintent_clear_data', array( $this->admin, 'handle_clear_data' ) );

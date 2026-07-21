@@ -1131,7 +1131,15 @@ final class Reseller_Intent_Admin {
 			'repeats'       => $repeats,
 			'pages'         => $pages,
 			'carted'        => $carted,
-			'opportunities' => $opportunities,
+			'opportunities' => $opportunities['items'],
+			'totals'        => array(
+				'tlds'           => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT LOWER(SUBSTRING_INDEX(domain_query, '.', -1))) FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s{$where}", '%' . $wpdb->esc_like( '.' ) . '%' ) ), // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				'repeats'        => (int) $wpdb->get_var( "SELECT COUNT(*) FROM (SELECT 1 FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> ''{$where} GROUP BY domain_query HAVING SUM(event_count) >= 2) grouped" ), // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				'selectionTop'   => (int) $wpdb->get_var( "SELECT COUNT(DISTINCT domain_query) FROM {$table_name} WHERE event_type = 'domain_select' AND domain_query <> ''{$where}" ), // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				'selectionPairs' => (int) $wpdb->get_var( "SELECT COUNT(*) FROM (SELECT 1 FROM {$table_name} WHERE event_type = 'domain_select' AND domain_query <> '' AND related_query <> '' AND related_query <> domain_query AND domain_query NOT LIKE CONCAT(related_query, '.%'){$where} GROUP BY related_query, domain_query) grouped" ), // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.LikeWildcardsInQuery -- wildcard belongs to a column CONCAT.
+				'carted'         => (int) $carted['total'],
+				'opportunities'  => (int) $opportunities['total'],
+			),
 			'selection'     => $selection,
 			'availability'  => array(
 				'available' => $avail,
@@ -1330,6 +1338,13 @@ final class Reseller_Intent_Admin {
 			LIMIT 40" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
 
+		$distinct_avail = (int) $wpdb->get_var( "SELECT COUNT(DISTINCT domain_query) FROM {$table_name} WHERE event_type = 'domain_search' AND is_available = 1 AND domain_query <> ''{$where}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$overlap        = 0;
+		if ( ! empty( $carted ) ) {
+			$placeholders = implode( ',', array_fill( 0, count( $carted ), '%s' ) );
+			$overlap      = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT domain_query) FROM {$table_name} WHERE event_type = 'domain_search' AND is_available = 1 AND LOWER(domain_query) IN ({$placeholders}){$where}", array_keys( $carted ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- placeholders are built dynamically for the IN list.
+		}
+
 		$items = array();
 
 		foreach ( $rows as $row ) {
@@ -1354,7 +1369,10 @@ final class Reseller_Intent_Admin {
 			}
 		}
 
-		return $items;
+		return array(
+			'items' => $items,
+			'total' => max( 0, $distinct_avail - $overlap ),
+		);
 	}
 
 	private function get_carted_breakdown( $table_name, $where ) {
@@ -1404,6 +1422,7 @@ final class Reseller_Intent_Admin {
 		return array(
 			'domains' => $domains,
 			'tlds'    => $tlds,
+			'total'   => count( $domain_counts ),
 		);
 	}
 

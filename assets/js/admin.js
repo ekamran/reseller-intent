@@ -184,21 +184,26 @@
 		// Expanded view is PAGED at a fixed height instead of growing
 		// forever: 15 rows per page, next fetches quietly when needed.
 		var visible = expanded ? allRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) : allRows.slice(0, maxRows);
-		var hidden = allRows.length - maxRows;
+		var hidden = Math.max(props.totalRows || 0, allRows.length) - maxRows;
 		// Until the server says otherwise, a full first slice means there
 		// is probably more on the server.
 		var hasMore = extra.hasMore === null
 			? !!(props.loadMore && props.rows.length >= (props.initialFetched || 25))
 			: extra.hasMore;
 		var lastLoadedPage = Math.ceil(allRows.length / PAGE_SIZE);
-		var canNext = page < lastLoadedPage || hasMore;
+		var totalRows = props.totalRows || 0;
+		var totalPages = totalRows ? Math.max(1, Math.ceil(totalRows / PAGE_SIZE)) : 0;
+		var canNext = totalPages ? page < totalPages : (page < lastLoadedPage || hasMore);
 
 		function goNext() {
 			if (page < lastLoadedPage) {
 				setPage(page + 1);
 				return;
 			}
-			if (!hasMore || extra.loading || !props.loadMore) {
+			if (totalPages && page >= totalPages) {
+				return;
+			}
+			if ((!totalPages && !hasMore) || extra.loading || !props.loadMore) {
 				return;
 			}
 			setExtra({ rows: extra.rows, hasMore: extra.hasMore, loading: true });
@@ -237,7 +242,7 @@
 				}, sprintf( /* translators: %s: number of hidden rows */ __( 'Show %s more', 'reseller-intent' ), fmt(hidden) )) : null,
 				expanded && (canNext || page > 1) ? el('span', { className: 'ri-pager' },
 					el('button', { className: 'button', disabled: page <= 1, 'aria-label': __( 'Previous page', 'reseller-intent' ), onClick: function() { setPage(Math.max(1, page - 1)); } }, '\u2039'),
-					el('span', { className: 'ri-pager-state' }, extra.loading ? '\u2026' : fmt(page)),
+					el('span', { className: 'ri-pager-state' }, extra.loading ? '\u2026' : (totalPages ? fmt(page) + ' / ' + fmt(totalPages) : fmt(page))),
 					el('button', { className: 'button', disabled: !canNext || extra.loading, 'aria-label': __( 'Next page', 'reseller-intent' ), onClick: goNext }, '\u203a')
 				) : null,
 				expanded ? el('button', {
@@ -406,7 +411,7 @@
 		}
 		var rows = items.map(mapItem);
 		return el(Panel, { title: __( 'Searched TLDs', 'reseller-intent' ), note: __( 'Which extensions people look for.', 'reseller-intent' ) },
-			el(MiniTable, { columns: [__( 'TLD', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )], rows: rows, empty: __( 'No searches in this range.', 'reseller-intent' ), initialFetched: 25, loadMore: props.loadRows ? function(offset) { return props.loadRows('tlds', offset, mapItem); } : null })
+			el(MiniTable, { columns: [__( 'TLD', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )], rows: rows, empty: __( 'No searches in this range.', 'reseller-intent' ), initialFetched: 25, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('tlds', offset, mapItem); } : null })
 		);
 	}
 
@@ -416,7 +421,7 @@
 		}
 		var repeats = (props.repeats || []).map(mapItem);
 		return el(Panel, { title: __( 'Repeat Demand', 'reseller-intent' ), note: __( 'Domains searched 2+ times, buyers circling.', 'reseller-intent' ) },
-			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )], rows: repeats, empty: __( 'No repeated searches in this range.', 'reseller-intent' ), initialFetched: 25, loadMore: props.loadRows ? function(offset) { return props.loadRows('repeats', offset, mapItem); } : null })
+			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )], rows: repeats, empty: __( 'No repeated searches in this range.', 'reseller-intent' ), initialFetched: 25, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('repeats', offset, mapItem); } : null })
 		);
 	}
 
@@ -432,7 +437,7 @@
 					return el(StatChip, { key: i, value: fmt(tld.count), label: tld.label });
 				}))
 				: null,
-			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Added', 'reseller-intent' )], rows: rows, empty: __( 'No carted domains in this range.', 'reseller-intent' ), initialFetched: 15, loadMore: props.loadRows ? function(offset) { return props.loadRows('carted', offset, mapItem); } : null })
+			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Added', 'reseller-intent' )], rows: rows, empty: __( 'No carted domains in this range.', 'reseller-intent' ), initialFetched: 15, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('carted', offset, mapItem); } : null })
 		);
 	}
 
@@ -444,7 +449,7 @@
 		var rows = items.map(mapItem);
 
 		return el(Panel, { title: __( 'Missed Opportunities', 'reseller-intent' ), note: __( 'Searched and available, but never taken to cart. Warm leads.', 'reseller-intent' ) },
-			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Last seen', 'reseller-intent' )], rows: rows, empty: __( 'Nothing missed in this range. Every available search went to cart, or there were none.', 'reseller-intent' ), initialFetched: 15, loadMore: props.loadRows ? function(offset) { return props.loadRows('opportunities', offset, mapItem); } : null })
+			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Last seen', 'reseller-intent' )], rows: rows, empty: __( 'Nothing missed in this range. Every available search went to cart, or there were none.', 'reseller-intent' ), initialFetched: 15, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('opportunities', offset, mapItem); } : null })
 		);
 	}
 
@@ -467,11 +472,11 @@
 					el(StatChip, { value: fmt(exactRate, 1) + '%', label: __( 'Kept searched name', 'reseller-intent' ) })
 				)
 				: null,
-			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Selects', 'reseller-intent' )], rows: topRows, empty: __( 'No selection data in this range yet.', 'reseller-intent' ), initialFetched: 25, loadMore: props.loadRows ? function(offset) { return props.loadRows('selection_top', offset, mapTop); } : null }),
+			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Selects', 'reseller-intent' )], rows: topRows, empty: __( 'No selection data in this range yet.', 'reseller-intent' ), initialFetched: 25, totalRows: (props.totals || {}).selectionTop, loadMore: props.loadRows ? function(offset) { return props.loadRows('selection_top', offset, mapTop); } : null }),
 			pairRows.length
 				? el(Fragment, null,
 					el('p', { className: 'ri-subhead' }, 'Searched → settled for'),
-					el(MiniTable, { columns: [__( 'Searched', 'reseller-intent' ), __( 'Selected instead', 'reseller-intent' ), __( 'Times', 'reseller-intent' )], rows: pairRows, empty: '', initialFetched: 25, loadMore: props.loadRows ? function(offset) { return props.loadRows('selection_pairs', offset, mapPair); } : null })
+					el(MiniTable, { columns: [__( 'Searched', 'reseller-intent' ), __( 'Selected instead', 'reseller-intent' ), __( 'Times', 'reseller-intent' )], rows: pairRows, empty: '', initialFetched: 25, totalRows: (props.totals || {}).selectionPairs, loadMore: props.loadRows ? function(offset) { return props.loadRows('selection_pairs', offset, mapPair); } : null })
 				)
 				: null
 		);
@@ -1026,11 +1031,11 @@
 								)
 							) },
 							{ key: 'funnel', span: 4, short: true, isEmpty: !now.searches, node: el(FunnelPanel, { now: now, cartSizes: data.cartSizes }) },
-							{ key: 'tlds', span: 4, isEmpty: !data.tlds.items.length, node: el(TldPanel, { items: data.tlds.items, total: data.tlds.total, loadRows: loadRows }) },
-							{ key: 'carted', span: 4, isEmpty: !data.carted.domains.length, node: el(CartedPanel, { carted: data.carted, loadRows: loadRows }) },
-							{ key: 'opportunities', span: 4, isEmpty: !data.opportunities.length, node: el(OpportunitiesPanel, { items: data.opportunities, loadRows: loadRows }) },
-							{ key: 'repeats', span: 4, isEmpty: !data.repeats.length, node: el(DemandPanel, { repeats: data.repeats, loadRows: loadRows }) },
-							{ key: 'selection', span: 8, isEmpty: !data.selection.total, node: el(SelectionPanel, { selection: data.selection, loadRows: loadRows }) },
+							{ key: 'tlds', span: 4, isEmpty: !data.tlds.items.length, node: el(TldPanel, { items: data.tlds.items, total: data.tlds.total, totalRows: (data.totals || {}).tlds, loadRows: loadRows }) },
+							{ key: 'carted', span: 4, isEmpty: !data.carted.domains.length, node: el(CartedPanel, { carted: data.carted, totalRows: (data.totals || {}).carted, loadRows: loadRows }) },
+							{ key: 'opportunities', span: 4, isEmpty: !data.opportunities.length, node: el(OpportunitiesPanel, { items: data.opportunities, totalRows: (data.totals || {}).opportunities, loadRows: loadRows }) },
+							{ key: 'repeats', span: 4, isEmpty: !data.repeats.length, node: el(DemandPanel, { repeats: data.repeats, totalRows: (data.totals || {}).repeats, loadRows: loadRows }) },
+							{ key: 'selection', span: 8, isEmpty: !data.selection.total, node: el(SelectionPanel, { selection: data.selection, totals: data.totals, loadRows: loadRows }) },
 							{ key: 'pages', span: 4, short: true, isEmpty: !data.pages.length, node: el(PagesPanel, { pages: data.pages }) },
 							{ key: 'countries', span: 4, short: true, isEmpty: !data.countries.items.length, node: el(CountriesPanel, { countries: data.countries }) },
 							{ key: 'recent', span: 12, isEmpty: !data.recent.length, node: el(RecentLog, { recent: data.recent }) }

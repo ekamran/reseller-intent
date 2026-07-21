@@ -660,7 +660,7 @@ final class Reseller_Intent_Admin {
 								<?php esc_html_e( 'Pick my own color for dark sections', 'reseller-intent' ); ?>
 							</label>
 							<input type="text" id="rintent-accent-dark" name="accent_dark" class="rintent-colorpicker" value="<?php echo esc_attr( Reseller_Intent_Settings::accent_dark_color() ); ?>" <?php disabled( ! $accent_dark_custom ); ?> />
-							<p class="description"><?php esc_html_e( 'Used where the accent sits on dark surfaces, like the dark TLD strip. Auto lightens your accent just enough to stay readable and follows whenever the accent changes.', 'reseller-intent' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Recolors text accents on dark surfaces, like the prices in the dark TLD strip. Auto lightens your accent just enough to stay readable and follows whenever the accent changes. Buttons are not affected, they keep the accent color everywhere.', 'reseller-intent' ); ?></p>
 						</span>
 					</div>
 				</div>
@@ -706,6 +706,7 @@ final class Reseller_Intent_Admin {
 										<tr><td><?php esc_html_e( 'Accent (buttons, focus ring)', 'reseller-intent' ); ?></td><td><code>--rintent-accent</code> <?php esc_html_e( '(set by the color picker above)', 'reseller-intent' ); ?></td></tr>
 										<tr><td><?php esc_html_e( 'Accent on dark surfaces', 'reseller-intent' ); ?></td><td><code>--rintent-accent-dark</code> <?php esc_html_e( '(set by the Dark accent picker above; this variable overrides it)', 'reseller-intent' ); ?></td></tr>
 										<tr><td><?php esc_html_e( 'Text on accent surfaces', 'reseller-intent' ); ?></td><td><code>--rintent-accent-text</code> &middot; <code>--rintent-accent-dark-text</code> <?php esc_html_e( '(auto-computed for contrast; set to force your own)', 'reseller-intent' ); ?></td></tr>
+										<tr><td><?php esc_html_e( 'Buttons on dark sections', 'reseller-intent' ); ?></td><td><code>--rintent-dark-button</code> &middot; <code>--rintent-dark-button-text</code> <?php esc_html_e( '(default: the accent; the Dark accent picker never recolors buttons)', 'reseller-intent' ); ?></td></tr>
 										<tr><td><?php esc_html_e( 'Dark section context', 'reseller-intent' ); ?></td><td><code>.rintent-dark</code> &middot; <code>.rintent-light</code> <?php esc_html_e( '(wrapper classes; auto-detected when absent)', 'reseller-intent' ); ?></td></tr>
 									</tbody>
 								</table>

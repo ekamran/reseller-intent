@@ -12,8 +12,14 @@ body {
 	--rintent-widget-accent: var(--rintent-accent, #3858e9);
 	--rintent-widget-accent-hover: var(--rintent-accent-hover, #26429c);
 	--rintent-widget-accent-text: var(--rintent-accent-text, #ffffff);
-	--rintent-widget-accent-dark: var(--rintent-accent-dark, #7b96ff);
-	--rintent-widget-accent-dark-text: var(--rintent-accent-dark-text, #1d2327);
+	/*
+	 * Buttons keep the one action color on dark sections too; the Dark
+	 * accent picker only recolors text accents (TLD prices, highlights).
+	 * Set --rintent-dark-button / --rintent-dark-button-text from your
+	 * theme to give dark-section buttons their own color.
+	 */
+	--rintent-widget-accent-dark: var(--rintent-dark-button, var(--rintent-accent, #3858e9));
+	--rintent-widget-accent-dark-text: var(--rintent-dark-button-text, var(--rintent-accent-text, #ffffff));
 
 	/*
 	 * Theming knobs, override these (or target the classes listed in

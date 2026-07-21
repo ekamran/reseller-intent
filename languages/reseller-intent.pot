@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-21T21:30:25+00:00\n"
+"POT-Creation-Date: 2026-07-21T21:40:14+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: reseller-intent\n"
@@ -18,7 +18,7 @@ msgstr ""
 #: reseller-intent.php
 #: includes/class-reseller-intent-admin.php:43
 #: includes/class-reseller-intent-admin.php:44
-#: includes/class-reseller-intent-admin.php:2090
+#: includes/class-reseller-intent-admin.php:2091
 #: includes/class-reseller-intent-health.php:39
 #: includes/class-reseller-intent.php:184
 msgid "Reseller Intent"
@@ -400,7 +400,7 @@ msgid "Pick my own color for dark sections"
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:663
-msgid "Used where the accent sits on dark surfaces, like the dark TLD strip. Auto lightens your accent just enough to stay readable and follows whenever the accent changes."
+msgid "Recolors text accents on dark surfaces, like the prices in the dark TLD strip. Auto lightens your accent just enough to stay readable and follows whenever the accent changes. Buttons are not affected, they keep the accent color everywhere."
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:669
@@ -505,170 +505,178 @@ msgid "(auto-computed for contrast; set to force your own)"
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:709
-msgid "Dark section context"
+msgid "Buttons on dark sections"
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:709
+msgid "(default: the accent; the Dark accent picker never recolors buttons)"
+msgstr ""
+
+#: includes/class-reseller-intent-admin.php:710
+msgid "Dark section context"
+msgstr ""
+
+#: includes/class-reseller-intent-admin.php:710
 msgid "(wrapper classes; auto-detected when absent)"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:712
+#: includes/class-reseller-intent-admin.php:713
 msgid "Example:"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:719
+#: includes/class-reseller-intent-admin.php:720
 msgid "Performance"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:720
+#: includes/class-reseller-intent-admin.php:721
 msgid "Reseller Store loads React, jQuery add-ons and its styles on every page of the site, even pages with no store element. Trim that to only the pages that need it."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:722
+#: includes/class-reseller-intent-admin.php:723
 msgid "Asset trim"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:726
+#: includes/class-reseller-intent-admin.php:727
 msgid "Load Reseller Store assets only where they are used"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:728
+#: includes/class-reseller-intent-admin.php:729
 msgid "Kept automatically: pages whose content has any Reseller Store shortcode, product pages, and every page when a Reseller Store widget sits in a sidebar. Tracking follows along, pages without the widget load nothing from this plugin either."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:732
+#: includes/class-reseller-intent-admin.php:733
 msgid "Always keep on"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:735
+#: includes/class-reseller-intent-admin.php:736
 msgid "Page or post IDs, comma-separated. For pages where a builder or popup renders the widget outside the content, detection cannot see those. Developers can also use the rintent_page_needs_store filter."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:741
+#: includes/class-reseller-intent-admin.php:742
 msgid "Tracking and privacy"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:743
+#: includes/class-reseller-intent-admin.php:744
 msgid "Ignore searches"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:746
+#: includes/class-reseller-intent-admin.php:747
 msgid "One pattern per line, matched against searched domains. Use * as a wildcard. Handy for ignoring your own test searches."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:750
+#: includes/class-reseller-intent-admin.php:751
 msgid "Bots"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:754
+#: includes/class-reseller-intent-admin.php:755
 msgid "Also record events from known bots and crawlers (off recommended)"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:761
+#: includes/class-reseller-intent-admin.php:762
 msgid "Data storage"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:763
+#: includes/class-reseller-intent-admin.php:764
 msgid "Retention"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:770
+#: includes/class-reseller-intent-admin.php:771
 msgid "Events older than this are deleted once a day. You can also clear specific windows from the dashboard any time."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:774
+#: includes/class-reseller-intent-admin.php:775
 msgid "Uninstall"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:778
+#: includes/class-reseller-intent-admin.php:779
 msgid "Delete all tracked data and settings when the plugin is uninstalled"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:784
+#: includes/class-reseller-intent-admin.php:785
 msgid "Save Settings"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:838
+#: includes/class-reseller-intent-admin.php:839
 msgid "Copied"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:839
+#: includes/class-reseller-intent-admin.php:840
 msgid "Click to copy"
 msgstr ""
 
 #. translators: %s: human readable time difference
-#: includes/class-reseller-intent-admin.php:1139
-#: includes/class-reseller-intent-admin.php:1655
+#: includes/class-reseller-intent-admin.php:1140
+#: includes/class-reseller-intent-admin.php:1656
 #, php-format
 msgid "%s ago"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1219
+#: includes/class-reseller-intent-admin.php:1220
 msgid "Others"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1242
+#: includes/class-reseller-intent-admin.php:1243
 msgid "1 domain"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1246
+#: includes/class-reseller-intent-admin.php:1247
 msgid "2 domains"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1250
+#: includes/class-reseller-intent-admin.php:1251
 msgid "3 domains"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1254
+#: includes/class-reseller-intent-admin.php:1255
 msgid "4+ domains"
 msgstr ""
 
 #. translators: %s: human readable time difference
-#: includes/class-reseller-intent-admin.php:1404
+#: includes/class-reseller-intent-admin.php:1405
 #, php-format
 msgid "Last event %s ago"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1405
+#: includes/class-reseller-intent-admin.php:1406
 msgid "No events yet"
 msgstr ""
 
 #. translators: %d: number of days
-#: includes/class-reseller-intent-admin.php:1412
+#: includes/class-reseller-intent-admin.php:1413
 #, php-format
 msgid "Last %d days"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1413
+#: includes/class-reseller-intent-admin.php:1414
 #: assets/js/admin.js:24
 msgid "Lifetime"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1573
+#: includes/class-reseller-intent-admin.php:1574
 msgid "Home"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1851
+#: includes/class-reseller-intent-admin.php:1852
 msgid "You are not allowed to export data."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1915
+#: includes/class-reseller-intent-admin.php:1916
 msgid "You are not allowed to clear data."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:2122
+#: includes/class-reseller-intent-admin.php:2123
 msgid "searches today"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:2123
+#: includes/class-reseller-intent-admin.php:2124
 msgid "searches, 7 days"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:2124
+#: includes/class-reseller-intent-admin.php:2125
 msgid "search → cart, 7 days"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:2129
+#: includes/class-reseller-intent-admin.php:2130
 msgid "Open the full dashboard →"
 msgstr ""
 

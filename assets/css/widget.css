@@ -42,17 +42,19 @@ body {
 
 .rstore-domain-search .form-container .search-form {
 	display: flex;
-	align-items: stretch;
+	align-items: center;
 	width: 100%;
-	border-radius: 8px;
 }
 
 
 .rstore-domain-search .form-container .search-form .search-field {
+	appearance: none;
+	-webkit-appearance: none;
 	flex: 1 1 auto;
 	min-width: 0;
-	box-sizing: border-box;
-	margin: 0;
+	height: 44px !important;
+	box-sizing: border-box !important;
+	margin: 0 !important;
 }
 
 .rstore-domain-search .domain-result {
@@ -175,13 +177,13 @@ body {
  * submit entirely. Restore an owned, visible button.
  */
 .rstore-domain-search .search-form input[type="submit"] {
+	appearance: none !important;
+	-webkit-appearance: none !important;
 	opacity: 1 !important;
 	position: static !important;
 	left: auto !important;
 	width: auto !important;
-	height: auto !important;
-	min-height: 44px !important;
-	align-self: stretch !important;
+	height: 44px !important;
 	margin: 0 !important;
 	box-sizing: border-box !important;
 	padding: 0 22px !important;

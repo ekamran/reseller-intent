@@ -118,7 +118,14 @@ final class Reseller_Intent_Admin {
 			}
 			$prefixes = array();
 			for ( $k = count( $stem ); $k >= 1; $k-- ) {
-				$prefix                   = rtrim( implode( ' ', array_slice( $stem, 0, $k ) ), ' -' );
+				$prefix = rtrim( implode( ' ', array_slice( $stem, 0, $k ) ), ' -' );
+				// Trailing connector words are naming glue, not family
+				// identity ("SSL Setup Service - up to 5 sites").
+				$prefix = preg_replace( '/(?:\s+(?:up|to|with|for|and))+$/i', '', $prefix );
+				$prefix = rtrim( $prefix, ' -' );
+				if ( '' === $prefix || in_array( $prefix, $prefixes, true ) ) {
+					continue;
+				}
 				$prefixes[]               = $prefix;
 				$prefix_counts[ $prefix ] = ( $prefix_counts[ $prefix ] ?? 0 ) + 1;
 			}
@@ -144,6 +151,38 @@ final class Reseller_Intent_Admin {
 				return count( $ids ) >= 2;
 			}
 		);
+
+		// Display labels: the longest word run shared by every member's
+		// full title, so "Microsoft 365 ..." plans label as Microsoft 365
+		// even though the numeric token was cut during grouping.
+		$titles_by_id = array();
+		foreach ( $products as $product ) {
+			$titles_by_id[ $product->ID ] = $product->post_title;
+		}
+		$labeled = array();
+		foreach ( $families as $family_key => $family_ids ) {
+			$word_lists = array_map(
+				function ( $pid ) use ( $titles_by_id ) {
+					return preg_split( '/\s+/', trim( $titles_by_id[ $pid ] ) );
+				},
+				$family_ids
+			);
+			$common     = $word_lists[0];
+			foreach ( $word_lists as $word_list ) {
+				$keep = array();
+				foreach ( $word_list as $wi => $word ) {
+					if ( isset( $common[ $wi ] ) && $common[ $wi ] === $word ) {
+						$keep[] = $word;
+					} else {
+						break;
+					}
+				}
+				$common = $keep;
+			}
+			$label = rtrim( preg_replace( '/(?:\s+(?:up|to|with|for|and))+$/i', '', implode( ' ', $common ) ), ' -' );
+			$labeled[ '' !== $label ? $label : $family_key ] = $family_ids;
+		}
+		$families = $labeled;
 		ksort( $families );
 		?>
 		<?php $notice = isset( $_GET['rintent_notice'] ) ? sanitize_key( wp_unslash( $_GET['rintent_notice'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>

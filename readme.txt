@@ -1,5 +1,5 @@
 === Reseller Intent ===
-Contributors: kamranaziz
+Contributors: ekamran
 Tags: godaddy, reseller store, domain search, analytics, domains
 Requires at least: 6.2
 Tested up to: 7.0

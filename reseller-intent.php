@@ -1,7 +1,6 @@
 <?php
 /**
  * Plugin Name: Reseller Intent
- * Plugin URI: https://shifteq.com/reseller-intent/
  * Description: Domain search analytics for GoDaddy Reseller Store. See what visitors search, what they select and what they take to cart.
  * Version: 1.0.0
  * Author: Kamran Abdul Aziz

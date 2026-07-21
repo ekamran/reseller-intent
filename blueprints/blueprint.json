@@ -3,7 +3,7 @@
 	"meta": {
 		"title": "Reseller Intent demo",
 		"description": "Reseller Intent with the GoDaddy Reseller Store plugin and sample analytics data.",
-		"author": "kamranaziz"
+		"author": "ekamran"
 	},
 	"landingPage": "/wp-admin/admin.php?page=reseller-intent",
 	"preferredVersions": {

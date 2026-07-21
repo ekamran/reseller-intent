@@ -12,6 +12,8 @@ body {
 	--rintent-widget-accent: var(--rintent-accent, #3858e9);
 	--rintent-widget-accent-hover: var(--rintent-accent-hover, #26429c);
 	--rintent-widget-accent-text: var(--rintent-accent-text, #ffffff);
+	--rintent-widget-accent-dark: var(--rintent-accent-dark, #7b96ff);
+	--rintent-widget-accent-dark-text: var(--rintent-accent-dark-text, #1d2327);
 
 	/*
 	 * Theming knobs, override these (or target the classes listed in
@@ -394,19 +396,6 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 	border-radius: 8px;
 }
 
-/* Dark context: same skeleton, light-on-dark shimmer */
-.rintent-dark .rstore-domain-search .rintent-skeleton-row {
-	border-color: rgba(255, 255, 255, 0.09);
-	background: rgba(255, 255, 255, 0.045);
-}
-
-.rintent-dark .rstore-domain-search .rintent-skeleton-row .sk-name,
-.rintent-dark .rstore-domain-search .rintent-skeleton-row .sk-price,
-.rintent-dark .rstore-domain-search .rintent-skeleton-row .sk-btn {
-	background: linear-gradient(90deg, rgba(255, 255, 255, 0.07) 25%, rgba(255, 255, 255, 0.15) 37%, rgba(255, 255, 255, 0.07) 63%);
-	background-size: 300% 100%;
-}
-
 @keyframes rintentSkeletonShimmer {
 	0% {
 		background-position: 100% 0;
@@ -535,4 +524,34 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 	.rstore-domain-search .rintent-skeleton-row .sk-btn {
 		width: 130px;
 	}
+}
+
+/* Dark context: accent-surface controls switch to the dark accent so a
+ * dark-tuned accent never sinks into a dark section. Text contrast is
+ * computed server-side for whichever dark accent is active. */
+.rintent-dark .rstore-domain-search .continue-form .rstore-domain-continue-button,
+.rintent-dark .rstore-domain-search .rstore-domain-buy-button:not(.select):not(.selected),
+.rintent-dark .rstore-domain-search .search-form input[type="submit"] {
+	background: var(--rintent-widget-accent-dark) !important;
+	border-color: var(--rintent-widget-accent-dark) !important;
+	color: var(--rintent-widget-accent-dark-text) !important;
+}
+
+.rintent-dark .rstore-domain-search .continue-form .rstore-domain-continue-button:hover,
+.rintent-dark .rstore-domain-search .rstore-domain-buy-button:not(.select):not(.selected):hover,
+.rintent-dark .rstore-domain-search .continue-form .rstore-domain-continue-button:focus,
+.rintent-dark .rstore-domain-search .rstore-domain-buy-button:not(.select):not(.selected):focus {
+	background: color-mix(in srgb, var(--rintent-widget-accent-dark) 82%, #000) !important;
+	border-color: color-mix(in srgb, var(--rintent-widget-accent-dark) 82%, #000) !important;
+}
+
+.rintent-dark .rstore-domain-search .search-form .search-field:focus,
+.rintent-dark .rstore-domain-search .search-form .search-field:focus-visible {
+	border-color: var(--rintent-widget-accent-dark) !important;
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--rintent-widget-accent-dark) 35%, transparent) !important;
+}
+
+.rintent-dark .rstore-domain-search .search-form input[type="submit"]:focus-visible {
+	outline: 2px solid var(--rintent-widget-accent-dark);
+	outline-offset: 2px;
 }

@@ -35,7 +35,19 @@ final class Reseller_Intent_Settings {
 	 * when the accent is bright.
 	 */
 	public static function accent_text_color() {
-		$hex = ltrim( (string) self::get( 'accent_color' ), '#' );
+		return self::text_color_for( (string) self::get( 'accent_color' ) );
+	}
+
+	/**
+	 * Readable text color on the dark-surface accent. The auto-derived
+	 * pastel is light, so this usually lands on dark ink.
+	 */
+	public static function accent_dark_text_color() {
+		return self::text_color_for( self::accent_dark_color() );
+	}
+
+	private static function text_color_for( $color ) {
+		$hex = ltrim( (string) $color, '#' );
 
 		if ( 3 === strlen( $hex ) ) {
 			$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];

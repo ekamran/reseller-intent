@@ -6,6 +6,7 @@
 	var useState = wp.element.useState;
 	var useEffect = wp.element.useEffect;
 	var useMemo = wp.element.useMemo;
+	var useRef = wp.element.useRef;
 	var Fragment = wp.element.Fragment;
 
 	var __ = wp.i18n.__;
@@ -147,6 +148,7 @@
 	}
 
 	function MiniTable(props) {
+		var shellRef = useRef(null);
 		var expandState = useState(false);
 		var expanded = expandState[0];
 		var setExpanded = expandState[1];
@@ -165,6 +167,18 @@
 			setPage(1);
 			setExpanded(false);
 		}, [props.rows]);
+
+		// Re-span this table's masonry cell after any size-changing state,
+		// deterministically (ResizeObserver sleeps in background tabs).
+		useEffect(function() {
+			var node = shellRef.current;
+			var cell = node && node.closest ? node.closest('.ri-cell') : null;
+			var panel = cell ? cell.querySelector('.ri-panel') : null;
+
+			if (panel) {
+				cell.style.gridRowEnd = 'span ' + Math.max(2, Math.ceil((panel.getBoundingClientRect().height + 16) / 8));
+			}
+		});
 
 		var allRows = props.rows.concat(extra.rows);
 		// Expanded view is PAGED at a fixed height instead of growing
@@ -198,7 +212,7 @@
 			});
 		}
 
-		return el('div', { className: 'ri-table-shell' },
+		return el('div', { className: 'ri-table-shell', ref: shellRef },
 			el('table', { className: 'ri-table' },
 				el('thead', null,
 					el('tr', null, props.columns.map(function(col, i) {
@@ -776,25 +790,47 @@
 				return undefined;
 			}
 
-			if (!window.ResizeObserver) {
-				grid.className = 'ri-liquid no-masonry';
-				return undefined;
+			function spanCell(panel) {
+				var height = panel.getBoundingClientRect().height;
+				// +16 covers the panel's bottom margin (the visual row gap).
+				panel.parentElement.style.gridRowEnd = 'span ' + Math.max(2, Math.ceil((height + 16) / 8));
 			}
 
-			var observer = new window.ResizeObserver(function(entries) {
-				entries.forEach(function(entry) {
-					var cell = entry.target.parentElement;
-					var height = entry.target.getBoundingClientRect().height;
-					// +16 covers the panel's bottom margin (the visual row gap).
-					cell.style.gridRowEnd = 'span ' + Math.max(2, Math.ceil((height + 16) / 8));
+			function measureAll() {
+				grid.querySelectorAll('.ri-cell > .ri-panel').forEach(spanCell);
+			}
+
+			/*
+			 * Measure synchronously on every render: ResizeObserver (and
+			 * anything rAF-timed) is suspended in background tabs, so a
+			 * dashboard opened behind another tab would keep zero spans.
+			 * The observer then covers out-of-band changes only (fonts,
+			 * window resizes), with a late timeout as a further net.
+			 */
+			measureAll();
+			var late = window.setTimeout(measureAll, 400);
+
+			var observer = null;
+			if (window.ResizeObserver) {
+				observer = new window.ResizeObserver(function(entries) {
+					entries.forEach(function(entry) {
+						spanCell(entry.target);
+					});
 				});
-			});
+				grid.querySelectorAll('.ri-cell > .ri-panel').forEach(function(panel) {
+					observer.observe(panel);
+				});
+			}
 
-			grid.querySelectorAll('.ri-cell > .ri-panel').forEach(function(panel) {
-				observer.observe(panel);
-			});
+			window.addEventListener('resize', measureAll);
 
-			return function() { observer.disconnect(); };
+			return function() {
+				window.clearTimeout(late);
+				window.removeEventListener('resize', measureAll);
+				if (observer) {
+					observer.disconnect();
+				}
+			};
 		});
 		var _pp = useState(false), showPanelsMenu = _pp[0], setShowPanelsMenu = _pp[1];
 

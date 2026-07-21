@@ -843,31 +843,42 @@
 			data
 				? el(Fragment, null,
 					el(KpiGrid, { now: data.kpis.now, prev: data.kpis.prev }),
-					isShown('trend') || isShown('funnel') ? el('div', { className: 'ri-grid ri-grid--2' },
-						isShown('trend') ? el(Panel, { title: __( 'Search vs Cart Trend', 'reseller-intent' ), note: data.bounded ? __( 'Daily activity in this range.', 'reseller-intent' ) : __( 'Monthly activity, all time.', 'reseller-intent' ) },
-							el(TrendChart, data.trend),
-							el('div', { className: 'ri-legend' },
-								el('span', null, el('i', { className: 'ri-dot', style: { background: ACCENT } }), __( 'Searches', 'reseller-intent' )),
-								el('span', null, el('i', { className: 'ri-dot', style: { background: INK } }), __( 'Cart clicks', 'reseller-intent' ))
-							)
-						) : null,
-						isShown('funnel') ? el(FunnelPanel, { now: data.kpis.now, cartSizes: data.cartSizes }) : null
-					) : null,
-					isShown('tlds') || isShown('carted') || isShown('opportunities') || isShown('repeats') ? el('div', { className: 'ri-grid ri-grid--3' },
-						isShown('tlds') ? el(TldPanel, { items: data.tlds.items, total: data.tlds.total }) : null,
-						isShown('carted') ? el(CartedPanel, { carted: data.carted }) : null,
-						isShown('opportunities') ? el(OpportunitiesPanel, { items: data.opportunities }) : null,
-						isShown('repeats') ? el(DemandPanel, { repeats: data.repeats }) : null
-					) : null,
-					isShown('selection') || isShown('quality') || isShown('pages') || isShown('countries') ? el('div', { className: 'ri-grid ri-grid--2' },
-						isShown('selection') ? el(SelectionPanel, { selection: data.selection }) : null,
-						el('div', { className: 'ri-stack' },
-							isShown('quality') ? el(QualityPanel, { availability: data.availability, devices: data.devices }) : null,
-							isShown('pages') ? el(PagesPanel, { pages: data.pages }) : null,
-							isShown('countries') ? el(CountriesPanel, { countries: data.countries }) : null
-						)
-					) : null,
-					isShown('recent') ? el(RecentLog, { recent: data.recent }) : null
+					(function() {
+						/*
+						 * Liquid layout: one 12-column dense grid. Every panel
+						 * declares its natural width; panels with data come
+						 * first, empty ones shrink and pack together at the
+						 * end, so no range ever leaves holes in the middle.
+						 */
+						var now = data.kpis.now;
+						var defs = [
+							{ key: 'trend', span: 8, isEmpty: !(data.trend.labels || []).length, node: el(Panel, { title: __( 'Search vs Cart Trend', 'reseller-intent' ), note: data.bounded ? __( 'Daily activity in this range.', 'reseller-intent' ) : __( 'Monthly activity, all time.', 'reseller-intent' ) },
+								el(TrendChart, data.trend),
+								el('div', { className: 'ri-legend' },
+									el('span', null, el('i', { className: 'ri-dot', style: { background: ACCENT } }), __( 'Searches', 'reseller-intent' )),
+									el('span', null, el('i', { className: 'ri-dot', style: { background: INK } }), __( 'Cart clicks', 'reseller-intent' ))
+								)
+							) },
+							{ key: 'funnel', span: 4, isEmpty: !now.searches, node: el(FunnelPanel, { now: now, cartSizes: data.cartSizes }) },
+							{ key: 'tlds', span: 4, isEmpty: !data.tlds.items.length, node: el(TldPanel, { items: data.tlds.items, total: data.tlds.total }) },
+							{ key: 'carted', span: 4, isEmpty: !data.carted.domains.length, node: el(CartedPanel, { carted: data.carted }) },
+							{ key: 'opportunities', span: 4, isEmpty: !data.opportunities.length, node: el(OpportunitiesPanel, { items: data.opportunities }) },
+							{ key: 'repeats', span: 4, isEmpty: !data.repeats.length, node: el(DemandPanel, { repeats: data.repeats }) },
+							{ key: 'selection', span: 8, isEmpty: !data.selection.total, node: el(SelectionPanel, { selection: data.selection }) },
+							{ key: 'quality', span: 4, isEmpty: !(data.availability.available + data.availability.taken), node: el(QualityPanel, { availability: data.availability, devices: data.devices }) },
+							{ key: 'pages', span: 4, isEmpty: !data.pages.length, node: el(PagesPanel, { pages: data.pages }) },
+							{ key: 'countries', span: 4, isEmpty: !data.countries.items.length, node: el(CountriesPanel, { countries: data.countries }) },
+							{ key: 'recent', span: 12, isEmpty: !data.recent.length, node: el(RecentLog, { recent: data.recent }) }
+						].filter(function(d) { return isShown(d.key); });
+
+						var filled = defs.filter(function(d) { return !d.isEmpty; });
+						var empties = defs.filter(function(d) { return d.isEmpty; });
+
+						return el('div', { className: 'ri-liquid' }, filled.concat(empties).map(function(d) {
+							var span = d.isEmpty ? 4 : d.span;
+							return el('div', { key: d.key, className: 'ri-cell ri-span-' + span + (d.isEmpty ? ' ri-cell--empty' : '') }, d.node);
+						}));
+					})()
 				)
 				: (loading ? el('div', { className: 'ri-loading' }, __( 'Loading...', 'reseller-intent' )) : null),
 

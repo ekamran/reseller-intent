@@ -168,6 +168,50 @@
 	border-left-color: rgba(255, 255, 255, 0.25);
 }
 
+/* Liquid layout: 12-col dense grid, panels pack by declared span */
+.ri-liquid {
+	display: grid;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	grid-auto-flow: dense;
+	gap: 16px;
+	margin-top: 16px;
+}
+
+.ri-cell {
+	min-width: 0;
+}
+
+.ri-cell > .ri-panel {
+	height: 100%;
+	box-sizing: border-box;
+	margin: 0;
+}
+
+.ri-span-4 { grid-column: span 4; }
+.ri-span-8 { grid-column: span 8; }
+.ri-span-12 { grid-column: span 12; }
+
+/* Empty panels: quiet, short, packed together at the end */
+.ri-cell--empty > .ri-panel {
+	min-height: 0;
+}
+
+.ri-cell--empty .ri-table-shell,
+.ri-cell--empty .ri-chips {
+	opacity: 0.75;
+}
+
+@media (max-width: 1420px) {
+	.ri-span-4 { grid-column: span 6; }
+	.ri-span-8 { grid-column: span 12; }
+}
+
+@media (max-width: 960px) {
+	.ri-span-4,
+	.ri-span-8,
+	.ri-span-12 { grid-column: span 12; }
+}
+
 /* Panels visibility menu */
 .ri-panels-menu {
 	position: relative;
@@ -200,7 +244,7 @@
 /* Show more toggle under truncated tables */
 .ri-showmore {
 	display: block;
-	margin: 8px 0 0;
+	margin: 12px 2px 4px;
 	padding: 0;
 	border: 0;
 	background: none;

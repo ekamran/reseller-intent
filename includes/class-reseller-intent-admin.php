@@ -689,7 +689,7 @@ final class Reseller_Intent_Admin {
 								</p>
 								<p class="description"><?php esc_html_e( 'Its button text, any wording or language. Leave empty for the default.', 'reseller-intent' ); ?></p>
 							</span>
-							<p class="description"><?php esc_html_e( 'Tip: wrap a dark page section in a .rintent-dark class for light-on-dark widget colors.', 'reseller-intent' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Dark sections are detected automatically and the widget switches to light-on-dark colors on its own. To force it either way, wrap the section in a .rintent-dark or .rintent-light class.', 'reseller-intent' ); ?></p>
 
 							<details class="rintent-theming-ref">
 								<summary><?php esc_html_e( 'Theming reference: CSS classes and variables', 'reseller-intent' ); ?></summary>
@@ -706,7 +706,7 @@ final class Reseller_Intent_Admin {
 										<tr><td><?php esc_html_e( 'Accent (buttons, focus ring)', 'reseller-intent' ); ?></td><td><code>--rintent-accent</code> <?php esc_html_e( '(set by the color picker above)', 'reseller-intent' ); ?></td></tr>
 										<tr><td><?php esc_html_e( 'Accent on dark surfaces', 'reseller-intent' ); ?></td><td><code>--rintent-accent-dark</code> <?php esc_html_e( '(set by the Dark accent picker above; this variable overrides it)', 'reseller-intent' ); ?></td></tr>
 										<tr><td><?php esc_html_e( 'Text on accent surfaces', 'reseller-intent' ); ?></td><td><code>--rintent-accent-text</code> &middot; <code>--rintent-accent-dark-text</code> <?php esc_html_e( '(auto-computed for contrast; set to force your own)', 'reseller-intent' ); ?></td></tr>
-										<tr><td><?php esc_html_e( 'Dark section context', 'reseller-intent' ); ?></td><td><code>.rintent-dark</code> <?php esc_html_e( '(wrapper class)', 'reseller-intent' ); ?></td></tr>
+										<tr><td><?php esc_html_e( 'Dark section context', 'reseller-intent' ); ?></td><td><code>.rintent-dark</code> &middot; <code>.rintent-light</code> <?php esc_html_e( '(wrapper classes; auto-detected when absent)', 'reseller-intent' ); ?></td></tr>
 									</tbody>
 								</table>
 								<p class="description"><?php esc_html_e( 'Example:', 'reseller-intent' ); ?> <code>body{--rintent-domain-size:18px;--rintent-price-color:#0a7d5c;}</code></p>

@@ -192,7 +192,76 @@
 		$(this).closest('.rstore-domain-search').removeClass('rintent-results-cleared');
 	});
 
+	/*
+	 * Dark surfaces get .rintent-dark on the widget root automatically, so
+	 * the dark styling needs zero setup. Order of truth:
+	 * .rintent-light ancestor forces light, .rintent-dark or legacy
+	 * .rstore-dark ancestors force dark, otherwise the surface behind the
+	 * widget decides (solid color, then gradient stop, then surrounding
+	 * text color as the last hint).
+	 */
+	function colorLuminance(value) {
+		var parts = value ? value.match(/[\d.]+/g) : null;
+
+		if (!parts || parts.length < 3) {
+			return null;
+		}
+
+		if (parts.length >= 4 && parseFloat(parts[3]) < 0.5) {
+			return null;
+		}
+
+		return (0.2126 * parts[0]) + (0.7152 * parts[1]) + (0.0722 * parts[2]);
+	}
+
+	function contextIsDark(root) {
+		var node = root.parentElement;
+		var lum;
+
+		while (node && node.nodeType === 1 && node !== document.documentElement) {
+			var style = window.getComputedStyle(node);
+
+			lum = colorLuminance(style.backgroundColor);
+			if (null !== lum) {
+				return lum < 140;
+			}
+
+			var image = style.backgroundImage || '';
+			if (-1 !== image.indexOf('gradient')) {
+				var stop = image.match(/rgba?\([^)]+\)/);
+				lum = stop ? colorLuminance(stop[0]) : null;
+				if (null !== lum) {
+					return lum < 140;
+				}
+			}
+
+			node = node.parentElement;
+		}
+
+		lum = colorLuminance(window.getComputedStyle(root.parentElement || root).color);
+
+		return null !== lum && lum > 150;
+	}
+
+	function autoDarkContext() {
+		$('.rstore-domain-search').each(function() {
+			if (this.closest('.rintent-light')) {
+				this.classList.remove('rintent-dark');
+				return;
+			}
+
+			if (this.closest('.rintent-dark')) {
+				return;
+			}
+
+			if (this.closest('.rstore-dark') || contextIsDark(this)) {
+				this.classList.add('rintent-dark');
+			}
+		});
+	}
+
 	function enhanceAll() {
+		autoDarkContext();
 		ensureSkeletonRows();
 		ensureClearAllButtons();
 		alignClearButtonsToSearchForm();

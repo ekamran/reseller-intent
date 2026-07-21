@@ -103,7 +103,7 @@ Built to stay out of your page speed score.
 
 = 1.0.0 =
 * Initial release: anonymous domain-search tracking, intent dashboard, chunked CSV export, browser-style clear-data, retention controls.
-* Widget style pack: accent-driven styling, skeleton loaders, floating Clear All, dark context, documented theming variables.
+* Widget style pack: accent-driven styling, skeleton loaders, floating Clear All, automatic dark-section detection, documented theming variables.
 * Shortcodes with generator UI: TLD price strip (cached + cron-warmed) and starting-at price.
 * Top Countries panel (privacy-safe geo headers), WP dashboard glance widget, search ignore-list, filterable dashboard capability.
 * Timezone-based country fallback for hosts without geo headers; legacy timezone aliases handled.

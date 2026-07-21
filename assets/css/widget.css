@@ -233,7 +233,7 @@ body {
 	outline-offset: -3px;
 }
 
-.rintent-dark .rstore-domain-search .search-form input[type="submit"]:focus-visible {
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .search-form input[type="submit"]:focus-visible {
 	outline-color: var(--rintent-widget-accent-dark-text) !important;
 }
 
@@ -448,52 +448,58 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 	}
 }
 
-/* ---------- Dark context: wrap the widget area in .rintent-dark ---------- */
+/* ---------- Dark context ----------
+ * Three ways in, same look:
+ * 1. auto: widget.js reads the surface behind the widget and adds
+ *    .rintent-dark on the widget root when it is dark
+ * 2. manual wrapper: .rintent-dark on any ancestor (.rintent-light forces
+ *    light and wins over auto)
+ * 3. legacy wrapper: .rstore-dark, kept for Add-On migrations */
 
-.rintent-dark .rstore-domain-search .rstore-message,
-.rintent-dark .rstore-domain-search .rstore-message h1,
-.rintent-dark .rstore-domain-search .rstore-message h2,
-.rintent-dark .rstore-domain-search .rstore-message h3,
-.rintent-dark .rstore-domain-search .rstore-message h4 {
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rstore-message,
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rstore-message h1,
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rstore-message h2,
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rstore-message h3,
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rstore-message h4 {
 	color: #ffffff !important;
 }
 
-.rintent-dark .rstore-domain-search .domain-result {
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .domain-result {
 	border-color: rgba(255, 255, 255, 0.12) !important;
 	background: rgba(255, 255, 255, 0.04) !important;
 }
 
-.rintent-dark .rstore-domain-search .domain-name,
-.rintent-dark .rstore-domain-search .result-content {
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .domain-name,
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .result-content {
 	color: #ffffff !important;
 }
 
-.rintent-dark .rstore-domain-search .purchase-info {
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .purchase-info {
 	color: rgba(255, 255, 255, 0.66) !important;
 }
 
-.rintent-dark .rstore-domain-search button.rstore-domain-buy-button.select.btn.btn-secondary,
-.rintent-dark .rstore-domain-search .rintent-clear-btn {
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) button.rstore-domain-buy-button.select.btn.btn-secondary,
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rintent-clear-btn {
 	color: rgba(255, 255, 255, 0.85) !important;
 }
 
-.rintent-dark .rstore-domain-search button.rstore-domain-buy-button.selected.btn.btn-default {
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) button.rstore-domain-buy-button.selected.btn.btn-default {
 	color: #ffffff !important;
 }
 
-.rintent-dark .rstore-domain-search .rstore-disclaimer,
-.rintent-dark .rstore-domain-search .rstore-disclaimer p {
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rstore-disclaimer,
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rstore-disclaimer p {
 	color: rgba(255, 255, 255, 0.66) !important;
 }
 
-.rintent-dark .rstore-domain-search .rintent-skeleton-row {
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rintent-skeleton-row {
 	border-color: rgba(255, 255, 255, 0.1);
 	background: rgba(255, 255, 255, 0.04);
 }
 
-.rintent-dark .rstore-domain-search .rintent-skeleton-row .sk-name,
-.rintent-dark .rstore-domain-search .rintent-skeleton-row .sk-price,
-.rintent-dark .rstore-domain-search .rintent-skeleton-row .sk-btn {
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rintent-skeleton-row .sk-name,
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rintent-skeleton-row .sk-price,
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rintent-skeleton-row .sk-btn {
 	background: linear-gradient(90deg, rgba(255, 255, 255, 0.08) 25%, rgba(255, 255, 255, 0.16) 37%, rgba(255, 255, 255, 0.08) 63%);
 	background-size: 300% 100%;
 }
@@ -564,29 +570,29 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 /* Dark context: accent-surface controls switch to the dark accent so a
  * dark-tuned accent never sinks into a dark section. Text contrast is
  * computed server-side for whichever dark accent is active. */
-.rintent-dark .rstore-domain-search .continue-form .rstore-domain-continue-button,
-.rintent-dark .rstore-domain-search .rstore-domain-buy-button:not(.select):not(.selected),
-.rintent-dark .rstore-domain-search .search-form input[type="submit"] {
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .continue-form .rstore-domain-continue-button,
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rstore-domain-buy-button:not(.select):not(.selected),
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .search-form input[type="submit"] {
 	background: var(--rintent-widget-accent-dark) !important;
 	border-color: var(--rintent-widget-accent-dark) !important;
 	color: var(--rintent-widget-accent-dark-text) !important;
 }
 
-.rintent-dark .rstore-domain-search .continue-form .rstore-domain-continue-button:hover,
-.rintent-dark .rstore-domain-search .rstore-domain-buy-button:not(.select):not(.selected):hover,
-.rintent-dark .rstore-domain-search .continue-form .rstore-domain-continue-button:focus,
-.rintent-dark .rstore-domain-search .rstore-domain-buy-button:not(.select):not(.selected):focus {
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .continue-form .rstore-domain-continue-button:hover,
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rstore-domain-buy-button:not(.select):not(.selected):hover,
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .continue-form .rstore-domain-continue-button:focus,
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rstore-domain-buy-button:not(.select):not(.selected):focus {
 	background: color-mix(in srgb, var(--rintent-widget-accent-dark) 82%, #000) !important;
 	border-color: color-mix(in srgb, var(--rintent-widget-accent-dark) 82%, #000) !important;
 }
 
-.rintent-dark .rstore-domain-search .search-form .search-field:focus,
-.rintent-dark .rstore-domain-search .search-form .search-field:focus-visible {
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .search-form .search-field:focus,
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .search-form .search-field:focus-visible {
 	border-color: var(--rintent-widget-accent-dark) !important;
 	box-shadow: none !important;
 }
 
-.rintent-dark .rstore-domain-search .search-form input[type="submit"]:focus-visible {
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .search-form input[type="submit"]:focus-visible {
 	outline: 2px solid var(--rintent-widget-accent-dark);
 	outline-offset: 2px;
 }

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-21T21:11:01+00:00\n"
+"POT-Creation-Date: 2026-07-21T21:30:25+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: reseller-intent\n"
@@ -437,7 +437,7 @@ msgid "Its button text, any wording or language. Leave empty for the default."
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:692
-msgid "Tip: wrap a dark page section in a .rintent-dark class for light-on-dark widget colors."
+msgid "Dark sections are detected automatically and the widget switches to light-on-dark colors on its own. To force it either way, wrap the section in a .rintent-dark or .rintent-light class."
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:695
@@ -509,7 +509,7 @@ msgid "Dark section context"
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:709
-msgid "(wrapper class)"
+msgid "(wrapper classes; auto-detected when absent)"
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:712

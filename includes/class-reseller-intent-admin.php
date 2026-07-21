@@ -183,7 +183,7 @@ final class Reseller_Intent_Admin {
 									$price = '' !== trim( $sale ) ? $sale : $list;
 									?>
 									<label>
-										<input type="checkbox" class="rintent-gen-product" value="<?php echo esc_attr( $product->ID ); ?>" data-title="<?php echo esc_attr( strtolower( $product->post_title ) ); ?>" />
+										<input type="checkbox" class="rintent-gen-product" value="<?php echo esc_attr( $product->ID ); ?>" data-title="<?php echo esc_attr( strtolower( $product->post_title ) ); ?>" data-price="<?php echo esc_attr( trim( $price ) ); ?>" />
 										<?php echo esc_html( $product->post_title ); ?>
 										<span class="rintent-product-meta">- <?php echo esc_html( '' !== trim( $price ) ? $price : __( 'no price', 'reseller-intent' ) ); ?> &middot; ID <?php echo esc_html( $product->ID ); ?></span>
 									</label>
@@ -234,6 +234,7 @@ final class Reseller_Intent_Admin {
 						<span class="rintent-label"><?php esc_html_e( 'Live preview', 'reseller-intent' ); ?></span>
 						<span>
 							<div id="rintent-preview-price" class="rintent-preview rintent-preview--inline" data-empty="<?php esc_attr_e( 'Select products to see it.', 'reseller-intent' ); ?>"></div>
+							<p id="rintent-range-hint" class="description" style="display:none;"><?php esc_html_e( 'Range shows two prices only when the selected products have different prices. Pick at least two plans, like the cheapest and the highest of a family.', 'reseller-intent' ); ?></p>
 						</span>
 					</div>
 				<div class="rintent-field">
@@ -405,10 +406,13 @@ final class Reseller_Intent_Admin {
 
 			var previewNonce = '<?php echo esc_js( wp_create_nonce( 'rintent_preview' ) ); ?>';
 			var previewTimers = {};
+			var previewSeq = {};
 
 			function fetchPreview(type, params, targetId) {
 				window.clearTimeout(previewTimers[type]);
 				previewTimers[type] = window.setTimeout(function() {
+					var seq = (previewSeq[type] || 0) + 1;
+					previewSeq[type] = seq;
 					var target = document.getElementById(targetId);
 					if (!target) {
 						return;
@@ -421,6 +425,9 @@ final class Reseller_Intent_Admin {
 					window.fetch(ajaxurl, { method: 'POST', credentials: 'same-origin', body: body })
 						.then(function(r) { return r.json(); })
 						.then(function(json) {
+							if (seq !== previewSeq[type]) {
+								return; // a newer request superseded this one
+							}
 							if (json && json.success && json.data) {
 								target.innerHTML = json.data.html || '<em><?php echo esc_js( __( 'Nothing to show yet.', 'reseller-intent' ) ); ?></em>';
 								var dark = type === 'tld' && document.getElementById('rintent-gen-theme').value === 'dark';
@@ -440,7 +447,15 @@ final class Reseller_Intent_Admin {
 			}
 
 			function previewPrice() {
-				var ids = Array.prototype.slice.call(document.querySelectorAll('.rintent-gen-product:checked')).map(function(cb) { return cb.value; }).join(',');
+				var checked = Array.prototype.slice.call(document.querySelectorAll('.rintent-gen-product:checked'));
+				var ids = checked.map(function(cb) { return cb.value; }).join(',');
+				var hint = document.getElementById('rintent-range-hint');
+				if (hint) {
+					var distinct = {};
+					checked.forEach(function(cb) { if (cb.getAttribute('data-price')) { distinct[cb.getAttribute('data-price')] = 1; } });
+					var needHint = document.getElementById('rintent-gen-mode').value === 'range' && checked.length > 0 && Object.keys(distinct).length < 2;
+					hint.style.display = needHint ? '' : 'none';
+				}
 				var target = document.getElementById('rintent-preview-price');
 				if (!ids) {
 					if (target) { target.innerHTML = '<em>' + (target.getAttribute('data-empty') || '') + '</em>'; }

@@ -226,6 +226,21 @@
 			return false;
 		}
 
+		/*
+		 * requestAnimationFrame alone is a trap here: browsers suspend it
+		 * in background tabs, so a widget loading while the tab is hidden
+		 * would never get its skeletons. Race it against a short timeout,
+		 * whichever fires first runs the (idempotent) enhancers once.
+		 */
+		function runEnhance() {
+			if (!scheduled) {
+				return;
+			}
+
+			scheduled = false;
+			enhanceAll();
+		}
+
 		var observer = new MutationObserver(function(mutations) {
 			if (scheduled) {
 				return;
@@ -244,10 +259,8 @@
 			}
 
 			scheduled = true;
-			window.requestAnimationFrame(function() {
-				scheduled = false;
-				enhanceAll();
-			});
+			window.requestAnimationFrame(runEnhance);
+			window.setTimeout(runEnhance, 150);
 		});
 
 		observer.observe(document.body, { childList: true, subtree: true });

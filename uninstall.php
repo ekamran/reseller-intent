@@ -33,4 +33,3 @@ $wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient%r
 wp_clear_scheduled_hook( 'rintent_auto_purge' );
 wp_clear_scheduled_hook( 'rintent_tld_prefetch' );
 wp_clear_scheduled_hook( 'rintent_tld_prefetch', array( 'refresh' ) );
-wp_clear_scheduled_hook( 'rintent_weekly_digest' );

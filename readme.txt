@@ -25,7 +25,6 @@ Your Reseller Store domain search is where buying decisions happen, but by defau
 * Per-page breakdown (which search box converts)
 * Recent searches log with filter
 * CSV and JSON export for any range
-* Weekly email digest (searches, conversion, top domains & TLDs) with a test-send button
 
 **Data controls**
 
@@ -103,4 +102,4 @@ Built to stay out of your page speed score.
 * Top Countries panel (privacy-safe geo headers), WP dashboard glance widget, search ignore-list, filterable dashboard capability.
 * Timezone-based country fallback for hosts without geo headers; legacy timezone aliases handled.
 * Geo-aware support phone shortcode with regional numbers manager.
-* Custom date range on the dashboard, JSON export, weekly email digest.
+* Custom date range on the dashboard, JSON export.

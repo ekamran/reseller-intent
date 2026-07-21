@@ -403,6 +403,23 @@
 	letter-spacing: 0.5px;
 }
 
+.ri-kpi-row {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 10px;
+	width: 100%;
+}
+
+.ri-spark {
+	width: 64px;
+	height: 20px;
+	flex: 0 0 auto;
+	margin-bottom: 6px;
+	color: var(--ri-accent, #3858e9);
+	opacity: 0.75;
+}
+
 .ri-kpi-value {
 	margin: 6px 0 0;
 	color: #0f172a;

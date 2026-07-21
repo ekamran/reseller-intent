@@ -15,7 +15,6 @@ final class Reseller_Intent {
 	private $tld_strip;
 	private $price;
 	private $phone;
-	private $digest;
 	private $perf;
 	private $health;
 
@@ -28,7 +27,6 @@ final class Reseller_Intent {
 		$this->tld_strip = new Reseller_Intent_TLD_Strip();
 		$this->price     = new Reseller_Intent_Price();
 		$this->phone     = new Reseller_Intent_Phone();
-		$this->digest    = new Reseller_Intent_Digest();
 		$this->perf      = new Reseller_Intent_Perf();
 		$this->health    = new Reseller_Intent_Health();
 
@@ -64,7 +62,6 @@ final class Reseller_Intent {
 		$this->tld_strip->register();
 		$this->price->register();
 		$this->phone->register();
-		$this->digest->register();
 		$this->perf->register();
 		$this->health->register();
 		Reseller_Intent_CLI::maybe_register();
@@ -102,7 +99,6 @@ final class Reseller_Intent {
 	public static function deactivate() {
 		wp_clear_scheduled_hook( 'rintent_auto_purge' );
 		Reseller_Intent_TLD_Strip::unschedule();
-		Reseller_Intent_Digest::unschedule();
 	}
 
 	/**

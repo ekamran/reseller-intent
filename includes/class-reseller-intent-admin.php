@@ -423,10 +423,6 @@ final class Reseller_Intent_Admin {
 				<div class="notice notice-success is-dismissible"><p><?php echo esc_html( sprintf( /* translators: %s: number of events */ __( '%s legacy events imported.', 'reseller-intent' ), number_format_i18n( (int) $import_match[1] ) ) ); ?></p></div>
 			<?php elseif ( 'import_skipped' === $notice ) : ?>
 				<div class="notice notice-info is-dismissible"><p><?php esc_html_e( 'Import skipped. Already imported or no legacy table found.', 'reseller-intent' ); ?></p></div>
-			<?php elseif ( 'digest_sent' === $notice ) : ?>
-				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Test digest sent.', 'reseller-intent' ); ?></p></div>
-			<?php elseif ( 'digest_failed' === $notice ) : ?>
-				<div class="notice notice-error is-dismissible"><p><?php esc_html_e( 'Sending failed. Check that your site can send email (an SMTP plugin usually fixes this).', 'reseller-intent' ); ?></p></div>
 			<?php endif; ?>
 
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
@@ -522,23 +518,6 @@ final class Reseller_Intent_Admin {
 				</div>
 
 				<div class="rintent-card">
-					<h2><?php esc_html_e( 'Weekly report', 'reseller-intent' ); ?></h2>
-					<div class="rintent-field">
-						<span class="rintent-label"><?php esc_html_e( 'Email digest', 'reseller-intent' ); ?></span>
-						<span>
-							<label for="rintent-digest">
-								<input type="checkbox" id="rintent-digest" name="digest_enabled" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'digest_enabled' ) ); ?> />
-								<?php esc_html_e( 'Send a weekly summary (searches, conversion, top domains and TLDs). Weeks with no activity are skipped.', 'reseller-intent' ); ?>
-							</label>
-							<p style="margin:8px 0 0;">
-								<input type="email" name="digest_email" class="regular-text" value="<?php echo esc_attr( (string) Reseller_Intent_Settings::get( 'digest_email' ) ); ?>" placeholder="<?php echo esc_attr( get_option( 'admin_email' ) ); ?>" />
-							</p>
-							<p class="description"><?php esc_html_e( 'Leave empty to use the site admin email.', 'reseller-intent' ); ?></p>
-						</span>
-					</div>
-				</div>
-
-				<div class="rintent-card">
 					<h2><?php esc_html_e( 'Tracking and privacy', 'reseller-intent' ); ?></h2>
 					<div class="rintent-field">
 						<span class="rintent-label"><label for="rintent-blocklist"><?php esc_html_e( 'Ignore searches', 'reseller-intent' ); ?></label></span>
@@ -588,11 +567,6 @@ final class Reseller_Intent_Admin {
 			<div class="rintent-card">
 				<h2><?php esc_html_e( 'Tools', 'reseller-intent' ); ?></h2>
 				<div class="rintent-tools">
-					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-						<input type="hidden" name="action" value="rintent_send_digest_test" />
-						<?php wp_nonce_field( 'rintent_send_digest_test' ); ?>
-						<?php submit_button( __( 'Send test digest email', 'reseller-intent' ), 'secondary', 'submit', false ); ?>
-					</form>
 					<?php if ( Reseller_Intent_Import::legacy_table_exists() && ! Reseller_Intent_Import::already_imported() ) : ?>
 						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 							<input type="hidden" name="action" value="rintent_import_legacy" />
@@ -1102,9 +1076,41 @@ final class Reseller_Intent_Admin {
 		$last_event_ts  = $last_event_at ? (int) strtotime( $last_event_at ) : 0;
 		$last_event_age = $last_event_ts ? max( 0, strtotime( current_time( 'mysql' ) ) - $last_event_ts ) : 0;
 
+		// KPI sparklines: fixed last-7-days daily counts, range-independent.
+		$spark_rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT DATE(created_at) AS day,
+				SUM(CASE WHEN event_type = 'domain_search' THEN event_count ELSE 0 END) AS searches,
+				COUNT(DISTINCT CASE WHEN event_type = 'domain_search' AND domain_query <> '' THEN domain_query END) AS uniques,
+				SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END) AS carts,
+				SUM(CASE WHEN event_type = 'continue_to_cart' THEN items_count ELSE 0 END) AS added
+			FROM {$table_name} WHERE created_at >= %s GROUP BY day ORDER BY day ASC",
+				wp_date( 'Y-m-d 00:00:00', $now_ts - ( 6 * DAY_IN_SECONDS ) )
+			),
+			ARRAY_A
+		); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$sparks     = array(
+			'searches' => array(),
+			'uniques'  => array(),
+			'carts'    => array(),
+			'added'    => array(),
+		);
+		$by_day     = array();
+		foreach ( (array) $spark_rows as $spark_row ) {
+			$by_day[ $spark_row['day'] ] = $spark_row;
+		}
+		for ( $d = 6; $d >= 0; $d-- ) {
+			$day                  = wp_date( 'Y-m-d', $now_ts - ( $d * DAY_IN_SECONDS ) );
+			$sparks['searches'][] = isset( $by_day[ $day ] ) ? (int) $by_day[ $day ]['searches'] : 0;
+			$sparks['uniques'][]  = isset( $by_day[ $day ] ) ? (int) $by_day[ $day ]['uniques'] : 0;
+			$sparks['carts'][]    = isset( $by_day[ $day ] ) ? (int) $by_day[ $day ]['carts'] : 0;
+			$sparks['added'][]    = isset( $by_day[ $day ] ) ? (int) $by_day[ $day ]['added'] : 0;
+		}
+
 		return array(
 			'range'         => $range_key,
 			'bounded'       => $bounded,
+			'sparks'        => $sparks,
 			'lastEvent'     => array(
 				'ago'   => $last_event_ts
 					/* translators: %s: human readable time difference */

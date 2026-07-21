@@ -249,6 +249,19 @@
 				)
 			),
 			el('span', { className: 'ri-showmore-row' },
+				props.copyList && allRows.length ? el('button', {
+					className: 'ri-showmore',
+					onClick: function(event) {
+						var text = allRows.map(function(r) { return typeof r[0] === 'string' ? r[0] : ''; }).filter(Boolean).join('\n');
+						if (navigator.clipboard && text) {
+							navigator.clipboard.writeText(text);
+							var btn = event.currentTarget;
+							var original = btn.textContent;
+							btn.textContent = __( 'Copied!', 'reseller-intent' );
+							window.setTimeout(function() { btn.textContent = original; }, 1200);
+						}
+					}
+				}, sprintf( /* translators: %s: number of domains */ __( 'Copy %s domains', 'reseller-intent' ), fmt(allRows.length) )) : null,
 				hidden > 0 && ! expanded ? el('button', {
 					className: 'ri-showmore',
 					'aria-expanded': false,
@@ -383,19 +396,41 @@
 
 	/* ---------- Panels ---------- */
 
+	function Spark(props) {
+		var data = props.data || [];
+
+		if (!data.length || !data.some(function(v) { return v > 0; })) {
+			return null;
+		}
+
+		var W = 64;
+		var H = 20;
+		var max = Math.max.apply(null, data.concat([1]));
+		var step = data.length > 1 ? W / (data.length - 1) : W;
+		var points = data.map(function(v, i) {
+			return (i * step).toFixed(1) + ',' + (H - 2 - (v / max) * (H - 4)).toFixed(1);
+		}).join(' ');
+
+		return el('svg', { className: 'ri-spark', viewBox: '0 0 ' + W + ' ' + H, 'aria-hidden': 'true' },
+			el('polyline', { points: points, fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinejoin: 'round', strokeLinecap: 'round' }),
+			el('circle', { cx: W, cy: (H - 2 - (data[data.length - 1] / max) * (H - 4)).toFixed(1), r: 2, fill: 'currentColor' })
+		);
+	}
+
 	function KpiGrid(props) {
 		var now = props.now || {};
 		var prev = props.prev;
+		var sparks = props.sparks || {};
 		var conversion = now.searches > 0 ? (now.cartClicks / now.searches) * 100 : 0;
 		var avgCart = now.cartClicks > 0 ? now.domainsAdded / now.cartClicks : 0;
 		var prevConversion = prev ? (prev.searches > 0 ? (prev.cartClicks / prev.searches) * 100 : 0) : null;
 		var prevAvgCart = prev ? (prev.cartClicks > 0 ? prev.domainsAdded / prev.cartClicks : 0) : null;
 
 		var cards = [
-			{ label: __( 'Domain Searches', 'reseller-intent' ), value: fmt(now.searches), current: now.searches, previous: prev ? prev.searches : null },
-			{ label: __( 'Unique Searches', 'reseller-intent' ), value: fmt(now.uniqueSearches), current: now.uniqueSearches, previous: prev ? prev.uniqueSearches : null },
-			{ label: __( 'Cart Clicks', 'reseller-intent' ), value: fmt(now.cartClicks), current: now.cartClicks, previous: prev ? prev.cartClicks : null },
-			{ label: __( 'Domains Added', 'reseller-intent' ), value: fmt(now.domainsAdded), current: now.domainsAdded, previous: prev ? prev.domainsAdded : null },
+			{ label: __( 'Domain Searches', 'reseller-intent' ), value: fmt(now.searches), current: now.searches, previous: prev ? prev.searches : null, spark: sparks.searches },
+			{ label: __( 'Unique Searches', 'reseller-intent' ), value: fmt(now.uniqueSearches), current: now.uniqueSearches, previous: prev ? prev.uniqueSearches : null, spark: sparks.uniques },
+			{ label: __( 'Cart Clicks', 'reseller-intent' ), value: fmt(now.cartClicks), current: now.cartClicks, previous: prev ? prev.cartClicks : null, spark: sparks.carts },
+			{ label: __( 'Domains Added', 'reseller-intent' ), value: fmt(now.domainsAdded), current: now.domainsAdded, previous: prev ? prev.domainsAdded : null, spark: sparks.added },
 			{ label: __( 'Avg Domains / Cart', 'reseller-intent' ), value: fmt(avgCart, 2), current: avgCart, previous: prevAvgCart },
 			{ label: __( 'Search → Cart Rate', 'reseller-intent' ), value: fmt(conversion, 1) + '%', current: conversion, previous: prevConversion }
 		];
@@ -403,7 +438,10 @@
 		return el('div', { className: 'ri-kpis' }, cards.map(function(card, i) {
 			return el('div', { className: 'ri-kpi', key: i },
 				el('p', { className: 'ri-kpi-label' }, card.label),
-				el('p', { className: 'ri-kpi-value' }, card.value),
+				el('div', { className: 'ri-kpi-row' },
+					el('p', { className: 'ri-kpi-value' }, card.value),
+					card.spark ? el(Spark, { data: card.spark }) : null
+				),
 				el(DeltaBadge, { current: card.current, previous: card.previous })
 			);
 		}));
@@ -425,7 +463,7 @@
 		}
 		var rows = items.map(mapItem);
 		return el(Panel, { title: __( 'Searched TLDs', 'reseller-intent' ), note: __( 'Which extensions people look for.', 'reseller-intent' ) },
-			el(MiniTable, { columns: [__( 'TLD', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )], rows: rows, empty: __( 'No searches in this range.', 'reseller-intent' ), colWidths: ['', '200px'], initialFetched: 25, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('tlds', offset, mapItem); } : null })
+			el(MiniTable, { columns: [__( 'TLD', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )], rows: rows, empty: __( 'No searches yet. Every search adds its TLD here.', 'reseller-intent' ), colWidths: ['', '200px'], initialFetched: 25, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('tlds', offset, mapItem); } : null })
 		);
 	}
 
@@ -435,7 +473,7 @@
 		}
 		var repeats = (props.repeats || []).map(mapItem);
 		return el(Panel, { title: __( 'Repeat Demand', 'reseller-intent' ), note: __( 'Domains searched 2+ times, buyers circling.', 'reseller-intent' ) },
-			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )], rows: repeats, empty: __( 'No repeated searches in this range.', 'reseller-intent' ), colWidths: ['', '100px'], initialFetched: 25, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('repeats', offset, mapItem); } : null })
+			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )], rows: repeats, empty: __( 'Quiet so far. When a visitor searches the same name twice, it lands here, a buyer circling.', 'reseller-intent' ), colWidths: ['', '100px'], initialFetched: 25, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('repeats', offset, mapItem); } : null })
 		);
 	}
 
@@ -451,7 +489,7 @@
 					return el(StatChip, { key: i, value: fmt(tld.count), label: tld.label });
 				}))
 				: null,
-			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Added', 'reseller-intent' )], rows: rows, empty: __( 'No carted domains in this range.', 'reseller-intent' ), colWidths: ['', '80px'], initialFetched: 15, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('carted', offset, mapItem); } : null })
+			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Added', 'reseller-intent' )], rows: rows, empty: __( 'Cart clicks will land here. Tracking is live, watch the Last event chip up top.', 'reseller-intent' ), colWidths: ['', '80px'], initialFetched: 15, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('carted', offset, mapItem); } : null })
 		);
 	}
 
@@ -463,7 +501,7 @@
 		var rows = items.map(mapItem);
 
 		return el(Panel, { title: __( 'Missed Opportunities', 'reseller-intent' ), note: __( 'Searched and available, but never taken to cart. Warm leads.', 'reseller-intent' ) },
-			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Last seen', 'reseller-intent' )], rows: rows, empty: __( 'Nothing missed in this range. Every available search went to cart, or there were none.', 'reseller-intent' ), colWidths: ['', '100px', '125px'], initialFetched: 15, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('opportunities', offset, mapItem); } : null })
+			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Last seen', 'reseller-intent' )], rows: rows, empty: __( 'Nothing missed. Available searches that skip the cart will show here, your follow-up list.', 'reseller-intent' ), colWidths: ['', '100px', '125px'], copyList: true, initialFetched: 15, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('opportunities', offset, mapItem); } : null })
 		);
 	}
 
@@ -486,7 +524,7 @@
 					el(StatChip, { value: fmt(exactRate, 1) + '%', label: __( 'Kept searched name', 'reseller-intent' ) })
 				)
 				: null,
-			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Selects', 'reseller-intent' )], rows: topRows, empty: __( 'No selection data in this range yet.', 'reseller-intent' ), colWidths: ['', '95px'], initialFetched: 25, totalRows: (props.totals || {}).selectionTop, loadMore: props.loadRows ? function(offset) { return props.loadRows('selection_top', offset, mapTop); } : null }),
+			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Selects', 'reseller-intent' )], rows: topRows, empty: __( 'Select clicks will appear once visitors pick a result from the list.', 'reseller-intent' ), colWidths: ['', '95px'], initialFetched: 25, totalRows: (props.totals || {}).selectionTop, loadMore: props.loadRows ? function(offset) { return props.loadRows('selection_top', offset, mapTop); } : null }),
 			pairRows.length
 				? el(Fragment, null,
 					el('p', { className: 'ri-subhead' }, 'Searched → settled for'),
@@ -512,7 +550,7 @@
 			];
 		});
 		return el(Panel, { title: __( 'Search by Page', 'reseller-intent' ), note: __( 'Which page each search and cart click came from.', 'reseller-intent' ) },
-			el(MiniTable, { columns: [__( 'Page', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Cart clicks', 'reseller-intent' )], rows: rows, colWidths: ['', '195px', '110px'], empty: __( 'No page data in this range.', 'reseller-intent' ) })
+			el(MiniTable, { columns: [__( 'Page', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Cart clicks', 'reseller-intent' )], rows: rows, colWidths: ['', '195px', '110px'], empty: __( 'Once searches come in, you will see which page they happen on.', 'reseller-intent' ) })
 		);
 	}
 
@@ -1030,7 +1068,7 @@
 
 			data
 				? el(Fragment, null,
-					el(KpiGrid, { now: data.kpis.now, prev: data.kpis.prev }),
+					el(KpiGrid, { now: data.kpis.now, prev: data.kpis.prev, sparks: data.sparks }),
 					(function() {
 						/*
 						 * Liquid layout: one 12-column dense grid. Every panel

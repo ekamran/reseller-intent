@@ -3,6 +3,9 @@
  *
  * Theming knobs (set from your own CSS, defaults inherit sensibly):
  *   --rintent-accent            price color (light) / hover border
+ *   --rintent-accent-dark       price color on the dark theme; defaults to
+ *                               an auto-lightened mix of the accent so any
+ *                               accent stays readable on dark surfaces
  *   --rintent-tld-bg            pill background
  *   --rintent-tld-border        pill border color
  *   --rintent-tld-color         TLD text color
@@ -72,11 +75,17 @@ body .rintent-tld-strip--dark .rintent-tld b {
 	color: var(--rintent-tld-color, #ffffff);
 }
 
+/*
+ * The saved accent is picked for light surfaces; used as-is it can vanish
+ * on a dark section (navy accent on a navy hero). Mix it toward white so
+ * the hue survives but the value is always readable. Override with
+ * --rintent-accent-dark for full control.
+ */
 body .rintent-tld-strip--dark .rintent-tld i {
-	color: var(--rintent-accent, #7b96ff);
+	color: var(--rintent-accent-dark, color-mix(in srgb, var(--rintent-accent, #7b96ff) 45%, #fff));
 }
 
 body .rintent-tld-strip--dark .rintent-tld:hover {
-	border-color: var(--rintent-accent, #7b96ff);
+	border-color: var(--rintent-accent-dark, color-mix(in srgb, var(--rintent-accent, #7b96ff) 45%, #fff));
 	background: rgba(255, 255, 255, 0.09);
 }

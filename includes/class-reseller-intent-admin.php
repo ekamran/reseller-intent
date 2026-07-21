@@ -126,7 +126,7 @@ final class Reseller_Intent_Admin {
 					<span class="rintent-label"><label for="rintent-gen-theme"><?php esc_html_e( 'Theme', 'reseller-intent' ); ?></label></span>
 					<span>
 						<select id="rintent-gen-theme"><option value="light"><?php esc_html_e( 'Light', 'reseller-intent' ); ?></option><option value="dark"><?php esc_html_e( 'Dark', 'reseller-intent' ); ?></option></select>
-						<p class="description"><?php esc_html_e( 'Dark is for dark page sections. Prices use your accent color from Settings, everything else can be overridden with the --rintent-tld-* variables.', 'reseller-intent' ); ?></p>
+						<p class="description"><?php esc_html_e( 'Dark is for dark page sections. Prices use your accent from Settings, auto-lightened on dark so they stay readable; set --rintent-accent-dark to pick that color yourself, and --rintent-tld-* to restyle the pills.', 'reseller-intent' ); ?></p>
 					</span>
 				</div>
 				<div class="rintent-field">
@@ -477,6 +477,7 @@ final class Reseller_Intent_Admin {
 										<tr><td><?php esc_html_e( 'Search button / Continue to cart', 'reseller-intent' ); ?></td><td><code>.search-form input[type=submit]</code> &middot; <code>.rstore-domain-continue-button</code></td></tr>
 										<tr><td><?php esc_html_e( 'Select / Selected links', 'reseller-intent' ); ?></td><td><code>.rstore-domain-buy-button.select</code> &middot; <code>.rstore-domain-buy-button.selected</code></td></tr>
 										<tr><td><?php esc_html_e( 'Accent (buttons, focus ring)', 'reseller-intent' ); ?></td><td><code>--rintent-accent</code> <?php esc_html_e( '(set by the color picker above)', 'reseller-intent' ); ?></td></tr>
+										<tr><td><?php esc_html_e( 'Accent on dark surfaces', 'reseller-intent' ); ?></td><td><code>--rintent-accent-dark</code> <?php esc_html_e( '(auto: your accent lightened for dark sections; set this to choose it yourself)', 'reseller-intent' ); ?></td></tr>
 										<tr><td><?php esc_html_e( 'Dark section context', 'reseller-intent' ); ?></td><td><code>.rintent-dark</code> <?php esc_html_e( '(wrapper class)', 'reseller-intent' ); ?></td></tr>
 									</tbody>
 								</table>

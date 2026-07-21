@@ -55,6 +55,10 @@ body {
 	height: 44px !important;
 	box-sizing: border-box !important;
 	margin: 0 !important;
+	/* Own the border: themes ship thick dark input borders that melt into
+	 * dark sections, making the white area look shorter than the button. */
+	border: 1px solid #cfd7e3 !important;
+	background: #ffffff !important;
 }
 
 .rstore-domain-search .domain-result {

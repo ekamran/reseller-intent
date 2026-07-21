@@ -564,18 +564,18 @@ final class Reseller_Intent_Admin {
 				<?php submit_button( __( 'Save Settings', 'reseller-intent' ) ); ?>
 			</form>
 
-			<div class="rintent-card">
-				<h2><?php esc_html_e( 'Tools', 'reseller-intent' ); ?></h2>
-				<div class="rintent-tools">
-					<?php if ( Reseller_Intent_Import::legacy_table_exists() && ! Reseller_Intent_Import::already_imported() ) : ?>
+			<?php if ( Reseller_Intent_Import::legacy_table_exists() && ! Reseller_Intent_Import::already_imported() ) : ?>
+				<div class="rintent-card">
+					<h2><?php esc_html_e( 'Tools', 'reseller-intent' ); ?></h2>
+					<div class="rintent-tools">
 						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 							<input type="hidden" name="action" value="rintent_import_legacy" />
 							<?php wp_nonce_field( 'rintent_import_legacy' ); ?>
 							<?php submit_button( __( 'Import Reseller Store Add-On data', 'reseller-intent' ), 'secondary', 'submit', false ); ?>
 						</form>
-					<?php endif; ?>
+					</div>
 				</div>
-			</div>
+			<?php endif; ?>
 		</div>
 		<?php
 	}

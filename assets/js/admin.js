@@ -500,7 +500,7 @@
 		}
 		var rows = items.map(mapItem);
 
-		return el(Panel, { title: __( 'Missed Opportunities', 'reseller-intent' ), note: __( 'Searched, available, but never bought. Register the good ones yourself, or find out what stopped the sale.', 'reseller-intent' ) },
+		return el(Panel, { title: __( 'Missed Opportunities', 'reseller-intent' ), note: __( 'Searched and available, but never taken to cart.', 'reseller-intent' ) },
 			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Last seen', 'reseller-intent' )], rows: rows, empty: __( 'Nothing missed. Names that were searched and available but never bought will show here.', 'reseller-intent' ), colWidths: ['', '100px', '125px'], copyList: true, initialFetched: 15, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('opportunities', offset, mapItem); } : null })
 		);
 	}

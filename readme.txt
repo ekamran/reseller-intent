@@ -97,10 +97,11 @@ Built to stay out of your page speed score.
 
 1. The intent dashboard: KPIs with 7-day sparklines, search vs cart trend, conversion funnel and availability at a glance.
 2. Every list panel pages through the full dataset, with real totals.
-3. Shortcode builders with live previews: TLD price strip, live product price and the support line.
-4. The styled domain search widget on light and dark sections.
-5. Settings: accent colors, widget styling, performance trim and privacy controls.
-6. Browser-style clear data with a preview count before anything is deleted.
+3. Shortcode builders with live previews: the TLD price strip and the live product price.
+4. The shortcodes on a real page: TLD price strip, price lines and the support number, on light and dark sections.
+5. The styled domain search widget on light and dark sections.
+6. Settings: accent colors, widget styling, performance trim and privacy controls.
+7. Browser-style clear data with a preview count before anything is deleted.
 
 == Changelog ==
 

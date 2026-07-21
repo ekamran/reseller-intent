@@ -12,7 +12,18 @@
 
 	function getDeviceType() {
 		try {
-			return window.matchMedia('(max-width: 782px)').matches ? 'mobile' : 'desktop';
+			var ua = navigator.userAgent || '';
+
+			// iPadOS reports a Mac user agent; touch points give it away.
+			if (/tablet|ipad/i.test(ua) || (/macintosh/i.test(ua) && navigator.maxTouchPoints > 1)) {
+				return 'tablet';
+			}
+
+			if (/mobi/i.test(ua) || window.matchMedia('(max-width: 782px)').matches) {
+				return 'mobile';
+			}
+
+			return 'desktop';
 		} catch (error) {
 			return '';
 		}

@@ -404,10 +404,10 @@
 
 	function QualityPanel(props) {
 		var availability = props.availability || { available: 0, taken: 0 };
-		var devices = props.devices || { mobile: 0, desktop: 0 };
+		var devices = props.devices || { mobile: 0, tablet: 0, desktop: 0 };
 		var availTotal = availability.available + availability.taken;
 		var availRate = pct(availability.available, availTotal);
-		var deviceTotal = devices.mobile + devices.desktop;
+		var deviceTotal = devices.mobile + (devices.tablet || 0) + devices.desktop;
 
 		/*
 		 * This panel's content is fixed size forever (3 chips, 2 device
@@ -430,6 +430,7 @@
 					deviceTotal > 0
 						? el('div', { className: 'ri-bars' },
 							el(BarRow, { label: __( 'Desktop', 'reseller-intent' ), width: pct(devices.desktop, deviceTotal), value: fmt(devices.desktop) + ' (' + fmt(pct(devices.desktop, deviceTotal), 1) + '%)' }),
+							el(BarRow, { label: __( 'Tablet', 'reseller-intent' ), width: pct(devices.tablet || 0, deviceTotal), value: fmt(devices.tablet || 0) + ' (' + fmt(pct(devices.tablet || 0, deviceTotal), 1) + '%)' }),
 							el(BarRow, { label: __( 'Mobile', 'reseller-intent' ), width: pct(devices.mobile, deviceTotal), value: fmt(devices.mobile) + ' (' + fmt(pct(devices.mobile, deviceTotal), 1) + '%)' })
 						)
 						: el('p', { className: 'ri-empty' }, 'No device data in this range yet.')
@@ -864,21 +865,21 @@
 						var now = data.kpis.now;
 						var defs = [
 							{ key: 'quality', span: 12, short: true, isEmpty: !(data.availability.available + data.availability.taken), node: el(QualityPanel, { availability: data.availability, devices: data.devices }) },
-							{ key: 'trend', span: 8, isEmpty: !(data.trend.labels || []).length, node: el(Panel, { title: __( 'Search vs Cart Trend', 'reseller-intent' ), note: data.bounded ? __( 'Daily activity in this range.', 'reseller-intent' ) : __( 'Monthly activity, all time.', 'reseller-intent' ) },
+							{ key: 'trend', span: 8, isEmpty: !((data.trend.searches || []).some(function(v) { return v > 0; }) || (data.trend.carts || []).some(function(v) { return v > 0; })), node: el(Panel, { title: __( 'Search vs Cart Trend', 'reseller-intent' ), note: data.bounded ? __( 'Daily activity in this range.', 'reseller-intent' ) : __( 'Monthly activity, all time.', 'reseller-intent' ) },
 								el(TrendChart, data.trend),
 								el('div', { className: 'ri-legend' },
 									el('span', null, el('i', { className: 'ri-dot', style: { background: ACCENT } }), __( 'Searches', 'reseller-intent' )),
 									el('span', null, el('i', { className: 'ri-dot', style: { background: INK } }), __( 'Cart clicks', 'reseller-intent' ))
 								)
 							) },
-							{ key: 'funnel', span: 4, isEmpty: !now.searches, node: el(FunnelPanel, { now: now, cartSizes: data.cartSizes }) },
+							{ key: 'funnel', span: 4, short: true, isEmpty: !now.searches, node: el(FunnelPanel, { now: now, cartSizes: data.cartSizes }) },
 							{ key: 'tlds', span: 4, isEmpty: !data.tlds.items.length, node: el(TldPanel, { items: data.tlds.items, total: data.tlds.total }) },
 							{ key: 'carted', span: 4, isEmpty: !data.carted.domains.length, node: el(CartedPanel, { carted: data.carted }) },
 							{ key: 'opportunities', span: 4, isEmpty: !data.opportunities.length, node: el(OpportunitiesPanel, { items: data.opportunities }) },
 							{ key: 'repeats', span: 4, isEmpty: !data.repeats.length, node: el(DemandPanel, { repeats: data.repeats }) },
 							{ key: 'selection', span: 8, isEmpty: !data.selection.total, node: el(SelectionPanel, { selection: data.selection }) },
-							{ key: 'pages', span: 4, isEmpty: !data.pages.length, node: el(PagesPanel, { pages: data.pages }) },
-							{ key: 'countries', span: 4, isEmpty: !data.countries.items.length, node: el(CountriesPanel, { countries: data.countries }) },
+							{ key: 'pages', span: 4, short: true, isEmpty: !data.pages.length, node: el(PagesPanel, { pages: data.pages }) },
+							{ key: 'countries', span: 4, short: true, isEmpty: !data.countries.items.length, node: el(CountriesPanel, { countries: data.countries }) },
 							{ key: 'recent', span: 12, isEmpty: !data.recent.length, node: el(RecentLog, { recent: data.recent }) }
 						].filter(function(d) { return isShown(d.key); });
 

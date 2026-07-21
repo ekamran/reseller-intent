@@ -49,7 +49,7 @@ final class Reseller_Intent_Tracker {
 		$related_query = isset( $_POST['related_query'] ) ? sanitize_text_field( wp_unslash( $_POST['related_query'] ) ) : '';
 		$related_query = $this->normalize_domain_query( $related_query );
 		$device        = isset( $_POST['device'] ) ? sanitize_key( wp_unslash( $_POST['device'] ) ) : '';
-		$device        = in_array( $device, array( 'mobile', 'desktop' ), true ) ? $device : '';
+		$device        = in_array( $device, array( 'mobile', 'tablet', 'desktop' ), true ) ? $device : '';
 		$page_url      = isset( $_POST['page_url'] ) ? esc_url_raw( wp_unslash( $_POST['page_url'] ) ) : '';
 		$items_count   = isset( $_POST['items_count'] ) ? absint( $_POST['items_count'] ) : 0;
 		$items_json    = '';

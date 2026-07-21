@@ -873,12 +873,13 @@ final class Reseller_Intent_Admin {
 		$device_rows = $wpdb->get_results(
 			"SELECT device, COALESCE(SUM(event_count),0) AS hits
 			FROM {$table_name}
-			WHERE event_type = 'domain_search' AND device IN ('mobile','desktop'){$where}
+			WHERE event_type = 'domain_search' AND device IN ('mobile','tablet','desktop'){$where}
 			GROUP BY device",
 			ARRAY_A
 		);
 		$devices     = array(
 			'mobile'  => 0,
+			'tablet'  => 0,
 			'desktop' => 0,
 		);
 		foreach ( (array) $device_rows as $device_row ) {

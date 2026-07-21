@@ -29,7 +29,7 @@ Your Reseller Store domain search is where buying decisions happen, but by defau
 **Data controls**
 
 * Browser-style "Clear data", delete the last hour, 24 hours, 7 days, 30 days, 6 months, year, or everything, with a preview count before you confirm
-* Optional automatic retention (30 days – 2 years, off by default)
+* Optional automatic retention (30 days to 2 years, off by default)
 * Optional full cleanup on uninstall
 
 **Privacy by design**
@@ -92,6 +92,15 @@ Built to stay out of your page speed score.
 * Cart clicks are sent with sendBeacon, so the event survives the jump to checkout.
 * The dashboard (React) loads in wp-admin only, never on your site.
 * Bonus: an opt-in Performance setting trims Reseller Store's own sitewide assets (React, jQuery add-ons, styles) from pages that have no store element on them.
+
+== Screenshots ==
+
+1. The intent dashboard: KPIs with 7-day sparklines, search vs cart trend, conversion funnel and availability at a glance.
+2. Every list panel pages through the full dataset, with real totals.
+3. Shortcode builders with live previews: TLD price strip, live product price and the support line.
+4. The styled domain search widget on light and dark sections.
+5. Settings: accent colors, widget styling, performance trim and privacy controls.
+6. Browser-style clear data with a preview count before anything is deleted.
 
 == Changelog ==
 

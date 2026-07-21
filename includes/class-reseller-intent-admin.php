@@ -1294,7 +1294,7 @@ final class Reseller_Intent_Admin {
 				'stale' => $last_event_ts ? ( $last_event_age > 3 * DAY_IN_SECONDS ) : false,
 			),
 			'rangeLabel'    => $custom
-				? sprintf( '%s – %s', wp_date( 'M j, Y', strtotime( $from . ' 12:00:00' ) ), wp_date( 'M j, Y', strtotime( $to . ' 12:00:00' ) ) )
+				? sprintf( '%s to %s', wp_date( 'M j, Y', strtotime( $from . ' 12:00:00' ) ), wp_date( 'M j, Y', strtotime( $to . ' 12:00:00' ) ) )
 				: ( $bounded
 					/* translators: %d: number of days */
 					? sprintf( __( 'Last %d days', 'reseller-intent' ), $len )

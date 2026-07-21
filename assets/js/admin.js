@@ -763,6 +763,39 @@
 		var _e = useState(''), error = _e[0], setError = _e[1];
 		var _m = useState(false), showClear = _m[0], setShowClear = _m[1];
 		var _h = useState(loadHiddenPanels), hiddenPanels = _h[0], setHiddenPanels = _h[1];
+
+		/*
+		 * Masonry sizing: each cell spans its own content height in 8px
+		 * grid rows, so expanding one panel never stretches its row
+		 * neighbors and no white space opens up anywhere.
+		 */
+		useEffect(function() {
+			var grid = document.querySelector('.ri-liquid');
+
+			if (!grid) {
+				return undefined;
+			}
+
+			if (!window.ResizeObserver) {
+				grid.className = 'ri-liquid no-masonry';
+				return undefined;
+			}
+
+			var observer = new window.ResizeObserver(function(entries) {
+				entries.forEach(function(entry) {
+					var cell = entry.target.parentElement;
+					var height = entry.target.getBoundingClientRect().height;
+					// +16 covers the panel's bottom margin (the visual row gap).
+					cell.style.gridRowEnd = 'span ' + Math.max(2, Math.ceil((height + 16) / 8));
+				});
+			});
+
+			grid.querySelectorAll('.ri-cell > .ri-panel').forEach(function(panel) {
+				observer.observe(panel);
+			});
+
+			return function() { observer.disconnect(); };
+		});
 		var _pp = useState(false), showPanelsMenu = _pp[0], setShowPanelsMenu = _pp[1];
 
 		function isShown(key) {

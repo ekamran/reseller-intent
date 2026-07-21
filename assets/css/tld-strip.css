@@ -16,15 +16,15 @@
 body .rintent-tld-strip {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 12px;
+	gap: 8px;
 	justify-content: center;
 }
 
 body .rintent-tld-strip .rintent-tld {
 	display: inline-flex;
 	align-items: baseline;
-	gap: 8px;
-	padding: 8px 18px;
+	gap: 7px;
+	padding: 7px 14px;
 	border-radius: 8px;
 	font-size: 13.5px;
 	text-decoration: none;

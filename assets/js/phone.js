@@ -23,7 +23,7 @@
 		}
 	}
 
-	function numberFor(country) {
+	function entryFor(country) {
 		var i;
 		var entry;
 
@@ -31,7 +31,7 @@
 			for (i = 0; i < config.numbers.length; i += 1) {
 				entry = config.numbers[i];
 				if (entry.countries && entry.countries.indexOf(country) !== -1) {
-					return entry.number;
+					return entry;
 				}
 			}
 		}
@@ -40,23 +40,31 @@
 	}
 
 	function apply() {
-		var number = numberFor(visitorCountry());
-
-		if (!number) {
-			return;
-		}
-
+		var entry = entryFor(visitorCountry());
 		var nodes = document.querySelectorAll('[data-rintent-phone]');
 		var i;
-		var target;
+		var numberNode;
+		var flagNode;
 
 		for (i = 0; i < nodes.length; i += 1) {
-			target = nodes[i].querySelector('.rintent-phone-number') || nodes[i];
-			target.textContent = number;
+			if (entry) {
+				numberNode = nodes[i].querySelector('.rintent-phone-number');
+				flagNode = nodes[i].querySelector('.rintent-phone-flag');
 
-			if (nodes[i].tagName === 'A') {
-				nodes[i].setAttribute('href', 'tel:' + number.replace(/[^0-9+]/g, ''));
+				if (numberNode) {
+					numberNode.textContent = entry.number;
+				}
+				if (flagNode && entry.flag) {
+					flagNode.textContent = entry.flag;
+				}
+				if (nodes[i].tagName === 'A') {
+					nodes[i].setAttribute('href', 'tel:' + entry.number.replace(/[^0-9+]/g, ''));
+				}
 			}
+
+			// Reveal immediately, resolved or defaulted; the CSS delay is
+			// only the no-JS safety net.
+			nodes[i].classList.add('is-resolved');
 		}
 	}
 

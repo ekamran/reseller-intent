@@ -72,7 +72,7 @@ Build both visually under Reseller Intent → Shortcodes.
 
 * `[rintent_tld_strip tlds=".com,.in,.io" theme="light|dark" more_url="" more_label=""]`, live TLD price pills matching checkout prices (12h cache + background refresh).
 * `[rintent_price ids="12,14,15" before="Starting at " after="/mo" fallback="$3.99"]`, live price across the selected Reseller Store products. `mode="min|max|range"` shows the cheapest (default), highest, or a full range with a `separator` of your choice. Wrap it in your own words with `before` and `after`. Every part has its own CSS class (`.rintent-price`, `-before`, `-amount`, `-sep`, `-after`).
-* `[rintent_phone format="link|text" prefix="Call "]`, geo-aware support number. Manage the numbers on the same Shortcodes page; GoDaddy's global support numbers are built in as defaults and your own list is never touched by updates. Visitors see their region's number via a page-cache-safe client-side swap based on the browser timezone. No IPs, no lookup services.
+* `[rintent_phone]`, geo-aware support line: the visitor's regional flag and number as one tel: link (optional `prefix` text). Manage the numbers on the same Shortcodes page; GoDaddy's global support numbers are built in as defaults and your own list is never touched by updates. Visitors see their region's number via a page-cache-safe client-side swap based on the browser timezone. No IPs, no lookup services.
 
 == WP-CLI ==
 

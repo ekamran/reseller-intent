@@ -288,15 +288,14 @@ final class Reseller_Intent_Admin {
 				<div class="rintent-field" style="border-top:1px solid #f0f3f8;margin-top:4px;">
 					<span class="rintent-label"><?php esc_html_e( 'Shortcode', 'reseller-intent' ); ?></span>
 					<span class="rintent-output">
-						<code>[rintent_phone prefix="Call "]</code>
-						<code>[rintent_phone format="text"]</code>
+						<code>[rintent_phone]</code>
 					</span>
 				</div>
 				<div class="rintent-field">
 					<span class="rintent-label"><?php esc_html_e( 'Live preview', 'reseller-intent' ); ?></span>
 					<span>
 						<div id="rintent-preview-phone" class="rintent-preview rintent-preview--inline"></div>
-						<p class="description"><?php esc_html_e( 'Shows the default number here; each visitor sees their regional one.', 'reseller-intent' ); ?></p>
+						<p class="description"><?php esc_html_e( 'Flag and number as a call link. Shows the default here; each visitor sees their regional one.', 'reseller-intent' ); ?></p>
 					</span>
 				</div>
 			</div>
@@ -872,7 +871,7 @@ final class Reseller_Intent_Admin {
 				break;
 
 			case 'phone':
-				$html = do_shortcode( '[rintent_phone prefix="Call "]' );
+				$html = do_shortcode( '[rintent_phone]' );
 				break;
 
 			default:

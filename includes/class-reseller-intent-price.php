@@ -46,6 +46,17 @@ final class Reseller_Intent_Price {
 
 		$mode = in_array( $atts['mode'], array( 'min', 'max', 'range' ), true ) ? $atts['mode'] : 'min';
 
+		/*
+		 * Spacing guards: "From$4.99per year" is never what anyone means.
+		 * If the wording does not carry its own spacing, add it.
+		 */
+		if ( '' !== $atts['before'] && ' ' !== substr( $atts['before'], -1 ) ) {
+			$atts['before'] .= ' ';
+		}
+		if ( '' !== $atts['after'] && ' ' !== substr( $atts['after'], 0, 1 ) && '/' !== substr( $atts['after'], 0, 1 ) ) {
+			$atts['after'] = ' ' . $atts['after'];
+		}
+
 		$lowest        = null;
 		$highest       = null;
 		$lowest_label  = '';

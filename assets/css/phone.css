@@ -1,0 +1,36 @@
+/**
+ * Reseller Intent, [rintent_phone] flag + number link.
+ *
+ * Anti-flash: the link starts invisible and reveals either when the
+ * regional swap resolves (is-resolved, instant) or after a short CSS
+ * delay as the no-JS / no-match fallback, so visitors never see the
+ * default number flip to their regional one.
+ *
+ * Theming: .rintent-phone / -prefix / -flag / -number, inherits font.
+ */
+.rintent-phone {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45em;
+	text-decoration: none;
+	color: inherit;
+	opacity: 0;
+	animation: rintentPhoneReveal 0s 0.4s forwards;
+}
+
+.rintent-phone.is-resolved {
+	animation: none;
+	opacity: 1;
+}
+
+@keyframes rintentPhoneReveal {
+	to { opacity: 1; }
+}
+
+.rintent-phone-flag {
+	line-height: 1;
+}
+
+.rintent-phone-number {
+	white-space: nowrap;
+}

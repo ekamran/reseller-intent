@@ -12,12 +12,17 @@ if ( ! defined( 'ABSPATH' ) ) {
  * and a tiny script swaps in the visitor's regional number client-side
  * using the browser timezone (no IP, no external calls).
  *
- * Attributes:
- *   format  "link" (tel: anchor, default) or "text"
- *   class   Extra CSS class(es) for the element.
- *   prefix  Text before the number, e.g. "Call ".        Default: ""
+ * Always renders one thing: a tel: link with the region's flag and
+ * number, like a phone line in a site header. The default renders
+ * server-side (page-cache safe) and a tiny script swaps flag, number
+ * and href to the visitor's region; a short CSS reveal removes the
+ * default-then-swap flash.
  *
- * Theming: .rintent-phone class; style it like any inline element.
+ * Attributes:
+ *   class   Extra CSS class(es) for the element.
+ *   prefix  Optional text before the flag.               Default: ""
+ *
+ * Theming: .rintent-phone / .rintent-phone-flag / .rintent-phone-number
  */
 final class Reseller_Intent_Phone {
 
@@ -211,10 +216,23 @@ final class Reseller_Intent_Phone {
 		return ! empty( $numbers ) ? $numbers[0] : null;
 	}
 
+	/**
+	 * Flag emoji for a 2-letter country code; globe for the global line.
+	 */
+	public static function flag_for( $country ) {
+		$country = strtoupper( (string) $country );
+
+		if ( ! preg_match( '/^[A-Z]{2}$/', $country ) ) {
+			return "\u{1F310}";
+		}
+
+		return mb_chr( 0x1F1E6 + ord( $country[0] ) - 65, 'UTF-8' )
+			. mb_chr( 0x1F1E6 + ord( $country[1] ) - 65, 'UTF-8' );
+	}
+
 	public function render( $atts ) {
 		$atts = shortcode_atts(
 			array(
-				'format' => 'link',
 				'class'  => '',
 				'prefix' => '',
 			),
@@ -233,15 +251,13 @@ final class Reseller_Intent_Phone {
 
 		$classes = trim( 'rintent-phone ' . preg_replace( '/[^A-Za-z0-9 _-]/', '', (string) $atts['class'] ) );
 		$number  = (string) $default['number'];
+		$flag    = self::flag_for( empty( $default['countries'] ) ? '' : $default['countries'][0] );
 		$prefix  = (string) $atts['prefix'];
 
-		if ( 'text' === $atts['format'] ) {
-			return '<span class="' . esc_attr( $classes ) . '" data-rintent-phone>'
-				. esc_html( $prefix ) . '<span class="rintent-phone-number">' . esc_html( $number ) . '</span></span>';
-		}
-
 		return '<a class="' . esc_attr( $classes ) . '" data-rintent-phone href="' . esc_url( 'tel:' . preg_replace( '/[^0-9+]/', '', $number ) ) . '">'
-			. esc_html( $prefix ) . '<span class="rintent-phone-number">' . esc_html( $number ) . '</span></a>';
+			. ( '' !== $prefix ? '<span class="rintent-phone-prefix">' . esc_html( $prefix ) . '</span>' : '' )
+			. '<span class="rintent-phone-flag" aria-hidden="true">' . esc_html( $flag ) . '</span>'
+			. '<span class="rintent-phone-number">' . esc_html( $number ) . '</span></a>';
 	}
 
 	/**
@@ -256,6 +272,13 @@ final class Reseller_Intent_Phone {
 
 		$base_url  = plugin_dir_url( RINTENT_FILE );
 		$base_path = plugin_dir_path( RINTENT_FILE );
+
+		wp_enqueue_style(
+			'reseller-intent-phone',
+			$base_url . 'assets/css/phone.css',
+			array(),
+			filemtime( $base_path . 'assets/css/phone.css' )
+		);
 
 		wp_enqueue_script(
 			'reseller-intent-phone',
@@ -285,6 +308,7 @@ final class Reseller_Intent_Phone {
 							return array(
 								'number'    => (string) $entry['number'],
 								'countries' => array_values( (array) ( $entry['countries'] ?? array() ) ),
+								'flag'      => self::flag_for( empty( $entry['countries'] ) ? '' : $entry['countries'][0] ),
 							);
 						},
 						$numbers

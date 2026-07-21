@@ -133,8 +133,8 @@ final class Reseller_Intent_Perf {
 	}
 
 	private function store_widget_active() {
-		foreach ( (array) wp_get_sidebars_widgets() as $sidebar => $widgets ) {
-			if ( 'wp_inactive_widgets' === $sidebar ) {
+		foreach ( (array) get_option( 'sidebars_widgets', array() ) as $sidebar => $widgets ) {
+			if ( 'wp_inactive_widgets' === $sidebar || 'array_version' === $sidebar ) {
 				continue;
 			}
 

@@ -11,7 +11,7 @@ final class Reseller_Intent_DB {
 	public static function table_name() {
 		global $wpdb;
 
-		return $wpdb->prefix . self::TABLE_SUFFIX;
+		return esc_sql( $wpdb->prefix . self::TABLE_SUFFIX );
 	}
 
 	public static function activate() {

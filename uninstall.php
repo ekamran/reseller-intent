@@ -18,7 +18,7 @@ if ( empty( $rintent_settings['delete_on_uninstall'] ) ) {
 
 global $wpdb;
 
-$rintent_table = $wpdb->prefix . 'rintent_events';
+$rintent_table = esc_sql( $wpdb->prefix . 'rintent_events' );
 $wpdb->query( "DROP TABLE IF EXISTS {$rintent_table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 delete_option( 'rintent_settings' );

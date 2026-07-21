@@ -384,14 +384,6 @@ final class Reseller_Intent_Tracker {
 	}
 
 	private function is_list_array( $candidate ) {
-		if ( ! is_array( $candidate ) ) {
-			return false;
-		}
-
-		if ( function_exists( 'array_is_list' ) ) {
-			return array_is_list( $candidate );
-		}
-
-		return array_keys( $candidate ) === range( 0, count( $candidate ) - 1 );
+		return is_array( $candidate ) && array_values( $candidate ) === $candidate;
 	}
 }

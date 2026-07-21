@@ -42,7 +42,7 @@ final class Reseller_Intent_Import {
 			$this->redirect( 'import_skipped' );
 		}
 
-		$legacy  = $wpdb->prefix . 'rstore_domain_events';
+		$legacy  = esc_sql( $wpdb->prefix . 'rstore_domain_events' );
 		$target  = Reseller_Intent_DB::table_name();
 		$total   = 0;
 		$last_id = 0;

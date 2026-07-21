@@ -470,6 +470,10 @@ final class Reseller_Intent_Admin {
 								<input type="checkbox" id="rintent-clear-all" name="widget_clear_all" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'widget_clear_all' ) ); ?> />
 								<?php esc_html_e( 'Floating "Clear All" button under the search bar', 'reseller-intent' ); ?>
 							</label>
+							<p style="margin:8px 0 0;">
+								<input type="text" name="clear_all_label" class="regular-text" maxlength="40" value="<?php echo esc_attr( (string) Reseller_Intent_Settings::get( 'clear_all_label' ) ); ?>" placeholder="<?php esc_attr_e( 'Clear All', 'reseller-intent' ); ?>" />
+							</p>
+							<p class="description"><?php esc_html_e( 'Its button text, any wording or language. Leave empty for the default.', 'reseller-intent' ); ?></p>
 							<p class="description"><?php esc_html_e( 'Tip: wrap a dark page section in a .rintent-dark class for light-on-dark widget colors.', 'reseller-intent' ); ?></p>
 
 							<details class="rintent-theming-ref">

@@ -15,6 +15,7 @@ final class Reseller_Intent_Settings {
 		'style_widget'        => true,
 		'widget_skeletons'    => true,
 		'widget_clear_all'    => true,
+		'clear_all_label'     => '',    // '' = translated default "Clear All".
 		'blocklist'           => array(),
 		'support_numbers'     => null,  // null = built-in GoDaddy defaults; array = owner's own list.
 		'trim_gd_assets'      => false,
@@ -179,6 +180,7 @@ final class Reseller_Intent_Settings {
 			'style_widget'        => ! empty( $_POST['style_widget'] ),
 			'widget_skeletons'    => ! empty( $_POST['widget_skeletons'] ),
 			'widget_clear_all'    => ! empty( $_POST['widget_clear_all'] ),
+			'clear_all_label'     => substr( sanitize_text_field( isset( $_POST['clear_all_label'] ) ? wp_unslash( $_POST['clear_all_label'] ) : '' ), 0, 40 ),
 			'blocklist'           => $this->sanitize_blocklist( isset( $_POST['blocklist'] ) ? sanitize_textarea_field( wp_unslash( $_POST['blocklist'] ) ) : '' ),
 			'trim_gd_assets'      => ! empty( $_POST['trim_gd_assets'] ),
 			'gd_asset_pages'      => $this->sanitize_id_list( isset( $_POST['gd_asset_pages'] ) ? sanitize_text_field( wp_unslash( $_POST['gd_asset_pages'] ) ) : '' ),

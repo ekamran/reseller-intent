@@ -72,7 +72,9 @@ final class Reseller_Intent_Assets {
 			array(
 				'skeletons'  => (bool) Reseller_Intent_Settings::get( 'widget_skeletons' ),
 				'clearAll'   => (bool) Reseller_Intent_Settings::get( 'widget_clear_all' ),
-				'clearLabel' => __( 'Clear All', 'reseller-intent' ),
+				'clearLabel' => '' !== (string) Reseller_Intent_Settings::get( 'clear_all_label' )
+					? (string) Reseller_Intent_Settings::get( 'clear_all_label' )
+					: __( 'Clear All', 'reseller-intent' ),
 			)
 		);
 	}

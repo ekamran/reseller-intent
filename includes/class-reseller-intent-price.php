@@ -62,7 +62,14 @@ final class Reseller_Intent_Price {
 		$lowest_label  = '';
 		$highest_label = '';
 
-		foreach ( wp_parse_id_list( $atts['ids'] ) as $post_id ) {
+		$ids = wp_parse_id_list( $atts['ids'] );
+
+		// One cache prime instead of a post + meta query per plan.
+		if ( count( $ids ) > 1 && function_exists( '_prime_post_caches' ) ) {
+			_prime_post_caches( $ids, false, true );
+		}
+
+		foreach ( $ids as $post_id ) {
 			if ( 'publish' !== get_post_status( $post_id ) ) {
 				continue;
 			}

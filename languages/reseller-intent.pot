@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-21T21:40:14+00:00\n"
+"POT-Creation-Date: 2026-07-22T10:42:59+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: reseller-intent\n"
@@ -18,7 +18,7 @@ msgstr ""
 #: reseller-intent.php
 #: includes/class-reseller-intent-admin.php:43
 #: includes/class-reseller-intent-admin.php:44
-#: includes/class-reseller-intent-admin.php:2091
+#: includes/class-reseller-intent-admin.php:2094
 #: includes/class-reseller-intent-health.php:39
 #: includes/class-reseller-intent.php:184
 msgid "Reseller Intent"
@@ -113,8 +113,16 @@ msgid "\"More\" pill"
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:224
+msgid "Text on the more pill"
+msgstr ""
+
+#: includes/class-reseller-intent-admin.php:224
 #: includes/class-reseller-intent-tld-strip.php:145
 msgid "More TLDs"
+msgstr ""
+
+#: includes/class-reseller-intent-admin.php:225
+msgid "Link for the more pill"
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:226
@@ -175,6 +183,10 @@ msgid "Products"
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:266
+msgid "Filter products"
+msgstr ""
+
+#: includes/class-reseller-intent-admin.php:266
 msgid "Filter products..."
 msgstr ""
 
@@ -219,8 +231,16 @@ msgid "Text around it"
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:312
+msgid "Text before the price"
+msgstr ""
+
+#: includes/class-reseller-intent-admin.php:312
 #: includes/class-reseller-intent-admin.php:439
 msgid "Starting at "
+msgstr ""
+
+#: includes/class-reseller-intent-admin.php:313
+msgid "Text after the price"
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:313
@@ -237,12 +257,20 @@ msgstr ""
 msgid "Range separator"
 msgstr ""
 
+#: includes/class-reseller-intent-admin.php:320
+msgid "Separator between the two range prices"
+msgstr ""
+
 #: includes/class-reseller-intent-admin.php:321
 msgid "Printed between the two prices. Default: to"
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:325
 msgid "Fallback text"
+msgstr ""
+
+#: includes/class-reseller-intent-admin.php:327
+msgid "Fallback text when no price is available"
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:328
@@ -266,6 +294,8 @@ msgid "Every part has its own class, style them from your theme:"
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:354
+#: includes/class-reseller-intent-admin.php:379
+#: includes/class-reseller-intent-admin.php:842
 msgid "Support phone number"
 msgstr ""
 
@@ -302,7 +332,17 @@ msgid "Countries"
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:378
+#: includes/class-reseller-intent-admin.php:841
+msgid "Support entry label"
+msgstr ""
+
+#: includes/class-reseller-intent-admin.php:378
 msgid "US Support"
+msgstr ""
+
+#: includes/class-reseller-intent-admin.php:380
+#: includes/class-reseller-intent-admin.php:843
+msgid "Country codes for this number"
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:381
@@ -425,6 +465,10 @@ msgstr ""
 
 #: includes/class-reseller-intent-admin.php:684
 msgid "Floating \"Clear All\" button under the search bar"
+msgstr ""
+
+#: includes/class-reseller-intent-admin.php:688
+msgid "Clear All button text"
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:688
@@ -605,78 +649,78 @@ msgid "Click to copy"
 msgstr ""
 
 #. translators: %s: human readable time difference
-#: includes/class-reseller-intent-admin.php:1140
-#: includes/class-reseller-intent-admin.php:1656
+#: includes/class-reseller-intent-admin.php:1143
+#: includes/class-reseller-intent-admin.php:1659
 #, php-format
 msgid "%s ago"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1220
+#: includes/class-reseller-intent-admin.php:1223
 msgid "Others"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1243
+#: includes/class-reseller-intent-admin.php:1246
 msgid "1 domain"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1247
+#: includes/class-reseller-intent-admin.php:1250
 msgid "2 domains"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1251
+#: includes/class-reseller-intent-admin.php:1254
 msgid "3 domains"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1255
+#: includes/class-reseller-intent-admin.php:1258
 msgid "4+ domains"
 msgstr ""
 
 #. translators: %s: human readable time difference
-#: includes/class-reseller-intent-admin.php:1405
+#: includes/class-reseller-intent-admin.php:1408
 #, php-format
 msgid "Last event %s ago"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1406
+#: includes/class-reseller-intent-admin.php:1409
 msgid "No events yet"
 msgstr ""
 
 #. translators: %d: number of days
-#: includes/class-reseller-intent-admin.php:1413
+#: includes/class-reseller-intent-admin.php:1416
 #, php-format
 msgid "Last %d days"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1414
+#: includes/class-reseller-intent-admin.php:1417
 #: assets/js/admin.js:24
 msgid "Lifetime"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1574
+#: includes/class-reseller-intent-admin.php:1577
 msgid "Home"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1852
+#: includes/class-reseller-intent-admin.php:1855
 msgid "You are not allowed to export data."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1916
+#: includes/class-reseller-intent-admin.php:1919
 msgid "You are not allowed to clear data."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:2123
+#: includes/class-reseller-intent-admin.php:2126
 msgid "searches today"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:2124
+#: includes/class-reseller-intent-admin.php:2127
 msgid "searches, 7 days"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:2125
+#: includes/class-reseller-intent-admin.php:2128
 msgid "search → cart, 7 days"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:2130
+#: includes/class-reseller-intent-admin.php:2133
 msgid "Open the full dashboard →"
 msgstr ""
 

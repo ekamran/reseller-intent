@@ -221,8 +221,8 @@ final class Reseller_Intent_Admin {
 				<div class="rintent-field">
 					<span class="rintent-label"><label for="rintent-gen-more-label"><?php esc_html_e( '"More" pill', 'reseller-intent' ); ?></label></span>
 					<span>
-						<input type="text" id="rintent-gen-more-label" class="regular-text" placeholder="<?php esc_attr_e( 'More TLDs', 'reseller-intent' ); ?>" />
-						<input type="url" id="rintent-gen-more-url" class="regular-text" placeholder="https://example.com/domains/" />
+						<input type="text" id="rintent-gen-more-label" class="regular-text" aria-label="<?php esc_attr_e( 'Text on the more pill', 'reseller-intent' ); ?>" placeholder="<?php esc_attr_e( 'More TLDs', 'reseller-intent' ); ?>" />
+						<input type="url" id="rintent-gen-more-url" class="regular-text" aria-label="<?php esc_attr_e( 'Link for the more pill', 'reseller-intent' ); ?>" placeholder="https://example.com/domains/" />
 						<p class="description"><?php esc_html_e( 'Optional link pill at the end. Leave the URL empty to hide it.', 'reseller-intent' ); ?></p>
 					</span>
 				</div>
@@ -263,7 +263,7 @@ final class Reseller_Intent_Admin {
 					<div class="rintent-field" id="rintent-gen-products-row">
 						<span class="rintent-label"><label for="rintent-gen-filter"><?php esc_html_e( 'Products', 'reseller-intent' ); ?></label></span>
 						<span>
-							<input type="search" id="rintent-gen-filter" class="regular-text" placeholder="<?php esc_attr_e( 'Filter products...', 'reseller-intent' ); ?>" style="margin-bottom:8px;" />
+							<input type="search" id="rintent-gen-filter" class="regular-text" aria-label="<?php esc_attr_e( 'Filter products', 'reseller-intent' ); ?>" placeholder="<?php esc_attr_e( 'Filter products...', 'reseller-intent' ); ?>" style="margin-bottom:8px;" />
 							<div class="rintent-product-picker" id="rintent-gen-products">
 								<?php
 								foreach ( $products as $product ) :
@@ -309,22 +309,22 @@ final class Reseller_Intent_Admin {
 					<div class="rintent-field">
 						<span class="rintent-label"><label for="rintent-gen-before"><?php esc_html_e( 'Text around it', 'reseller-intent' ); ?></label></span>
 						<span>
-							<input type="text" id="rintent-gen-before" class="regular-text" placeholder="<?php esc_attr_e( 'Starting at ', 'reseller-intent' ); ?>" />
-							<input type="text" id="rintent-gen-after" class="regular-text" placeholder="<?php esc_attr_e( ' per year', 'reseller-intent' ); ?>" />
+							<input type="text" id="rintent-gen-before" class="regular-text" aria-label="<?php esc_attr_e( 'Text before the price', 'reseller-intent' ); ?>" placeholder="<?php esc_attr_e( 'Starting at ', 'reseller-intent' ); ?>" />
+							<input type="text" id="rintent-gen-after" class="regular-text" aria-label="<?php esc_attr_e( 'Text after the price', 'reseller-intent' ); ?>" placeholder="<?php esc_attr_e( ' per year', 'reseller-intent' ); ?>" />
 							<p class="description"><?php esc_html_e( 'Before and after text, both optional. Use any wording you like, spaces included.', 'reseller-intent' ); ?></p>
 						</span>
 					</div>
 					<div class="rintent-field" id="rintent-gen-sep-row" style="display:none;">
 						<span class="rintent-label"><label for="rintent-gen-separator"><?php esc_html_e( 'Range separator', 'reseller-intent' ); ?></label></span>
 						<span>
-							<input type="text" id="rintent-gen-separator" class="regular-text" placeholder=" to " />
+							<input type="text" id="rintent-gen-separator" class="regular-text" aria-label="<?php esc_attr_e( 'Separator between the two range prices', 'reseller-intent' ); ?>" placeholder=" to " />
 							<p class="description"><?php esc_html_e( 'Printed between the two prices. Default: to', 'reseller-intent' ); ?></p>
 						</span>
 					</div>
 					<div class="rintent-field">
 						<span class="rintent-label"><label for="rintent-gen-fallback"><?php esc_html_e( 'Fallback text', 'reseller-intent' ); ?></label></span>
 						<span>
-							<input type="text" id="rintent-gen-fallback" class="regular-text" placeholder="$3.99" />
+							<input type="text" id="rintent-gen-fallback" class="regular-text" aria-label="<?php esc_attr_e( 'Fallback text when no price is available', 'reseller-intent' ); ?>" placeholder="$3.99" />
 							<p class="description"><?php esc_html_e( 'Shown if no selected product has a price.', 'reseller-intent' ); ?></p>
 						</span>
 					</div>
@@ -375,9 +375,9 @@ final class Reseller_Intent_Admin {
 						<tbody>
 							<?php foreach ( Reseller_Intent_Phone::numbers() as $support_entry ) : ?>
 								<tr>
-									<td><input type="text" name="support_label[]" value="<?php echo esc_attr( $support_entry['label'] ); ?>" placeholder="<?php esc_attr_e( 'US Support', 'reseller-intent' ); ?>" /></td>
-									<td><input type="text" name="support_number[]" value="<?php echo esc_attr( $support_entry['number'] ); ?>" placeholder="+1-480-000-0000" /></td>
-									<td><input type="text" name="support_countries[]" value="<?php echo esc_attr( implode( ',', (array) $support_entry['countries'] ) ); ?>" placeholder="US,CA" /></td>
+									<td><input type="text" name="support_label[]" aria-label="<?php esc_attr_e( 'Support entry label', 'reseller-intent' ); ?>" value="<?php echo esc_attr( $support_entry['label'] ); ?>" placeholder="<?php esc_attr_e( 'US Support', 'reseller-intent' ); ?>" /></td>
+									<td><input type="text" name="support_number[]" aria-label="<?php esc_attr_e( 'Support phone number', 'reseller-intent' ); ?>" value="<?php echo esc_attr( $support_entry['number'] ); ?>" placeholder="+1-480-000-0000" /></td>
+									<td><input type="text" name="support_countries[]" aria-label="<?php esc_attr_e( 'Country codes for this number', 'reseller-intent' ); ?>" value="<?php echo esc_attr( implode( ',', (array) $support_entry['countries'] ) ); ?>" placeholder="US,CA" /></td>
 									<td><button type="button" class="button-link-delete rintent-support-remove" aria-label="<?php esc_attr_e( 'Remove row', 'reseller-intent' ); ?>">&times;</button></td>
 								</tr>
 							<?php endforeach; ?>
@@ -685,7 +685,7 @@ final class Reseller_Intent_Admin {
 							</label>
 							<span id="rintent-clear-label-row" <?php echo Reseller_Intent_Settings::get( 'widget_clear_all' ) ? '' : 'style="display:none;"'; ?>>
 								<p style="margin:8px 0 0;">
-									<input type="text" name="clear_all_label" class="regular-text" maxlength="40" value="<?php echo esc_attr( (string) Reseller_Intent_Settings::get( 'clear_all_label' ) ); ?>" placeholder="<?php esc_attr_e( 'Clear All', 'reseller-intent' ); ?>" />
+									<input type="text" name="clear_all_label" class="regular-text" maxlength="40" aria-label="<?php esc_attr_e( 'Clear All button text', 'reseller-intent' ); ?>" value="<?php echo esc_attr( (string) Reseller_Intent_Settings::get( 'clear_all_label' ) ); ?>" placeholder="<?php esc_attr_e( 'Clear All', 'reseller-intent' ); ?>" />
 								</p>
 								<p class="description"><?php esc_html_e( 'Its button text, any wording or language. Leave empty for the default.', 'reseller-intent' ); ?></p>
 							</span>
@@ -836,8 +836,11 @@ final class Reseller_Intent_Admin {
 				'rintent-admin-pages',
 				'rintentPages',
 				array(
-					'copied'   => __( 'Copied', 'reseller-intent' ),
-					'copyHint' => __( 'Click to copy', 'reseller-intent' ),
+					'copied'               => __( 'Copied', 'reseller-intent' ),
+					'copyHint'             => __( 'Click to copy', 'reseller-intent' ),
+					'ariaSupportLabel'     => __( 'Support entry label', 'reseller-intent' ),
+					'ariaSupportNumber'    => __( 'Support phone number', 'reseller-intent' ),
+					'ariaSupportCountries' => __( 'Country codes for this number', 'reseller-intent' ),
 				)
 			);
 			return;

@@ -51,9 +51,9 @@
 			var tbody = document.querySelector('#rintent-support-rows tbody');
 			var row = document.createElement('tr');
 
-			row.innerHTML = '<td><input type="text" name="support_label[]" /></td>'
-				+ '<td><input type="text" name="support_number[]" placeholder="+1-480-000-0000" /></td>'
-				+ '<td><input type="text" name="support_countries[]" placeholder="US,CA" /></td>'
+			row.innerHTML = '<td><input type="text" name="support_label[]" aria-label="' + (config.ariaSupportLabel || 'Support entry label') + '" /></td>'
+				+ '<td><input type="text" name="support_number[]" aria-label="' + (config.ariaSupportNumber || 'Support phone number') + '" placeholder="+1-480-000-0000" /></td>'
+				+ '<td><input type="text" name="support_countries[]" aria-label="' + (config.ariaSupportCountries || 'Country codes for this number') + '" placeholder="US,CA" /></td>'
 				+ '<td><button type="button" class="button-link-delete rintent-support-remove" aria-label="Remove row">&times;</button></td>';
 			tbody.appendChild(row);
 			row.querySelector('input').focus();

@@ -2,8 +2,12 @@
  * Reseller Intent, Shortcodes page generators and live previews.
  * Config arrives via the rintentGen object (wp_localize_script).
  */
-var cfg = window.rintentGen || {};
 (function() {
+	'use strict';
+
+	var cfg = window.rintentGen || {};
+
+	cfg.placeholders = cfg.placeholders || { min: ['', ''], max: ['', ''], range: ['', ''] };
 	function esc(value) {
 		return String(value).replace(/"/g, '');
 	}

@@ -62,11 +62,33 @@ final class Reseller_Intent_Tracker {
 		}
 
 		if ( isset( $_POST['items_json'] ) ) {
-			$raw_items = wp_unslash( $_POST['items_json'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitize_text_field would corrupt JSON; decoded, validated and re-encoded below, never used raw.
+			$raw_items = wp_unslash( $_POST['items_json'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON payload; decoded below and rebuilt field by field through normalize_domain_query(), never stored raw.
 			$decoded   = json_decode( $raw_items, true );
+			$clean     = array();
 
 			if ( is_array( $decoded ) ) {
-				$items_json = wp_json_encode( $decoded );
+				foreach ( $decoded as $item ) {
+					if ( count( $clean ) >= 100 ) {
+						break;
+					}
+
+					$domain = '';
+					if ( is_array( $item ) && isset( $item['domain'] ) && is_string( $item['domain'] ) ) {
+						$domain = $item['domain'];
+					} elseif ( is_string( $item ) ) {
+						$domain = $item;
+					}
+
+					$domain = $this->normalize_domain_query( $domain );
+
+					if ( '' !== $domain ) {
+						$clean[] = array( 'domain' => $domain );
+					}
+				}
+			}
+
+			if ( array() !== $clean ) {
+				$items_json = wp_json_encode( $clean );
 				$items_json = is_string( $items_json ) ? substr( $items_json, 0, 10000 ) : '';
 			}
 		}
@@ -354,18 +376,43 @@ final class Reseller_Intent_Tracker {
 		return true;
 	}
 
+	/**
+	 * One transient per client IP, so the key space stays bounded no
+	 * matter what payloads are thrown at the endpoint. The value carries
+	 * a rolling event count (burst cap) and the hash of the previous
+	 * payload (double-fire dedupe), replacing the old per-payload keys.
+	 */
 	private function is_rate_limited( $event_type, $domain_query, $items_count ) {
-		$client_ip = $this->get_client_ip();
-		$window    = 'continue_to_cart' === $event_type ? 2 : 3;
-		$key       = 'rintent_rl_' . md5(
-			$event_type . '|' . $domain_query . '|' . (int) $items_count . '|' . $client_ip
+		$key   = 'rintent_rl_' . md5( (string) $this->get_client_ip() );
+		$hash  = md5( $event_type . '|' . $domain_query . '|' . (int) $items_count );
+		$now   = time();
+		$state = get_transient( $key );
+		$state = is_array( $state ) ? $state : array(
+			'n'    => 0,
+			'last' => '',
+			't'    => $now,
 		);
 
-		if ( false !== get_transient( $key ) ) {
+		$dedupe_window = 'continue_to_cart' === $event_type ? 2 : 3;
+
+		if ( $state['last'] === $hash && ( $now - (int) $state['t'] ) < $dedupe_window ) {
 			return true;
 		}
 
-		set_transient( $key, 1, $window );
+		if ( (int) $state['n'] >= 12 ) {
+			return true;
+		}
+
+		set_transient(
+			$key,
+			array(
+				'n'    => (int) $state['n'] + 1,
+				'last' => $hash,
+				't'    => $now,
+			),
+			5
+		);
+
 		return false;
 	}
 

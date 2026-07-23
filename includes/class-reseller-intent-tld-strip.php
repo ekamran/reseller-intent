@@ -198,7 +198,7 @@ final class Reseller_Intent_TLD_Strip {
 			'reseller-intent-tld-strip',
 			sprintf(
 				'body{--rintent-accent:%s;--rintent-accent-dark:%s;}',
-				(string) Reseller_Intent_Settings::get( 'accent_color' ),
+				Reseller_Intent_Settings::accent_color(),
 				Reseller_Intent_Settings::accent_dark_color()
 			)
 		);

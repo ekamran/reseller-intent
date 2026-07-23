@@ -88,16 +88,13 @@ final class Reseller_Intent_CLI {
 	 * [--format=<format>]
 	 * : csv (default) or json.
 	 *
-	 * [--output=<file>]
-	 * : Write to this file instead of stdout.
 	 */
 	public function export( $args, $assoc_args ) {
-		// phpcs:disable WordPress.WP.AlternativeFunctions -- streaming export to stdout or a caller-chosen file; WP_Filesystem cannot stream.
+		// phpcs:disable WordPress.WP.AlternativeFunctions -- streaming export to stdout; WP_Filesystem cannot stream.
 		global $wpdb;
 
 		$days   = max( 0, (int) ( $assoc_args['days'] ?? 0 ) );
 		$format = 'json' === ( $assoc_args['format'] ?? 'csv' ) ? 'json' : 'csv';
-		$output = (string) ( $assoc_args['output'] ?? '' );
 
 		$table_name = Reseller_Intent_DB::table_name();
 		$where      = '';
@@ -107,10 +104,10 @@ final class Reseller_Intent_CLI {
 			$where  = $wpdb->prepare( ' WHERE created_at >= %s', $cutoff );
 		}
 
-		$handle = $output ? fopen( $output, 'w' ) : fopen( 'php://output', 'w' );
+		$handle = fopen( 'php://output', 'w' );
 
 		if ( ! $handle ) {
-			WP_CLI::error( 'Could not open the output file for writing.' );
+			WP_CLI::error( 'Could not open the output stream.' );
 		}
 
 		$columns = array( 'id', 'event_type', 'domain_query', 'related_query', 'event_count', 'items_count', 'items_json', 'is_available', 'device', 'country', 'page_url', 'created_at' );
@@ -152,9 +149,6 @@ final class Reseller_Intent_CLI {
 
 		fclose( $handle );
 
-		if ( $output ) {
-			WP_CLI::success( sprintf( '%d events exported to %s.', $total, $output ) );
-		}
 		// phpcs:enable WordPress.WP.AlternativeFunctions
 	}
 

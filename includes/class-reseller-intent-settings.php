@@ -29,12 +29,23 @@ final class Reseller_Intent_Settings {
 	}
 
 	/**
+	 * The accent, guaranteed to be a safe hex color. Output sites print
+	 * this straight into inline CSS, so it is validated here even though
+	 * the save handler sanitizes too.
+	 */
+	public static function accent_color() {
+		$color = sanitize_hex_color( (string) self::get( 'accent_color' ) );
+
+		return $color ? $color : '#3858e9';
+	}
+
+	/**
 	 * Readable text color for anything sitting on the accent color. A light
 	 * accent (yellow, mint) makes white labels unreadable, so pick dark ink
 	 * when the accent is bright.
 	 */
 	public static function accent_text_color() {
-		return self::text_color_for( (string) self::get( 'accent_color' ) );
+		return self::text_color_for( self::accent_color() );
 	}
 
 	/**
@@ -77,7 +88,7 @@ final class Reseller_Intent_Settings {
 			return $custom;
 		}
 
-		$hex = ltrim( (string) self::get( 'accent_color' ), '#' );
+		$hex = ltrim( self::accent_color(), '#' );
 
 		if ( 3 === strlen( $hex ) ) {
 			$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];

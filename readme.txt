@@ -72,10 +72,20 @@ Build both visually under Reseller Intent → Shortcodes.
 
 == WP-CLI ==
 
+* `wp rintent export [--days=<n>] [--format=<csv|json>]`, stream all events to stdout.
 * `wp rintent stats [--days=<n>]`, event counts and conversion.
-* `wp rintent export [--days=<n>] [--format=csv|json] [--output=<file>]`, full event export.
 * `wp rintent clear --range=<hour|day|week|month|6months|year|all> [--yes]`, delete events.
 * `wp rintent refresh-tld`, fetch fresh TLD strip prices now.
+
+== External services ==
+
+The optional TLD price strip shortcode fetches live domain prices from GoDaddy's storefront API at secureserver.net, the platform that powers every Reseller Store storefront. This keeps the displayed prices identical to the checkout prices.
+
+What is sent: your public reseller ID and one static probe domain name per TLD you configured. This happens server side about twice a day and after a manual refresh, and only while the price strip shortcode is in use. No visitor data of any kind is ever sent.
+
+The service is operated by GoDaddy: [Universal Terms of Service](https://www.godaddy.com/legal/agreements/universal-terms-of-service-agreement), [Privacy Policy](https://www.godaddy.com/legal/agreements/privacy-policy).
+
+The built-in default support numbers for the phone shortcode are GoDaddy's public support numbers, stored inside the plugin; showing them involves no external request.
 
 == Performance ==
 

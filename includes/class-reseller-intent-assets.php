@@ -45,7 +45,7 @@ final class Reseller_Intent_Assets {
 			filemtime( $base_path . 'assets/css/widget.css' )
 		);
 
-		$accent = (string) Reseller_Intent_Settings::get( 'accent_color' );
+		$accent = Reseller_Intent_Settings::accent_color();
 
 		wp_add_inline_style(
 			'reseller-intent-widget',

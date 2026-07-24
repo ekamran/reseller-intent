@@ -1,6 +1,6 @@
 === Reseller Intent ===
 Contributors: ekamran
-Tags: godaddy, reseller store, domain search, analytics, domains
+Tags: domain search, domains, analytics, reseller, tld pricing
 Requires at least: 6.2
 Tested up to: 7.0
 Requires PHP: 8.1
@@ -47,6 +47,13 @@ Your Reseller Store domain search is where buying decisions happen, but by defau
 * Frontend script loads only on pages where the Reseller Store widget is present
 
 Requires the free [Reseller Store](https://wordpress.org/plugins/reseller-store/) plugin by GoDaddy Reseller Programs. Tested with Reseller Store 3.0.1; if a newer Reseller Store version is detected, the plugin shows a friendly heads-up so you can double-check your dashboard.
+
+== Installation ==
+
+1. Install and activate the free Reseller Store plugin, then complete its setup so your storefront works.
+2. Install Reseller Intent from Plugins > Add New, or upload the plugin folder to wp-content/plugins.
+3. Activate it. Tracking starts immediately on any page that already shows the Reseller Store domain search.
+4. Open Reseller Intent in the admin menu to see the dashboard. Everything under Settings is optional.
 
 == Frequently Asked Questions ==
 

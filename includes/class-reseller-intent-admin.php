@@ -781,7 +781,7 @@ final class Reseller_Intent_Admin {
 		switch ( $type ) {
 			case 'tld':
 				$tlds  = isset( $_POST['tlds'] ) ? sanitize_text_field( wp_unslash( $_POST['tlds'] ) ) : '';
-				$theme = ( isset( $_POST['theme'] ) && 'dark' === $_POST['theme'] ) ? 'dark' : 'light';
+				$theme = ( isset( $_POST['theme'] ) && 'dark' === sanitize_key( wp_unslash( $_POST['theme'] ) ) ) ? 'dark' : 'light';
 				$label = isset( $_POST['more_label'] ) ? sanitize_text_field( wp_unslash( $_POST['more_label'] ) ) : '';
 				$url   = isset( $_POST['more_url'] ) ? esc_url_raw( wp_unslash( $_POST['more_url'] ) ) : '';
 				$html  = do_shortcode(
@@ -797,7 +797,8 @@ final class Reseller_Intent_Admin {
 
 			case 'price':
 				$ids    = isset( $_POST['ids'] ) ? implode( ',', wp_parse_id_list( wp_unslash( $_POST['ids'] ) ) ) : '';
-				$mode   = isset( $_POST['mode'] ) && in_array( $_POST['mode'], array( 'min', 'max', 'range' ), true ) ? sanitize_key( wp_unslash( $_POST['mode'] ) ) : 'min';
+				$mode   = isset( $_POST['mode'] ) ? sanitize_key( wp_unslash( $_POST['mode'] ) ) : 'min';
+		$mode   = in_array( $mode, array( 'min', 'max', 'range' ), true ) ? $mode : 'min';
 				$before = isset( $_POST['before'] ) ? sanitize_text_field( wp_unslash( $_POST['before'] ) ) : '';
 				$after  = isset( $_POST['after'] ) ? sanitize_text_field( wp_unslash( $_POST['after'] ) ) : '';
 				$sep    = isset( $_POST['separator'] ) ? sanitize_text_field( wp_unslash( $_POST['separator'] ) ) : '';

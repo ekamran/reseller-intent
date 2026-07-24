@@ -97,12 +97,12 @@ final class Reseller_Intent_CLI {
 		$format = 'json' === ( $assoc_args['format'] ?? 'csv' ) ? 'json' : 'csv';
 
 		$table_name = Reseller_Intent_DB::table_name();
-		$where      = '';
 
-		if ( $days > 0 ) {
-			$cutoff = gmdate( 'Y-m-d H:i:s', strtotime( current_time( 'mysql' ) ) - $days * DAY_IN_SECONDS );
-			$where  = $wpdb->prepare( ' WHERE created_at >= %s', $cutoff );
-		}
+		// Epoch lower bound for "everything", so the query shape and its
+		// placeholders stay identical for every window.
+		$cutoff = $days > 0
+			? gmdate( 'Y-m-d H:i:s', strtotime( current_time( 'mysql' ) ) - $days * DAY_IN_SECONDS )
+			: '1970-01-01 00:00:00';
 
 		$handle = fopen( 'php://output', 'w' );
 
@@ -111,6 +111,8 @@ final class Reseller_Intent_CLI {
 		}
 
 		$columns = array( 'id', 'event_type', 'domain_query', 'related_query', 'event_count', 'items_count', 'items_json', 'is_available', 'device', 'country', 'page_url', 'created_at' );
+		// Column list is written out literally below; this array only drives
+		// the CSV header and the row order.
 		$total   = 0;
 		$last_id = 0;
 
@@ -123,7 +125,12 @@ final class Reseller_Intent_CLI {
 		do {
 			$rows = $wpdb->get_results(
 				$wpdb->prepare(
-					'SELECT ' . implode( ',', $columns ) . " FROM {$table_name}{$where}" . ( $where ? ' AND' : ' WHERE' ) . ' id > %d ORDER BY id ASC LIMIT 5000', // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- fixed column list, prefixed table, prepared where fragment.
+					"SELECT id, event_type, domain_query, related_query, event_count, items_count, items_json, is_available, device, country, page_url, created_at
+					FROM {$table_name}
+					WHERE created_at >= %s AND id > %d
+					ORDER BY id ASC
+					LIMIT 5000", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- prefixed table name.
+					$cutoff,
 					$last_id
 				),
 				ARRAY_A

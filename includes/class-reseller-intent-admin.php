@@ -14,6 +14,10 @@ final class Reseller_Intent_Admin {
 
 	const PAGE_SLUG = 'reseller-intent';
 
+	// Open range edges, so every query keeps the same two date placeholders.
+	const RANGE_MIN = '1970-01-01 00:00:00';
+	const RANGE_MAX = '9999-12-31 23:59:59';
+
 	/**
 	 * Who can see the dashboard/exports. Filterable so agencies can open it
 	 * to editors etc.: add_filter( 'rintent_dashboard_capability', fn() => 'edit_pages' );
@@ -823,26 +827,24 @@ final class Reseller_Intent_Admin {
 	}
 
 	/**
-	 * Shared range condition for panel queries.
+	 * Start and exclusive end for a range, as plain values. Every query
+	 * carries the same literal "created_at >= %s AND created_at < %s"
+	 * condition and passes these two through $wpdb->prepare(), so no SQL
+	 * fragment is ever built from a variable. Open-ended sides use the
+	 * epoch and a far-future date.
 	 */
-	private function range_where( $range_key, $from = '', $to = '' ) {
-		global $wpdb;
-
+	private function range_bounds( $range_key, $from = '', $to = '' ) {
 		if ( 'custom' === $range_key ) {
-			return $wpdb->prepare(
-				' AND created_at >= %s AND created_at < %s',
-				$from . ' 00:00:00',
-				gmdate( 'Y-m-d', strtotime( $to . ' +1 day' ) ) . ' 00:00:00'
-			);
+			return array( $from . ' 00:00:00', gmdate( 'Y-m-d', strtotime( $to . ' +1 day' ) ) . ' 00:00:00' );
 		}
 
 		if ( 'all' === $range_key ) {
-			return '';
+			return array( self::RANGE_MIN, self::RANGE_MAX );
 		}
 
 		$len = (int) $range_key;
 
-		return $wpdb->prepare( ' AND created_at >= %s', wp_date( 'Y-m-d 00:00:00', time() - ( ( $len - 1 ) * DAY_IN_SECONDS ) ) );
+		return array( wp_date( 'Y-m-d 00:00:00', time() - ( ( $len - 1 ) * DAY_IN_SECONDS ) ), self::RANGE_MAX );
 	}
 
 	/**
@@ -872,14 +874,15 @@ final class Reseller_Intent_Admin {
 			$range_key = '90';
 		}
 
-		$where      = $this->range_where( $range_key, $from, $to );
+		list( $range_start, $range_end ) = $this->range_bounds( $range_key, $from, $to );
+
 		$table_name = Reseller_Intent_DB::table_name();
 		$fetch      = $limit + 1;
 		$items      = array();
 
 		switch ( $panel ) {
 			case 'tlds':
-				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT LOWER(SUBSTRING_INDEX(domain_query, '.', -1)) AS tld, SUM(event_count) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s{$where} GROUP BY tld ORDER BY hits DESC LIMIT %d OFFSET %d", '%' . $wpdb->esc_like( '.' ) . '%', $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT LOWER(SUBSTRING_INDEX(domain_query, '.', -1)) AS tld, SUM(event_count) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s GROUP BY tld ORDER BY hits DESC LIMIT %d OFFSET %d", '%' . $wpdb->esc_like( '.' ) . '%', $range_start, $range_end, $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				foreach ( $rows as $row ) {
 					$items[] = array(
 						'label' => '.' . (string) $row->tld,
@@ -889,7 +892,7 @@ final class Reseller_Intent_Admin {
 				break;
 
 			case 'repeats':
-				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT domain_query AS domain, SUM(event_count) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> ''{$where} GROUP BY domain_query HAVING hits >= 2 ORDER BY hits DESC LIMIT %d OFFSET %d", $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT domain_query AS domain, SUM(event_count) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s GROUP BY domain_query HAVING hits >= 2 ORDER BY hits DESC LIMIT %d OFFSET %d", $range_start, $range_end, $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				foreach ( $rows as $row ) {
 					$items[] = array(
 						'domain' => (string) $row->domain,
@@ -899,7 +902,7 @@ final class Reseller_Intent_Admin {
 				break;
 
 			case 'selection_top':
-				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT domain_query AS domain, SUM(event_count) AS hits FROM {$table_name} WHERE event_type = 'domain_select' AND domain_query <> ''{$where} GROUP BY domain_query ORDER BY hits DESC LIMIT %d OFFSET %d", $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT domain_query AS domain, SUM(event_count) AS hits FROM {$table_name} WHERE event_type = 'domain_select' AND domain_query <> '' AND created_at >= %s AND created_at < %s GROUP BY domain_query ORDER BY hits DESC LIMIT %d OFFSET %d", $range_start, $range_end, $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				foreach ( $rows as $row ) {
 					$items[] = array(
 						'domain' => (string) $row->domain,
@@ -909,7 +912,7 @@ final class Reseller_Intent_Admin {
 				break;
 
 			case 'selection_pairs':
-				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT related_query AS searched, domain_query AS selected, COUNT(*) AS hits FROM {$table_name} WHERE event_type = 'domain_select' AND domain_query <> '' AND related_query <> '' AND related_query <> domain_query AND domain_query NOT LIKE CONCAT(related_query, '.%'){$where} GROUP BY related_query, domain_query ORDER BY hits DESC LIMIT %d OFFSET %d", $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.LikeWildcardsInQuery -- wildcard is part of a CONCAT against a column, not user input.
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT related_query AS searched, domain_query AS selected, COUNT(*) AS hits FROM {$table_name} WHERE event_type = 'domain_select' AND domain_query <> '' AND related_query <> '' AND related_query <> domain_query AND domain_query NOT LIKE CONCAT(related_query, '.%') AND created_at >= %s AND created_at < %s GROUP BY related_query, domain_query ORDER BY hits DESC LIMIT %d OFFSET %d", $range_start, $range_end, $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.LikeWildcardsInQuery -- wildcard is part of a CONCAT against a column, not user input.
 				foreach ( $rows as $row ) {
 					$items[] = array(
 						'searched' => (string) $row->searched,
@@ -920,7 +923,7 @@ final class Reseller_Intent_Admin {
 				break;
 
 			case 'countries':
-				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT country, COALESCE(SUM(event_count),0) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND country <> ''{$where} GROUP BY country ORDER BY hits DESC LIMIT %d OFFSET %d", $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT country, COALESCE(SUM(event_count),0) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND country <> '' AND created_at >= %s AND created_at < %s GROUP BY country ORDER BY hits DESC LIMIT %d OFFSET %d", $range_start, $range_end, $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				foreach ( $rows as $row ) {
 					$items[] = array(
 						'code'  => (string) $row->country,
@@ -931,7 +934,7 @@ final class Reseller_Intent_Admin {
 
 			case 'carted':
 				// Aggregated from items_json, so paging slices the aggregate.
-				$json_rows     = $wpdb->get_results( "SELECT items_json FROM {$table_name} WHERE event_type = 'continue_to_cart' AND items_json IS NOT NULL AND items_json <> ''{$where} ORDER BY id DESC LIMIT 2000" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$json_rows     = $wpdb->get_results( $wpdb->prepare( "SELECT items_json FROM {$table_name} WHERE event_type = 'continue_to_cart' AND items_json IS NOT NULL AND items_json <> '' AND created_at >= %s AND created_at < %s ORDER BY id DESC LIMIT 2000", $range_start, $range_end ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$domain_counts = array();
 				foreach ( $json_rows as $json_row ) {
 					foreach ( $this->extract_carted_domains( (string) $json_row->items_json ) as $domain ) {
@@ -955,7 +958,7 @@ final class Reseller_Intent_Admin {
 						$carted[ strtolower( $domain ) ] = true;
 					}
 				}
-				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT domain_query, COALESCE(SUM(event_count),0) AS hits, MAX(created_at) AS last_seen FROM {$table_name} WHERE event_type = 'domain_search' AND is_available = 1 AND domain_query <> ''{$where} GROUP BY domain_query ORDER BY hits DESC, last_seen DESC LIMIT %d OFFSET %d", $fetch + 60, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT domain_query, COALESCE(SUM(event_count),0) AS hits, MAX(created_at) AS last_seen FROM {$table_name} WHERE event_type = 'domain_search' AND is_available = 1 AND domain_query <> '' AND created_at >= %s AND created_at < %s GROUP BY domain_query ORDER BY hits DESC, last_seen DESC LIMIT %d OFFSET %d", $range_start, $range_end, $fetch + 60, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				foreach ( $rows as $row ) {
 					if ( isset( $carted[ strtolower( (string) $row->domain_query ) ] ) ) {
 						continue;
@@ -1006,13 +1009,15 @@ final class Reseller_Intent_Admin {
 			$end        = gmdate( 'Y-m-d', strtotime( $to . ' +1 day' ) ) . ' 00:00:00';
 			$prev_start = gmdate( 'Y-m-d', strtotime( $from . ' -' . $len . ' days' ) ) . ' 00:00:00';
 			$anchor_ts  = ( new DateTimeImmutable( $to . ' 12:00:00', wp_timezone() ) )->getTimestamp();
-			$where      = $wpdb->prepare( ' AND created_at >= %s AND created_at < %s', $start, $end );
+			$range_start = $start;
+			$range_end   = $end;
 		} else {
 			$len        = $bounded ? (int) $range_key : 0;
 			$start      = $bounded ? wp_date( 'Y-m-d 00:00:00', $now_ts - ( ( $len - 1 ) * DAY_IN_SECONDS ) ) : '';
 			$prev_start = $bounded ? wp_date( 'Y-m-d 00:00:00', $now_ts - ( ( ( 2 * $len ) - 1 ) * DAY_IN_SECONDS ) ) : '';
 			$anchor_ts  = $now_ts;
-			$where      = $bounded ? $wpdb->prepare( ' AND created_at >= %s', $start ) : '';
+			$range_start = $bounded ? $start : self::RANGE_MIN;
+			$range_end   = self::RANGE_MAX;
 		}
 
 		// KPIs: one aggregate query per window.
@@ -1021,12 +1026,17 @@ final class Reseller_Intent_Admin {
 
 		// TLD distribution.
 		$tld_rows  = $wpdb->get_results(
-			"SELECT LOWER(SUBSTRING_INDEX(domain_query, '.', -1)) AS tld, SUM(event_count) AS hits
-			FROM {$table_name}
-			WHERE event_type = 'domain_search' AND domain_query LIKE '%.%'{$where}
-			GROUP BY tld
-			ORDER BY hits DESC
-			LIMIT 40"
+			$wpdb->prepare(
+				"SELECT LOWER(SUBSTRING_INDEX(domain_query, '.', -1)) AS tld, SUM(event_count) AS hits
+				FROM {$table_name}
+				WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s
+				GROUP BY tld
+				ORDER BY hits DESC
+				LIMIT 40",
+				'%' . $wpdb->esc_like( '.' ) . '%',
+				$range_start,
+				$range_end
+			)
 		);
 		$tlds      = array();
 		$tld_total = 0;
@@ -1055,14 +1065,17 @@ final class Reseller_Intent_Admin {
 
 		// Cart size buckets.
 		$cart_row   = $wpdb->get_row(
-			"SELECT
-				COALESCE(SUM(CASE WHEN items_count <= 1 THEN 1 ELSE 0 END),0) AS b1,
-				COALESCE(SUM(CASE WHEN items_count = 2 THEN 1 ELSE 0 END),0) AS b2,
-				COALESCE(SUM(CASE WHEN items_count = 3 THEN 1 ELSE 0 END),0) AS b3,
-				COALESCE(SUM(CASE WHEN items_count >= 4 THEN 1 ELSE 0 END),0) AS b4,
-				COUNT(*) AS total
-			FROM {$table_name}
-			WHERE event_type = 'continue_to_cart'{$where}",
+			$wpdb->prepare(
+				"SELECT
+					COALESCE(SUM(CASE WHEN items_count <= 1 THEN 1 ELSE 0 END),0) AS b1,
+					COALESCE(SUM(CASE WHEN items_count = 2 THEN 1 ELSE 0 END),0) AS b2,
+					COALESCE(SUM(CASE WHEN items_count = 3 THEN 1 ELSE 0 END),0) AS b3,
+					COALESCE(SUM(CASE WHEN items_count >= 4 THEN 1 ELSE 0 END),0) AS b4,
+					COUNT(*) AS total
+				FROM {$table_name}
+				WHERE event_type = 'continue_to_cart' AND created_at >= %s AND created_at < %s",
+				$range_start, $range_end
+			),
 			ARRAY_A
 		);
 		$cart_row   = is_array( $cart_row ) ? array_map( 'intval', $cart_row ) : array();
@@ -1087,13 +1100,16 @@ final class Reseller_Intent_Admin {
 
 		// Repeat intent: searched 2+ times inside the window.
 		$repeat_rows = $wpdb->get_results(
-			"SELECT domain_query AS domain, SUM(event_count) AS hits
-			FROM {$table_name}
-			WHERE event_type = 'domain_search' AND domain_query <> ''{$where}
-			GROUP BY domain_query
-			HAVING hits >= 2
-			ORDER BY hits DESC
-			LIMIT 25"
+			$wpdb->prepare(
+				"SELECT domain_query AS domain, SUM(event_count) AS hits
+				FROM {$table_name}
+				WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s
+				GROUP BY domain_query
+				HAVING hits >= 2
+				ORDER BY hits DESC
+				LIMIT 25",
+				$range_start, $range_end
+			)
 		);
 		$repeats     = array();
 		foreach ( $repeat_rows as $repeat_row ) {
@@ -1104,34 +1120,40 @@ final class Reseller_Intent_Admin {
 		}
 
 		// Searches and cart clicks per source page.
-		$pages = $this->get_page_breakdown( $table_name, $where );
+		$pages = $this->get_page_breakdown( $table_name, $range_start, $range_end );
 
 		// Carted domains from items_json (bounded scan).
-		$carted = $this->get_carted_breakdown( $table_name, $where );
+		$carted = $this->get_carted_breakdown( $table_name, $range_start, $range_end );
 
 		// Demand signals: searched, available, never taken to cart.
-		$opportunities = $this->get_opportunities( $table_name, $where );
+		$opportunities = $this->get_opportunities( $table_name, $range_start, $range_end );
 
 		// Selection behavior.
-		$selection = $this->get_selection_breakdown( $table_name, $where );
+		$selection = $this->get_selection_breakdown( $table_name, $range_start, $range_end );
 
 		// Availability + devices.
 		$availability_row = $wpdb->get_row(
-			"SELECT
-				COALESCE(SUM(CASE WHEN is_available = 1 THEN event_count ELSE 0 END),0) AS avail,
-				COALESCE(SUM(CASE WHEN is_available = 0 THEN event_count ELSE 0 END),0) AS taken
-			FROM {$table_name}
-			WHERE event_type = 'domain_search' AND is_available IS NOT NULL{$where}",
+			$wpdb->prepare(
+				"SELECT
+					COALESCE(SUM(CASE WHEN is_available = 1 THEN event_count ELSE 0 END),0) AS avail,
+					COALESCE(SUM(CASE WHEN is_available = 0 THEN event_count ELSE 0 END),0) AS taken
+				FROM {$table_name}
+				WHERE event_type = 'domain_search' AND is_available IS NOT NULL AND created_at >= %s AND created_at < %s",
+				$range_start, $range_end
+			),
 			ARRAY_A
 		);
 		$avail            = isset( $availability_row['avail'] ) ? (int) $availability_row['avail'] : 0;
 		$taken            = isset( $availability_row['taken'] ) ? (int) $availability_row['taken'] : 0;
 
 		$device_rows = $wpdb->get_results(
-			"SELECT device, COALESCE(SUM(event_count),0) AS hits
-			FROM {$table_name}
-			WHERE event_type = 'domain_search' AND device IN ('mobile','tablet','desktop'){$where}
-			GROUP BY device",
+			$wpdb->prepare(
+				"SELECT device, COALESCE(SUM(event_count),0) AS hits
+				FROM {$table_name}
+				WHERE event_type = 'domain_search' AND device IN ('mobile','tablet','desktop') AND created_at >= %s AND created_at < %s
+				GROUP BY device",
+				$range_start, $range_end
+			),
 			ARRAY_A
 		);
 		$devices     = array(
@@ -1148,12 +1170,15 @@ final class Reseller_Intent_Admin {
 
 		// Top countries (privacy-safe: 2-letter geo header codes, no IPs).
 		$country_rows    = $wpdb->get_results(
-			"SELECT country, COALESCE(SUM(event_count),0) AS hits
-			FROM {$table_name}
-			WHERE event_type = 'domain_search' AND country <> ''{$where}
-			GROUP BY country
-			ORDER BY hits DESC
-			LIMIT 20",
+			$wpdb->prepare(
+				"SELECT country, COALESCE(SUM(event_count),0) AS hits
+				FROM {$table_name}
+				WHERE event_type = 'domain_search' AND country <> '' AND created_at >= %s AND created_at < %s
+				GROUP BY country
+				ORDER BY hits DESC
+				LIMIT 20",
+				$range_start, $range_end
+			),
 			ARRAY_A
 		);
 		$countries       = array();
@@ -1169,11 +1194,14 @@ final class Reseller_Intent_Admin {
 
 		// Recent search log: latest 100 in range; filtered/paged client-side.
 		$recent_rows = $wpdb->get_results(
-			"SELECT domain_query, created_at, is_available, device
-			FROM {$table_name}
-			WHERE event_type = 'domain_search' AND domain_query <> ''{$where}
-			ORDER BY id DESC
-			LIMIT 100"
+			$wpdb->prepare(
+				"SELECT domain_query, created_at, is_available, device
+				FROM {$table_name}
+				WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s
+				ORDER BY id DESC
+				LIMIT 100",
+				$range_start, $range_end
+			)
 		);
 		$recent      = array();
 		foreach ( $recent_rows as $recent_row ) {
@@ -1255,10 +1283,10 @@ final class Reseller_Intent_Admin {
 			'carted'        => $carted,
 			'opportunities' => $opportunities['items'],
 			'totals'        => array(
-				'tlds'           => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT LOWER(SUBSTRING_INDEX(domain_query, '.', -1))) FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s{$where}", '%' . $wpdb->esc_like( '.' ) . '%' ) ), // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				'repeats'        => (int) $wpdb->get_var( "SELECT COUNT(*) FROM (SELECT 1 FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> ''{$where} GROUP BY domain_query HAVING SUM(event_count) >= 2) grouped" ), // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-				'selectionTop'   => (int) $wpdb->get_var( "SELECT COUNT(DISTINCT domain_query) FROM {$table_name} WHERE event_type = 'domain_select' AND domain_query <> ''{$where}" ), // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-				'selectionPairs' => (int) $wpdb->get_var( "SELECT COUNT(*) FROM (SELECT 1 FROM {$table_name} WHERE event_type = 'domain_select' AND domain_query <> '' AND related_query <> '' AND related_query <> domain_query AND domain_query NOT LIKE CONCAT(related_query, '.%'){$where} GROUP BY related_query, domain_query) grouped" ), // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.LikeWildcardsInQuery -- wildcard belongs to a column CONCAT.
+				'tlds'           => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT LOWER(SUBSTRING_INDEX(domain_query, '.', -1))) FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s", '%' . $wpdb->esc_like( '.' ) . '%', $range_start, $range_end ) ), // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				'repeats'        => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM (SELECT 1 FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s GROUP BY domain_query HAVING SUM(event_count) >= 2) grouped", $range_start, $range_end ) ), // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				'selectionTop'   => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT domain_query) FROM {$table_name} WHERE event_type = 'domain_select' AND domain_query <> '' AND created_at >= %s AND created_at < %s", $range_start, $range_end ) ), // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				'selectionPairs' => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM (SELECT 1 FROM {$table_name} WHERE event_type = 'domain_select' AND domain_query <> '' AND related_query <> '' AND related_query <> domain_query AND domain_query NOT LIKE CONCAT(related_query, '.', %s) AND created_at >= %s AND created_at < %s GROUP BY related_query, domain_query) grouped", '%', $range_start, $range_end ) ), // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				'carted'         => (int) $carted['total'],
 				'opportunities'  => (int) $opportunities['total'],
 			),
@@ -1345,18 +1373,21 @@ final class Reseller_Intent_Admin {
 	 * grouped in SQL first, then merged by normalized path here, UTM
 	 * variants of the same page collapse into one row.
 	 */
-	private function get_page_breakdown( $table_name, $where ) {
+	private function get_page_breakdown( $table_name, $range_start, $range_end ) {
 		global $wpdb;
 
 		$page_rows = $wpdb->get_results(
-			"SELECT page_url,
-				COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN event_count ELSE 0 END),0) AS searches,
-				COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END),0) AS carts
-			FROM {$table_name}
-			WHERE event_type IN ('domain_search','continue_to_cart') AND page_url IS NOT NULL AND page_url <> ''{$where}
-			GROUP BY page_url
-			ORDER BY searches DESC
-			LIMIT 200"
+			$wpdb->prepare(
+				"SELECT page_url,
+					COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN event_count ELSE 0 END),0) AS searches,
+					COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END),0) AS carts
+				FROM {$table_name}
+				WHERE event_type IN ('domain_search','continue_to_cart') AND page_url IS NOT NULL AND page_url <> '' AND created_at >= %s AND created_at < %s
+				GROUP BY page_url
+				ORDER BY searches DESC
+				LIMIT 200",
+				$range_start, $range_end
+			)
 		);
 
 		$by_path = array();
@@ -1433,7 +1464,7 @@ final class Reseller_Intent_Admin {
 	 * whole (not just the selected range), a domain carted last month is
 	 * not an opportunity today.
 	 */
-	private function get_opportunities( $table_name, $where ) {
+	private function get_opportunities( $table_name, $range_start, $range_end ) {
 		global $wpdb;
 
 		$carted = array();
@@ -1452,19 +1483,22 @@ final class Reseller_Intent_Admin {
 		}
 
 		$rows = $wpdb->get_results(
-			"SELECT domain_query, COALESCE(SUM(event_count),0) AS hits, MAX(created_at) AS last_seen
-			FROM {$table_name}
-			WHERE event_type = 'domain_search' AND is_available = 1 AND domain_query <> ''{$where}
-			GROUP BY domain_query
-			ORDER BY hits DESC, last_seen DESC
-			LIMIT 40" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->prepare(
+				"SELECT domain_query, COALESCE(SUM(event_count),0) AS hits, MAX(created_at) AS last_seen
+				FROM {$table_name}
+				WHERE event_type = 'domain_search' AND is_available = 1 AND domain_query <> '' AND created_at >= %s AND created_at < %s
+				GROUP BY domain_query
+				ORDER BY hits DESC, last_seen DESC
+				LIMIT 40",
+				$range_start, $range_end
+			)
 		);
 
-		$distinct_avail = (int) $wpdb->get_var( "SELECT COUNT(DISTINCT domain_query) FROM {$table_name} WHERE event_type = 'domain_search' AND is_available = 1 AND domain_query <> ''{$where}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$distinct_avail = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT domain_query) FROM {$table_name} WHERE event_type = 'domain_search' AND is_available = 1 AND domain_query <> '' AND created_at >= %s AND created_at < %s", $range_start, $range_end ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$overlap        = 0;
 		if ( ! empty( $carted ) ) {
 			$placeholders = implode( ',', array_fill( 0, count( $carted ), '%s' ) );
-			$overlap      = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT domain_query) FROM {$table_name} WHERE event_type = 'domain_search' AND is_available = 1 AND LOWER(domain_query) IN ({$placeholders}){$where}", array_keys( $carted ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- placeholders are built dynamically for the IN list.
+			$overlap      = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT domain_query) FROM {$table_name} WHERE event_type = 'domain_search' AND is_available = 1 AND LOWER(domain_query) IN ({$placeholders}) AND created_at >= %s AND created_at < %s", array_merge( array_keys( $carted ), array( $range_start, $range_end ) ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- placeholders are built dynamically for the IN list.
 		}
 
 		$items = array();
@@ -1497,14 +1531,17 @@ final class Reseller_Intent_Admin {
 		);
 	}
 
-	private function get_carted_breakdown( $table_name, $where ) {
+	private function get_carted_breakdown( $table_name, $range_start, $range_end ) {
 		global $wpdb;
 
 		$json_rows = $wpdb->get_results(
-			"SELECT items_json FROM {$table_name}
-			WHERE event_type = 'continue_to_cart' AND items_json IS NOT NULL AND items_json <> ''{$where}
-			ORDER BY id DESC
-			LIMIT 500"
+			$wpdb->prepare(
+				"SELECT items_json FROM {$table_name}
+				WHERE event_type = 'continue_to_cart' AND items_json IS NOT NULL AND items_json <> '' AND created_at >= %s AND created_at < %s
+				ORDER BY id DESC
+				LIMIT 500",
+				$range_start, $range_end
+			)
 		);
 
 		$domain_counts = array();
@@ -1548,26 +1585,34 @@ final class Reseller_Intent_Admin {
 		);
 	}
 
-	private function get_selection_breakdown( $table_name, $where ) {
+	private function get_selection_breakdown( $table_name, $range_start, $range_end ) {
 		global $wpdb;
 
 		$totals = $wpdb->get_row(
-			"SELECT COUNT(*) AS total,
-				COALESCE(SUM(CASE WHEN related_query <> '' AND ( related_query = domain_query OR domain_query LIKE CONCAT(related_query, '.%') ) THEN 1 ELSE 0 END),0) AS exact_hits
-			FROM {$table_name}
-			WHERE event_type = 'domain_select' AND domain_query <> ''{$where}",
+			$wpdb->prepare(
+				"SELECT COUNT(*) AS total,
+					COALESCE(SUM(CASE WHEN related_query <> '' AND ( related_query = domain_query OR domain_query LIKE CONCAT(related_query, '.', %s) ) THEN 1 ELSE 0 END),0) AS exact_hits
+				FROM {$table_name}
+				WHERE event_type = 'domain_select' AND domain_query <> '' AND created_at >= %s AND created_at < %s",
+				'%',
+				$range_start,
+				$range_end
+			),
 			ARRAY_A
 		);
 		$total  = isset( $totals['total'] ) ? (int) $totals['total'] : 0;
 		$exact  = isset( $totals['exact_hits'] ) ? (int) $totals['exact_hits'] : 0;
 
 		$top_rows = $wpdb->get_results(
-			"SELECT domain_query AS domain, SUM(event_count) AS hits
-			FROM {$table_name}
-			WHERE event_type = 'domain_select' AND domain_query <> ''{$where}
-			GROUP BY domain_query
-			ORDER BY hits DESC
-			LIMIT 25"
+			$wpdb->prepare(
+				"SELECT domain_query AS domain, SUM(event_count) AS hits
+				FROM {$table_name}
+				WHERE event_type = 'domain_select' AND domain_query <> '' AND created_at >= %s AND created_at < %s
+				GROUP BY domain_query
+				ORDER BY hits DESC
+				LIMIT 25",
+				$range_start, $range_end
+			)
 		);
 		$top      = array();
 		foreach ( $top_rows as $top_row ) {
@@ -1578,13 +1623,18 @@ final class Reseller_Intent_Admin {
 		}
 
 		$pair_rows = $wpdb->get_results(
-			"SELECT related_query AS searched, domain_query AS selected, COUNT(*) AS hits
-			FROM {$table_name}
-			WHERE event_type = 'domain_select' AND domain_query <> '' AND related_query <> ''
-				AND related_query <> domain_query AND domain_query NOT LIKE CONCAT(related_query, '.%'){$where}
-			GROUP BY related_query, domain_query
-			ORDER BY hits DESC
-			LIMIT 25"
+			$wpdb->prepare(
+				"SELECT related_query AS searched, domain_query AS selected, COUNT(*) AS hits
+				FROM {$table_name}
+				WHERE event_type = 'domain_select' AND domain_query <> '' AND related_query <> ''
+					AND related_query <> domain_query AND domain_query NOT LIKE CONCAT(related_query, '.', %s) AND created_at >= %s AND created_at < %s
+				GROUP BY related_query, domain_query
+				ORDER BY hits DESC
+				LIMIT 25",
+				'%',
+				$range_start,
+				$range_end
+			)
 		);
 		$pairs     = array();
 		foreach ( $pair_rows as $pair_row ) {
@@ -1604,32 +1654,28 @@ final class Reseller_Intent_Admin {
 	}
 
 	/**
-	 * Aggregate KPI counts for a window. Empty $start = lifetime.
+	 * Aggregate KPI counts for a window. Empty bounds mean open ended.
 	 */
 	private function get_kpi_counts( $table_name, $start = '', $end = '' ) {
 		global $wpdb;
 
-		$where  = ' WHERE 1=1';
-		$params = array();
-		if ( '' !== $start ) {
-			$where   .= ' AND created_at >= %s';
-			$params[] = $start;
-		}
-		if ( '' !== $end ) {
-			$where   .= ' AND created_at < %s';
-			$params[] = $end;
-		}
+		$start = '' !== $start ? $start : self::RANGE_MIN;
+		$end   = '' !== $end ? $end : self::RANGE_MAX;
 
-		$sql = "SELECT
-			COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN event_count ELSE 0 END),0) AS searches,
-			COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END),0) AS cart_clicks,
-			COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN items_count ELSE 0 END),0) AS domains_added,
-			COUNT(DISTINCT CASE WHEN event_type = 'domain_search' AND domain_query <> '' THEN domain_query END) AS unique_searches
-			FROM {$table_name}{$where}";
-		if ( ! empty( $params ) ) {
-			$sql = $wpdb->prepare( $sql, $params ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-		}
-		$row = $wpdb->get_row( $sql, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$row = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT
+					COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN event_count ELSE 0 END),0) AS searches,
+					COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END),0) AS cart_clicks,
+					COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN items_count ELSE 0 END),0) AS domains_added,
+					COUNT(DISTINCT CASE WHEN event_type = 'domain_search' AND domain_query <> '' THEN domain_query END) AS unique_searches
+				FROM {$table_name}
+				WHERE created_at >= %s AND created_at < %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- prefixed table name.
+				$start,
+				$end
+			),
+			ARRAY_A
+		);
 
 		return array(
 			'searches'       => isset( $row['searches'] ) ? (int) $row['searches'] : 0,
@@ -1780,15 +1826,7 @@ final class Reseller_Intent_Admin {
 	private function export_domain_search_csv( $table_name, $range_key = 'all', $format = 'csv', $from = '', $to = '' ) {
 		global $wpdb;
 
-		$where = '';
-		if ( 'custom' === $range_key ) {
-			$end_excl = gmdate( 'Y-m-d', strtotime( $to . ' +1 day' ) ) . ' 00:00:00';
-			$where    = $wpdb->prepare( ' AND created_at >= %s AND created_at < %s', $from . ' 00:00:00', $end_excl );
-		} elseif ( 'all' !== $range_key ) {
-			$len   = (int) $range_key;
-			$start = wp_date( 'Y-m-d 00:00:00', time() - ( ( $len - 1 ) * DAY_IN_SECONDS ) );
-			$where = $wpdb->prepare( ' AND created_at >= %s', $start );
-		}
+		list( $range_start, $range_end ) = $this->range_bounds( $range_key, $from, $to );
 
 		while ( ob_get_level() > 0 ) {
 			ob_end_clean();
@@ -1831,11 +1869,10 @@ final class Reseller_Intent_Admin {
 				$wpdb->prepare(
 					"SELECT id, event_type, domain_query, related_query, items_count, items_json, is_available, device, country, page_url, created_at
 					FROM {$table_name}
-					WHERE id < %d{$where}
+					WHERE id < %d AND created_at >= %s AND created_at < %s
 					ORDER BY id DESC
 					LIMIT %d",
-					$last_id,
-					5000
+					$last_id, $range_start, $range_end, 5000
 				)
 			);
 

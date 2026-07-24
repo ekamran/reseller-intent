@@ -9,16 +9,16 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-23T09:51:41+00:00\n"
+"POT-Creation-Date: 2026-07-24T08:52:14+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: reseller-intent\n"
 
 #. Plugin Name of the plugin
 #: reseller-intent.php
-#: includes/class-reseller-intent-admin.php:43
-#: includes/class-reseller-intent-admin.php:44
-#: includes/class-reseller-intent-admin.php:1919
+#: includes/class-reseller-intent-admin.php:47
+#: includes/class-reseller-intent-admin.php:48
+#: includes/class-reseller-intent-admin.php:1956
 #: includes/class-reseller-intent-health.php:39
 #: includes/class-reseller-intent.php:184
 msgid "Reseller Intent"
@@ -39,688 +39,688 @@ msgstr ""
 msgid "https://shifteq.com"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:54
-#: includes/class-reseller-intent-admin.php:55
+#: includes/class-reseller-intent-admin.php:58
+#: includes/class-reseller-intent-admin.php:59
 msgid "Dashboard"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:63
-#: includes/class-reseller-intent-admin.php:64
-#: includes/class-reseller-intent-admin.php:190
+#: includes/class-reseller-intent-admin.php:67
+#: includes/class-reseller-intent-admin.php:68
+#: includes/class-reseller-intent-admin.php:194
 msgid "Shortcodes"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:72
-#: includes/class-reseller-intent-admin.php:73
-#: includes/class-reseller-intent-admin.php:434
+#: includes/class-reseller-intent-admin.php:76
+#: includes/class-reseller-intent-admin.php:77
+#: includes/class-reseller-intent-admin.php:438
 msgid "Settings"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:191
+#: includes/class-reseller-intent-admin.php:195
 msgid "Everything for each shortcode lives on its card: options, prices or numbers, and the code to copy."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:194
+#: includes/class-reseller-intent-admin.php:198
 msgid "Support numbers saved."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:196
+#: includes/class-reseller-intent-admin.php:200
 msgid "Support numbers reset to the GoDaddy defaults."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:198
+#: includes/class-reseller-intent-admin.php:202
 msgid "TLD prices refreshed from the storefront API."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:200
+#: includes/class-reseller-intent-admin.php:204
 msgid "Nothing to refresh yet. Prices are cached after the TLD strip renders for the first time."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:204
+#: includes/class-reseller-intent-admin.php:208
 msgid "TLD price strip"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:205
+#: includes/class-reseller-intent-admin.php:209
 msgid "Live TLD price pills that always match checkout prices. Cached for 12 hours and refreshed in the background."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:208
+#: includes/class-reseller-intent-admin.php:212
 msgid "TLDs"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:211
+#: includes/class-reseller-intent-admin.php:215
 msgid "Comma-separated, with or without dots."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:215
+#: includes/class-reseller-intent-admin.php:219
 msgid "Theme"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:217
+#: includes/class-reseller-intent-admin.php:221
 msgid "Light"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:217
+#: includes/class-reseller-intent-admin.php:221
 msgid "Dark"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:218
+#: includes/class-reseller-intent-admin.php:222
 msgid "Dark is for dark page sections. Prices use the Dark accent color from Settings (auto-lightened from your accent unless you pick one). CSS can still override anything: --rintent-accent-dark and the --rintent-tld-* variables."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:222
+#: includes/class-reseller-intent-admin.php:226
 msgid "\"More\" pill"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:224
+#: includes/class-reseller-intent-admin.php:228
 msgid "Text on the more pill"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:224
+#: includes/class-reseller-intent-admin.php:228
 #: includes/class-reseller-intent-tld-strip.php:145
 msgid "More TLDs"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:225
+#: includes/class-reseller-intent-admin.php:229
 msgid "Link for the more pill"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:226
+#: includes/class-reseller-intent-admin.php:230
 msgid "Optional link pill at the end. Leave the URL empty to hide it."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:230
-#: includes/class-reseller-intent-admin.php:332
-#: includes/class-reseller-intent-admin.php:394
+#: includes/class-reseller-intent-admin.php:234
+#: includes/class-reseller-intent-admin.php:336
+#: includes/class-reseller-intent-admin.php:398
 msgid "Shortcode"
-msgstr ""
-
-#: includes/class-reseller-intent-admin.php:233
-#: includes/class-reseller-intent-admin.php:335
-msgid "Copy"
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:237
 #: includes/class-reseller-intent-admin.php:339
-#: includes/class-reseller-intent-admin.php:400
+msgid "Copy"
+msgstr ""
+
+#: includes/class-reseller-intent-admin.php:241
+#: includes/class-reseller-intent-admin.php:343
+#: includes/class-reseller-intent-admin.php:404
 msgid "Live preview"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:239
+#: includes/class-reseller-intent-admin.php:243
 msgid "Rendering..."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:240
+#: includes/class-reseller-intent-admin.php:244
 msgid "Exactly what visitors get, live prices included."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:244
+#: includes/class-reseller-intent-admin.php:248
 msgid "Price cache"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:249
+#: includes/class-reseller-intent-admin.php:253
 msgid "Refresh prices now"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:251
+#: includes/class-reseller-intent-admin.php:255
 msgid "Prices refresh in the background every 11 hours and after a Reseller Store product import. Use this after a price change you want live right away."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:257
+#: includes/class-reseller-intent-admin.php:261
 msgid "Live product price"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:258
+#: includes/class-reseller-intent-admin.php:262
 msgid "Prints a live price from the selected products: cheapest, highest or a range. Add your own text around it. Select every plan of a family so the number stays correct when prices change."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:261
+#: includes/class-reseller-intent-admin.php:265
 msgid "No published Reseller Store products found. Import products in Reseller Store first."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:264
+#: includes/class-reseller-intent-admin.php:268
 msgid "Products"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:266
+#: includes/class-reseller-intent-admin.php:270
 msgid "Filter products"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:266
+#: includes/class-reseller-intent-admin.php:270
 msgid "Filter products..."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:277
+#: includes/class-reseller-intent-admin.php:281
 msgid "no price"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:284
+#: includes/class-reseller-intent-admin.php:288
 msgid "Show"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:287
+#: includes/class-reseller-intent-admin.php:291
 msgid "Cheapest price"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:288
+#: includes/class-reseller-intent-admin.php:292
 msgid "Highest price"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:289
+#: includes/class-reseller-intent-admin.php:293
 msgid "Price range (cheapest to highest)"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:291
+#: includes/class-reseller-intent-admin.php:295
 msgid "Range always covers one product family, its cheapest to its highest plan."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:295
+#: includes/class-reseller-intent-admin.php:299
 msgid "Product family"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:298
+#: includes/class-reseller-intent-admin.php:302
 msgid "No family with two or more plans found yet. Import your Reseller Store products first."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:306
+#: includes/class-reseller-intent-admin.php:310
 msgid "All plans of the family are included automatically."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:310
+#: includes/class-reseller-intent-admin.php:314
 msgid "Text around it"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:312
+#: includes/class-reseller-intent-admin.php:316
 msgid "Text before the price"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:312
-#: includes/class-reseller-intent-admin.php:664
+#: includes/class-reseller-intent-admin.php:316
+#: includes/class-reseller-intent-admin.php:668
 msgid "Starting at "
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:313
+#: includes/class-reseller-intent-admin.php:317
 msgid "Text after the price"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:313
-#: includes/class-reseller-intent-admin.php:664
-#: includes/class-reseller-intent-admin.php:665
+#: includes/class-reseller-intent-admin.php:317
+#: includes/class-reseller-intent-admin.php:668
+#: includes/class-reseller-intent-admin.php:669
 msgid " per year"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:314
+#: includes/class-reseller-intent-admin.php:318
 msgid "Before and after text, both optional. Use any wording you like, spaces included."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:318
+#: includes/class-reseller-intent-admin.php:322
 msgid "Range separator"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:320
+#: includes/class-reseller-intent-admin.php:324
 msgid "Separator between the two range prices"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:321
+#: includes/class-reseller-intent-admin.php:325
 msgid "Printed between the two prices. Default: to"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:325
+#: includes/class-reseller-intent-admin.php:329
 msgid "Fallback text"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:327
+#: includes/class-reseller-intent-admin.php:331
 msgid "Fallback text when no price is available"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:328
+#: includes/class-reseller-intent-admin.php:332
 msgid "Shown if no selected product has a price."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:334
+#: includes/class-reseller-intent-admin.php:338
 msgid "Select at least one product"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:341
+#: includes/class-reseller-intent-admin.php:345
 msgid "Select products to see it."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:345
+#: includes/class-reseller-intent-admin.php:349
 msgid "Styling"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:347
+#: includes/class-reseller-intent-admin.php:351
 msgid "Every part has its own class, style them from your theme:"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:354
-#: includes/class-reseller-intent-admin.php:379
-#: includes/class-reseller-intent-admin.php:642
+#: includes/class-reseller-intent-admin.php:358
+#: includes/class-reseller-intent-admin.php:383
+#: includes/class-reseller-intent-admin.php:646
 msgid "Support phone number"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:355
+#: includes/class-reseller-intent-admin.php:359
 msgid "Shows the right regional support number to each visitor, based on their browser timezone. Page-cache safe. Numbers, shortcode, everything is right here."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:360
+#: includes/class-reseller-intent-admin.php:364
 msgid "Your own list is saved. Plugin updates will never change it."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:361
+#: includes/class-reseller-intent-admin.php:365
 msgid "Replace your list with the GoDaddy default numbers? Your custom entries will be removed."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:361
+#: includes/class-reseller-intent-admin.php:365
 msgid "Reset to GoDaddy defaults"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:366
+#: includes/class-reseller-intent-admin.php:370
 msgid "GoDaddy default numbers active. Edit and save to make the list yours."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:374
+#: includes/class-reseller-intent-admin.php:378
 msgid "Label"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:374
+#: includes/class-reseller-intent-admin.php:378
 msgid "Phone number"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:374
+#: includes/class-reseller-intent-admin.php:378
 msgid "Countries"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:378
-#: includes/class-reseller-intent-admin.php:641
+#: includes/class-reseller-intent-admin.php:382
+#: includes/class-reseller-intent-admin.php:645
 msgid "Support entry label"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:378
+#: includes/class-reseller-intent-admin.php:382
 msgid "US Support"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:380
-#: includes/class-reseller-intent-admin.php:643
+#: includes/class-reseller-intent-admin.php:384
+#: includes/class-reseller-intent-admin.php:647
 msgid "Country codes for this number"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:381
+#: includes/class-reseller-intent-admin.php:385
 msgid "Remove row"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:386
+#: includes/class-reseller-intent-admin.php:390
 msgid "Countries: comma-separated 2-letter codes like IN, US, AE. Leave empty on one row to make it the default for everyone else."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:388
+#: includes/class-reseller-intent-admin.php:392
 msgid "Add number"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:389
+#: includes/class-reseller-intent-admin.php:393
 msgid "Save numbers"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:403
+#: includes/class-reseller-intent-admin.php:407
 msgid "Flag and number as a call link. Shows the default here; each visitor sees their regional one."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:424
+#: includes/class-reseller-intent-admin.php:428
 msgid "Keep forever (default)"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:425
+#: includes/class-reseller-intent-admin.php:429
 msgid "30 days"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:426
+#: includes/class-reseller-intent-admin.php:430
 msgid "90 days"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:427
+#: includes/class-reseller-intent-admin.php:431
 msgid "180 days"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:428
+#: includes/class-reseller-intent-admin.php:432
 msgid "1 year"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:429
+#: includes/class-reseller-intent-admin.php:433
 msgid "2 years"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:435
+#: includes/class-reseller-intent-admin.php:439
 msgid "Everything is optional. Tracking works out of the box."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:438
+#: includes/class-reseller-intent-admin.php:442
 #: assets/js/admin.js:1065
 msgid "Settings saved."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:446
+#: includes/class-reseller-intent-admin.php:450
 msgid "Appearance"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:448
+#: includes/class-reseller-intent-admin.php:452
 msgid "Accent color"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:451
+#: includes/class-reseller-intent-admin.php:455
 msgid "Used on the dashboard, the styled widget and the TLD price strip."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:455
+#: includes/class-reseller-intent-admin.php:459
 msgid "Dark accent color"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:460
+#: includes/class-reseller-intent-admin.php:464
 msgid "Pick my own color for dark sections"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:463
+#: includes/class-reseller-intent-admin.php:467
 msgid "Recolors text accents on dark surfaces, like the prices in the dark TLD strip. Auto lightens your accent just enough to stay readable and follows whenever the accent changes. Buttons are not affected, they keep the accent color everywhere."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:469
+#: includes/class-reseller-intent-admin.php:473
 msgid "Widget styling"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:470
+#: includes/class-reseller-intent-admin.php:474
 msgid "Optional polish for the Reseller Store search widget. Turn the first toggle off if it fights with your theme. Tracking is not affected."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:472
+#: includes/class-reseller-intent-admin.php:476
 msgid "Options"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:476
+#: includes/class-reseller-intent-admin.php:480
 msgid "Style the domain search widget (accent buttons, aligned rows, mobile layout)"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:480
+#: includes/class-reseller-intent-admin.php:484
 msgid "Skeleton loading rows while results load"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:484
+#: includes/class-reseller-intent-admin.php:488
 msgid "Floating \"Clear All\" button under the search bar"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:488
+#: includes/class-reseller-intent-admin.php:492
 msgid "Clear All button text"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:488
+#: includes/class-reseller-intent-admin.php:492
 #: includes/class-reseller-intent-assets.php:77
 msgid "Clear All"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:490
+#: includes/class-reseller-intent-admin.php:494
 msgid "Its button text, any wording or language. Leave empty for the default."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:492
+#: includes/class-reseller-intent-admin.php:496
 msgid "Dark sections are detected automatically and the widget switches to light-on-dark colors on its own. To force it either way, wrap the section in a .rintent-dark or .rintent-light class."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:495
+#: includes/class-reseller-intent-admin.php:499
 msgid "Theming reference: CSS classes and variables"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:496
+#: includes/class-reseller-intent-admin.php:500
 msgid "Target these from your theme or Additional CSS to restyle any part of the widget."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:498
+#: includes/class-reseller-intent-admin.php:502
 msgid "Element"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:498
+#: includes/class-reseller-intent-admin.php:502
 msgid "CSS class / variable"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:500
+#: includes/class-reseller-intent-admin.php:504
 msgid "Domain name in results"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:501
+#: includes/class-reseller-intent-admin.php:505
 msgid "Price"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:502
+#: includes/class-reseller-intent-admin.php:506
 msgid "Clear All button"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:503
+#: includes/class-reseller-intent-admin.php:507
 msgid "Result row card"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:504
+#: includes/class-reseller-intent-admin.php:508
 msgid "Search button / Continue to cart"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:505
+#: includes/class-reseller-intent-admin.php:509
 msgid "Select / Selected links"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:506
+#: includes/class-reseller-intent-admin.php:510
 msgid "Accent (buttons, focus ring)"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:506
+#: includes/class-reseller-intent-admin.php:510
 msgid "(set by the color picker above)"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:507
+#: includes/class-reseller-intent-admin.php:511
 msgid "Accent on dark surfaces"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:507
+#: includes/class-reseller-intent-admin.php:511
 msgid "(set by the Dark accent picker above; this variable overrides it)"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:508
+#: includes/class-reseller-intent-admin.php:512
 msgid "Text on accent surfaces"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:508
+#: includes/class-reseller-intent-admin.php:512
 msgid "(auto-computed for contrast; set to force your own)"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:509
+#: includes/class-reseller-intent-admin.php:513
 msgid "Buttons on dark sections"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:509
+#: includes/class-reseller-intent-admin.php:513
 msgid "(default: the accent; the Dark accent picker never recolors buttons)"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:510
+#: includes/class-reseller-intent-admin.php:514
 msgid "Dark section context"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:510
+#: includes/class-reseller-intent-admin.php:514
 msgid "(wrapper classes; auto-detected when absent)"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:513
+#: includes/class-reseller-intent-admin.php:517
 msgid "Example:"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:520
+#: includes/class-reseller-intent-admin.php:524
 msgid "Performance"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:521
+#: includes/class-reseller-intent-admin.php:525
 msgid "Reseller Store loads React, jQuery add-ons and its styles on every page of the site, even pages with no store element. Trim that to only the pages that need it."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:523
+#: includes/class-reseller-intent-admin.php:527
 msgid "Asset trim"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:527
+#: includes/class-reseller-intent-admin.php:531
 msgid "Load Reseller Store assets only where they are used"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:529
+#: includes/class-reseller-intent-admin.php:533
 msgid "Kept automatically: pages whose content has any Reseller Store shortcode, product pages, and every page when a Reseller Store widget sits in a sidebar. Tracking follows along, pages without the widget load nothing from this plugin either."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:533
+#: includes/class-reseller-intent-admin.php:537
 msgid "Always keep on"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:536
+#: includes/class-reseller-intent-admin.php:540
 msgid "Page or post IDs, comma-separated. For pages where a builder or popup renders the widget outside the content, detection cannot see those. Developers can also use the rintent_page_needs_store filter."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:542
+#: includes/class-reseller-intent-admin.php:546
 msgid "Tracking and privacy"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:544
+#: includes/class-reseller-intent-admin.php:548
 msgid "Ignore searches"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:547
+#: includes/class-reseller-intent-admin.php:551
 msgid "One pattern per line, matched against searched domains. Use * as a wildcard. Handy for ignoring your own test searches."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:551
+#: includes/class-reseller-intent-admin.php:555
 msgid "Bots"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:555
+#: includes/class-reseller-intent-admin.php:559
 msgid "Also record events from known bots and crawlers (off recommended)"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:562
+#: includes/class-reseller-intent-admin.php:566
 msgid "Data storage"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:564
+#: includes/class-reseller-intent-admin.php:568
 msgid "Retention"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:571
+#: includes/class-reseller-intent-admin.php:575
 msgid "Events older than this are deleted once a day. You can also clear specific windows from the dashboard any time."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:575
+#: includes/class-reseller-intent-admin.php:579
 msgid "Uninstall"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:579
+#: includes/class-reseller-intent-admin.php:583
 msgid "Delete all tracked data and settings when the plugin is uninstalled"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:585
+#: includes/class-reseller-intent-admin.php:589
 msgid "Save Settings"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:639
+#: includes/class-reseller-intent-admin.php:643
 msgid "Copied"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:640
+#: includes/class-reseller-intent-admin.php:644
 msgid "Click to copy"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:660
+#: includes/class-reseller-intent-admin.php:664
 #: assets/js/admin.js:260
 msgid "Copied!"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:661
+#: includes/class-reseller-intent-admin.php:665
 msgid "Nothing to show yet."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:665
+#: includes/class-reseller-intent-admin.php:669
 msgid "Up to "
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:666
+#: includes/class-reseller-intent-admin.php:670
 msgid "Plans from "
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:666
+#: includes/class-reseller-intent-admin.php:670
 msgid " yearly"
 msgstr ""
 
 #. translators: %s: human readable time difference
-#: includes/class-reseller-intent-admin.php:968
-#: includes/class-reseller-intent-admin.php:1484
+#: includes/class-reseller-intent-admin.php:971
+#: includes/class-reseller-intent-admin.php:1518
 #, php-format
 msgid "%s ago"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1048
+#: includes/class-reseller-intent-admin.php:1058
 msgid "Others"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1071
+#: includes/class-reseller-intent-admin.php:1084
 msgid "1 domain"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1075
+#: includes/class-reseller-intent-admin.php:1088
 msgid "2 domains"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1079
+#: includes/class-reseller-intent-admin.php:1092
 msgid "3 domains"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1083
+#: includes/class-reseller-intent-admin.php:1096
 msgid "4+ domains"
 msgstr ""
 
 #. translators: %s: human readable time difference
-#: includes/class-reseller-intent-admin.php:1233
+#: includes/class-reseller-intent-admin.php:1261
 #, php-format
 msgid "Last event %s ago"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1234
+#: includes/class-reseller-intent-admin.php:1262
 msgid "No events yet"
 msgstr ""
 
 #. translators: %d: number of days
-#: includes/class-reseller-intent-admin.php:1241
+#: includes/class-reseller-intent-admin.php:1269
 #, php-format
 msgid "Last %d days"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1242
+#: includes/class-reseller-intent-admin.php:1270
 #: assets/js/admin.js:24
 msgid "Lifetime"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1402
+#: includes/class-reseller-intent-admin.php:1433
 msgid "Home"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1680
+#: includes/class-reseller-intent-admin.php:1726
 msgid "You are not allowed to export data."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1744
+#: includes/class-reseller-intent-admin.php:1790
 msgid "You are not allowed to clear data."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1951
+#: includes/class-reseller-intent-admin.php:1988
 msgid "searches today"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1952
+#: includes/class-reseller-intent-admin.php:1989
 msgid "searches, 7 days"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1953
+#: includes/class-reseller-intent-admin.php:1990
 msgid "search → cart, 7 days"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1958
+#: includes/class-reseller-intent-admin.php:1995
 msgid "Open the full dashboard →"
 msgstr ""
 

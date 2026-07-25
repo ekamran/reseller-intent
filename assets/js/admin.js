@@ -14,6 +14,26 @@
 
 	var ACCENT = (window.resellerIntentAdmin && resellerIntentAdmin.accentColor) || '#3858e9';
 	var ACCENT_TEXT = (window.resellerIntentAdmin && resellerIntentAdmin.accentText) || '#ffffff';
+
+	/**
+	 * The accent at a given alpha, for chart fills. Derived rather than
+	 * hard coded so the chart always matches whatever accent is saved.
+	 */
+	function accentAlpha(alpha) {
+		var hex = String(ACCENT).replace('#', '');
+
+		if (3 === hex.length) {
+			hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+		}
+
+		if (6 !== hex.length || /[^0-9a-f]/i.test(hex)) {
+			return 'rgba(56,88,233,' + alpha + ')';
+		}
+
+		return 'rgba(' + parseInt(hex.slice(0, 2), 16) + ','
+			+ parseInt(hex.slice(2, 4), 16) + ','
+			+ parseInt(hex.slice(4, 6), 16) + ',' + alpha + ')';
+	}
 	var INK = '#1d2327';
 	var TZ_LABEL = (window.resellerIntentAdmin && resellerIntentAdmin.tzLabel) || '';
 
@@ -225,7 +245,7 @@
 		var colWidths = props.colWidths || props.columns.map(function(c, i) { return i === 0 ? '' : '110px'; });
 
 		return el('div', { className: 'ri-table-shell', ref: shellRef },
-			el('table', { className: 'ri-table ri-table--fixed' },
+			el('table', { className: 'ri-table ri-table--fixed' + (props.tableClass ? ' ' + props.tableClass : '') },
 				el('colgroup', null, colWidths.map(function(w, i) {
 					return el('col', { key: i, style: w ? { width: w } : null });
 				})),
@@ -385,7 +405,7 @@
 		return el('svg', { className: 'ri-trend', viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': __( 'Search vs cart trend chart', 'reseller-intent' ) },
 			gridLines,
 			el('line', { x1: padX, y1: padY + plotH, x2: padX + plotW, y2: padY + plotH, stroke: '#e2e8f0' }),
-			el('polygon', { points: areaPoints(searches), fill: 'rgba(85,62,232,0.08)' }),
+			el('polygon', { points: areaPoints(searches), fill: accentAlpha(0.08) }),
 			el('polyline', { points: points(searches), fill: 'none', stroke: ACCENT, strokeWidth: 2.5, strokeLinejoin: 'round', strokeLinecap: 'round' }),
 			el('polyline', { points: points(carts), fill: 'none', stroke: INK, strokeWidth: 2.5, strokeLinejoin: 'round', strokeLinecap: 'round' }),
 			dots,
@@ -527,7 +547,7 @@
 			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Selects', 'reseller-intent' )], rows: topRows, empty: __( 'Select clicks will appear once visitors pick a result from the list.', 'reseller-intent' ), colWidths: ['', '95px'], initialFetched: 25, totalRows: (props.totals || {}).selectionTop, loadMore: props.loadRows ? function(offset) { return props.loadRows('selection_top', offset, mapTop); } : null }),
 			pairRows.length
 				? el(Fragment, null,
-					el('p', { className: 'ri-subhead' }, 'Searched → settled for'),
+					el('p', { className: 'ri-subhead' }, __( 'Searched → settled for', 'reseller-intent' )),
 					el(MiniTable, { columns: [__( 'Searched', 'reseller-intent' ), __( 'Selected instead', 'reseller-intent' ), __( 'Times', 'reseller-intent' )], rows: pairRows, empty: '', colWidths: ['', '', '80px'], initialFetched: 25, totalRows: (props.totals || {}).selectionPairs, loadMore: props.loadRows ? function(offset) { return props.loadRows('selection_pairs', offset, mapPair); } : null })
 				)
 				: null
@@ -550,7 +570,7 @@
 			];
 		});
 		return el(Panel, { title: __( 'Search by Page', 'reseller-intent' ), note: __( 'Which page each search and cart click came from.', 'reseller-intent' ) },
-			el(MiniTable, { columns: [__( 'Page', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Cart clicks', 'reseller-intent' )], rows: rows, colWidths: ['', '195px', '110px'], empty: __( 'Once searches come in, you will see which page they happen on.', 'reseller-intent' ) })
+			el(MiniTable, { columns: [__( 'Page', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Cart clicks', 'reseller-intent' )], rows: rows, colWidths: ['', '158px', '78px'], tableClass: 'ri-table--pages', empty: __( 'Once searches come in, you will see which page they happen on.', 'reseller-intent' ) })
 		);
 	}
 
@@ -575,17 +595,17 @@
 							el(StatChip, { value: fmt(availability.available), label: __( 'Free', 'reseller-intent' ) }),
 							el(StatChip, { value: fmt(availability.taken), label: __( 'Taken', 'reseller-intent' ) })
 						)
-						: el('p', { className: 'ri-empty' }, 'No availability data in this range yet.')
+						: el('p', { className: 'ri-empty' }, __( 'No availability data in this range yet.', 'reseller-intent' ))
 				),
 				el('div', { className: 'ri-quality-col' },
-					el('p', { className: 'ri-subhead' }, 'Searches by device'),
+					el('p', { className: 'ri-subhead' }, __( 'Searches by device', 'reseller-intent' )),
 					deviceTotal > 0
 						? el('div', { className: 'ri-bars' },
 							el(BarRow, { label: __( 'Desktop', 'reseller-intent' ), width: pct(devices.desktop, deviceTotal), value: fmt(devices.desktop) + ' (' + fmt(pct(devices.desktop, deviceTotal), 1) + '%)' }),
 							el(BarRow, { label: __( 'Tablet', 'reseller-intent' ), width: pct(devices.tablet || 0, deviceTotal), value: fmt(devices.tablet || 0) + ' (' + fmt(pct(devices.tablet || 0, deviceTotal), 1) + '%)' }),
 							el(BarRow, { label: __( 'Mobile', 'reseller-intent' ), width: pct(devices.mobile, deviceTotal), value: fmt(devices.mobile) + ' (' + fmt(pct(devices.mobile, deviceTotal), 1) + '%)' })
 						)
-						: el('p', { className: 'ri-empty' }, 'No device data in this range yet.')
+						: el('p', { className: 'ri-empty' }, __( 'No device data in this range yet.', 'reseller-intent' ))
 				)
 			)
 		);
@@ -620,7 +640,7 @@
 			})),
 			cartTotal > 0
 				? el(Fragment, null,
-					el('p', { className: 'ri-subhead' }, 'Cart size split'),
+					el('p', { className: 'ri-subhead' }, __( 'Cart size split', 'reseller-intent' )),
 					el('div', { className: 'ri-bars' }, cartSizes.map(function(bucket, i) {
 						return el(BarRow, {
 							key: i,
@@ -697,7 +717,7 @@
 			el(MiniTable, {
 				columns: [__( 'Domain', 'reseller-intent' ), __( 'Result', 'reseller-intent' ), __( 'Device', 'reseller-intent' ), __( 'Searched At', 'reseller-intent' )], colWidths: ['', '90px', '95px', '155px'],
 				rows: pageRows,
-				empty: filter ? 'Nothing matches that filter.' : 'No searches in this range.'
+				empty: filter ? __( 'Nothing matches that filter.', 'reseller-intent' ) : __( 'No searches in this range.', 'reseller-intent' )
 			})
 		);
 	}
@@ -723,7 +743,7 @@
 						value: fmt(item.hits)
 					});
 				})
-				: el('p', { className: 'ri-empty' }, 'No country data yet. Your host/CDN needs to send a geo header (e.g. Cloudflare’s CF-IPCountry).')
+				: el('p', { className: 'ri-empty' }, __( 'No country data yet. Your host/CDN needs to send a geo header (e.g. Cloudflare’s CF-IPCountry).', 'reseller-intent' ))
 		);
 	}
 
@@ -799,7 +819,7 @@
 			},
 				el('h2', null, __( 'Clear data', 'reseller-intent' )),
 				el('p', null, __( 'Delete tracked events from the selected time window. There is no undo.', 'reseller-intent' )),
-				el('label', { className: 'ri-clear-label', htmlFor: 'ri-clear-range' }, 'Time window'),
+				el('label', { className: 'ri-clear-label', htmlFor: 'ri-clear-range' }, __( 'Time window', 'reseller-intent' )),
 				el('select', {
 					id: 'ri-clear-range',
 					className: 'ri-clear-select',
@@ -942,12 +962,12 @@
 					if (json && json.success && json.data) {
 						setData(json.data);
 					} else {
-						setError('Could not load dashboard data.');
+						setError( __( 'Could not load dashboard data.', 'reseller-intent' ) );
 					}
 				})
 				.catch(function() {
 					if (!cancelled) {
-						setError('Could not load dashboard data.');
+						setError( __( 'Could not load dashboard data.', 'reseller-intent' ) );
 					}
 				})
 				.then(function() {
@@ -998,13 +1018,13 @@
 			loading ? el('div', { className: 'ri-progress', role: 'status', 'aria-label': __( 'Loading', 'reseller-intent' ) }) : null,
 			el('div', { className: 'ri-header' },
 				el('div', null,
-					el('h1', null, 'Reseller Intent'),
+					el('h1', null, __( 'Reseller Intent', 'reseller-intent' )),
 					el('p', { className: 'ri-note' },
 						__( 'Domain search analytics', 'reseller-intent' ) + ' · v' + resellerIntentAdmin.version +
 						(data ? ' · ' + data.rangeLabel : ''),
 						data && data.lastEvent ? el('span', {
 							className: 'ri-health' + (data.lastEvent.stale ? ' is-stale' : ''),
-							title: data.lastEvent.stale ? 'No recent events. Check that the search widget is live and tracking is not blocked.' : null
+							title: data.lastEvent.stale ? __( 'No recent events. Check that the search widget is live and tracking is not blocked.', 'reseller-intent' ) : null
 						}, data.lastEvent.ago) : null
 					)
 				),

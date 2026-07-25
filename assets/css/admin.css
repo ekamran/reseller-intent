@@ -581,6 +581,13 @@
 	overflow: hidden;
 }
 
+/* Search by Page carries three columns in a narrow cell, so the track gives
+   its width back to the page label instead of ellipsing it to two letters. */
+.ri-table--pages .ri-inline-track {
+	width: 44px;
+	margin-right: 6px;
+}
+
 .ri-inline-fill {
 	display: block;
 	height: 100%;

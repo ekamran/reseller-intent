@@ -237,8 +237,39 @@ final class Reseller_Intent_Tracker {
 		return max( 0, count( $decoded ) );
 	}
 
+	/**
+	 * Internationalised names (münchen.de, тест.рф, भारत.in) reach us as
+	 * unicode. The ASCII filter below would quietly drop the accents and
+	 * store a domain nobody searched for, so convert to punycode first and
+	 * let the existing allowlist check the ASCII form.
+	 *
+	 * Pure ASCII input, which is nearly every search, returns untouched.
+	 */
+	private function to_punycode( $host ) {
+		if ( '' === $host || ! preg_match( '/[^\x20-\x7E]/', $host ) ) {
+			return $host;
+		}
+
+		if ( ! class_exists( '\WpOrg\Requests\IdnaEncoder' ) ) {
+			return $host;
+		}
+
+		try {
+			$encoded = \WpOrg\Requests\IdnaEncoder::encode( $host );
+		} catch ( \Throwable $e ) {
+			// Nothing valid to encode (over-long label, malformed input).
+			return $host;
+		}
+
+		return is_string( $encoded ) ? $encoded : $host;
+	}
+
 	private function normalize_domain_query( $domain_query ) {
-		$normalized = strtolower( trim( (string) $domain_query ) );
+		$domain_query = trim( (string) $domain_query );
+		$normalized   = function_exists( 'mb_strtolower' )
+			? mb_strtolower( $domain_query, 'UTF-8' )
+			: strtolower( $domain_query );
+
 		if ( '' === $normalized ) {
 			return '';
 		}
@@ -248,6 +279,7 @@ final class Reseller_Intent_Tracker {
 		$normalized = strtok( $normalized, '/?#' );
 		$normalized = trim( (string) $normalized, ". \t\n\r\0\x0B" );
 		$normalized = preg_replace( '/\s+/', '', (string) $normalized );
+		$normalized = $this->to_punycode( (string) $normalized );
 		$normalized = preg_replace( '/[^a-z0-9\.-]/', '', (string) $normalized );
 		$normalized = preg_replace( '/\.{2,}/', '.', (string) $normalized );
 		$normalized = trim( (string) $normalized, '.-' );

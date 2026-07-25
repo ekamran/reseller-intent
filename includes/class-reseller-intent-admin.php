@@ -22,6 +22,24 @@ final class Reseller_Intent_Admin {
 	 * Who can see the dashboard/exports. Filterable so agencies can open it
 	 * to editors etc.: add_filter( 'rintent_dashboard_capability', fn() => 'edit_pages' );
 	 */
+	/**
+	 * Punycode is what gets stored, because that is the real domain, but
+	 * "xn--mnchen-hotels-wob.de" tells a reseller nothing. Show the unicode
+	 * form on screen where the host can decode it, and the stored form
+	 * everywhere else. Exports keep punycode: it travels better.
+	 */
+	public static function display_domain( $domain ) {
+		$domain = (string) $domain;
+
+		if ( '' === $domain || false === strpos( $domain, 'xn--' ) || ! function_exists( 'idn_to_utf8' ) ) {
+			return $domain;
+		}
+
+		$decoded = idn_to_utf8( $domain, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46 );
+
+		return ( is_string( $decoded ) && '' !== $decoded ) ? $decoded : $domain;
+	}
+
 	public static function capability() {
 		return (string) apply_filters( 'rintent_dashboard_capability', 'manage_options' );
 	}
@@ -645,6 +663,7 @@ final class Reseller_Intent_Admin {
 					'ariaSupportLabel'     => __( 'Support entry label', 'reseller-intent' ),
 					'ariaSupportNumber'    => __( 'Support phone number', 'reseller-intent' ),
 					'ariaSupportCountries' => __( 'Country codes for this number', 'reseller-intent' ),
+					'ariaRemoveRow'        => __( 'Remove row', 'reseller-intent' ),
 				)
 			);
 
@@ -896,7 +915,7 @@ final class Reseller_Intent_Admin {
 				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT domain_query AS domain, SUM(event_count) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s GROUP BY domain_query HAVING hits >= 2 ORDER BY hits DESC LIMIT %d OFFSET %d", $range_start, $range_end, $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				foreach ( $rows as $row ) {
 					$items[] = array(
-						'domain' => (string) $row->domain,
+						'domain' => self::display_domain( $row->domain ),
 						'hits'   => (int) $row->hits,
 					);
 				}
@@ -906,7 +925,7 @@ final class Reseller_Intent_Admin {
 				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT domain_query AS domain, SUM(event_count) AS hits FROM {$table_name} WHERE event_type = 'domain_select' AND domain_query <> '' AND created_at >= %s AND created_at < %s GROUP BY domain_query ORDER BY hits DESC LIMIT %d OFFSET %d", $range_start, $range_end, $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				foreach ( $rows as $row ) {
 					$items[] = array(
-						'domain' => (string) $row->domain,
+						'domain' => self::display_domain( $row->domain ),
 						'hits'   => (int) $row->hits,
 					);
 				}
@@ -916,8 +935,8 @@ final class Reseller_Intent_Admin {
 				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT related_query AS searched, domain_query AS selected, COUNT(*) AS hits FROM {$table_name} WHERE event_type = 'domain_select' AND domain_query <> '' AND related_query <> '' AND related_query <> domain_query AND domain_query NOT LIKE CONCAT(related_query, '.%') AND created_at >= %s AND created_at < %s GROUP BY related_query, domain_query ORDER BY hits DESC LIMIT %d OFFSET %d", $range_start, $range_end, $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.LikeWildcardsInQuery -- wildcard is part of a CONCAT against a column, not user input.
 				foreach ( $rows as $row ) {
 					$items[] = array(
-						'searched' => (string) $row->searched,
-						'selected' => (string) $row->selected,
+						'searched' => self::display_domain( $row->searched ),
+						'selected' => self::display_domain( $row->selected ),
 						'hits'     => (int) $row->hits,
 					);
 				}
@@ -945,7 +964,7 @@ final class Reseller_Intent_Admin {
 				arsort( $domain_counts );
 				foreach ( array_slice( $domain_counts, $offset, $fetch, true ) as $domain => $count ) {
 					$items[] = array(
-						'domain' => (string) $domain,
+						'domain' => self::display_domain( $domain ),
 						'count'  => (int) $count,
 					);
 				}
@@ -965,7 +984,7 @@ final class Reseller_Intent_Admin {
 						continue;
 					}
 					$items[] = array(
-						'domain' => (string) $row->domain_query,
+						'domain' => self::display_domain( $row->domain_query ),
 						'count'  => (int) $row->hits,
 						'last'   => sprintf(
 							/* translators: %s: human readable time difference */
@@ -1115,7 +1134,7 @@ final class Reseller_Intent_Admin {
 		$repeats     = array();
 		foreach ( $repeat_rows as $repeat_row ) {
 			$repeats[] = array(
-				'domain' => (string) $repeat_row->domain,
+				'domain' => self::display_domain( $repeat_row->domain ),
 				'hits'   => (int) $repeat_row->hits,
 			);
 		}
@@ -1207,7 +1226,7 @@ final class Reseller_Intent_Admin {
 		$recent      = array();
 		foreach ( $recent_rows as $recent_row ) {
 			$recent[] = array(
-				'domain'    => (string) $recent_row->domain_query,
+				'domain'    => self::display_domain( $recent_row->domain_query ),
 				'time'      => $this->format_datetime_local( (string) $recent_row->created_at ),
 				'available' => ( null === $recent_row->is_available || '' === (string) $recent_row->is_available ) ? null : (bool) (int) $recent_row->is_available,
 				'device'    => (string) $recent_row->device,
@@ -1512,7 +1531,7 @@ final class Reseller_Intent_Admin {
 			}
 
 			$items[] = array(
-				'domain' => $domain,
+				'domain' => self::display_domain( $domain ),
 				'count'  => (int) $row->hits,
 				'last'   => sprintf(
 					/* translators: %s: human readable time difference */
@@ -1567,7 +1586,7 @@ final class Reseller_Intent_Admin {
 		$domains = array();
 		foreach ( array_slice( $domain_counts, 0, 15, true ) as $domain => $count ) {
 			$domains[] = array(
-				'domain' => (string) $domain,
+				'domain' => self::display_domain( $domain ),
 				'count'  => (int) $count,
 			);
 		}
@@ -1618,7 +1637,7 @@ final class Reseller_Intent_Admin {
 		$top      = array();
 		foreach ( $top_rows as $top_row ) {
 			$top[] = array(
-				'domain' => (string) $top_row->domain,
+				'domain' => self::display_domain( $top_row->domain ),
 				'hits'   => (int) $top_row->hits,
 			);
 		}
@@ -1640,8 +1659,8 @@ final class Reseller_Intent_Admin {
 		$pairs     = array();
 		foreach ( $pair_rows as $pair_row ) {
 			$pairs[] = array(
-				'searched' => (string) $pair_row->searched,
-				'selected' => (string) $pair_row->selected,
+				'searched' => self::display_domain( $pair_row->searched ),
+				'selected' => self::display_domain( $pair_row->selected ),
 				'hits'     => (int) $pair_row->hits,
 			);
 		}

@@ -1,5 +1,5 @@
 === Reseller Intent - Domain Search Analytics for GoDaddy Reseller Store ===
-Contributors: ekamran, yusufmudagal
+Contributors: ekamran, yusufmudagal, arina01
 Tags: godaddy, godaddy reseller, reseller store, domain reseller, reseller analytics
 Requires at least: 6.2
 Tested up to: 7.0

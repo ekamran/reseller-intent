@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: Reseller Intent - Domain Search Analytics for GoDaddy Reseller Store
+ * Plugin Name: Reseller Intent for GoDaddy Reseller Store
  * Description: See which domains visitors search on your reseller storefront, which ones they pick, and which ones they take to cart.
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: Kamran Abdul Aziz
  * Author URI: https://shifteq.com
  * License: GPL-2.0-or-later

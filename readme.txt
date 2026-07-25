@@ -1,10 +1,10 @@
-=== Reseller Intent - Domain Search Analytics for GoDaddy Reseller Store ===
+=== Reseller Intent for GoDaddy Reseller Store ===
 Contributors: ekamran, yusufmudagal, arina01
 Tags: godaddy, godaddy reseller, reseller store, domain reseller, reseller analytics
 Requires at least: 6.2
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -177,6 +177,9 @@ The service is operated by GoDaddy: [Universal Terms of Service](https://www.god
 The built in default support numbers for the phone shortcode are GoDaddy's published support numbers, stored inside the plugin. Showing them involves no external request.
 
 == Changelog ==
+
+= 1.0.2 =
+* Shorter plugin name, so it fits on one line wherever WordPress shows it.
 
 = 1.0.1 =
 * Fixed: searches for international domain names lost their accents on the way in, so München.de was recorded as a name nobody typed. They are now stored correctly and shown the way they were written.

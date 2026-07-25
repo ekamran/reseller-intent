@@ -118,7 +118,7 @@ final class Reseller_Intent_Settings {
 	 */
 	public function handle_save_numbers() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Sorry, you are not allowed to do that.', 'reseller-intent' ) );
+			wp_die( esc_html__( 'Sorry, you are not allowed to do that.', 'reseller-intent' ), 403 );
 		}
 
 		check_admin_referer( 'rintent_save_numbers' );
@@ -154,7 +154,7 @@ final class Reseller_Intent_Settings {
 	 */
 	public function handle_reset_numbers() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Sorry, you are not allowed to do that.', 'reseller-intent' ) );
+			wp_die( esc_html__( 'Sorry, you are not allowed to do that.', 'reseller-intent' ), 403 );
 		}
 
 		check_admin_referer( 'rintent_reset_numbers' );
@@ -177,7 +177,7 @@ final class Reseller_Intent_Settings {
 
 	public function handle_save() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Sorry, you are not allowed to do that.', 'reseller-intent' ) );
+			wp_die( esc_html__( 'Sorry, you are not allowed to do that.', 'reseller-intent' ), 403 );
 		}
 
 		check_admin_referer( 'rintent_save_settings' );

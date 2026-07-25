@@ -142,12 +142,26 @@
 						return; // a newer request superseded this one
 					}
 					if (json && json.success && json.data) {
-						target.innerHTML = json.data.html || '<em>' + cfg.emptyText + '</em>';
+						if (json.data.html) {
+							/* Server-rendered output of this plugin's own shortcodes,
+							   from a nonce-checked, capability-checked endpoint. */
+							target.innerHTML = json.data.html;
+						} else {
+							showEmpty(target, cfg.emptyText);
+						}
 						var dark = type === 'tld' && document.getElementById('rintent-gen-theme').value === 'dark';
 						target.classList.toggle('rintent-preview--dark', dark);
 					}
 				}).catch(function() {});
 		}, 350);
+	}
+
+	/* Placeholder text goes in as text, never as markup. */
+	function showEmpty(target, text) {
+		var em = document.createElement('em');
+		em.textContent = text || '';
+		target.textContent = '';
+		target.appendChild(em);
 	}
 
 	function previewTld() {
@@ -164,7 +178,7 @@
 		var ids = priceIds(mode).join(',');
 		var target = document.getElementById('rintent-preview-price');
 		if (!ids) {
-			if (target) { target.innerHTML = '<em>' + (target.getAttribute('data-empty') || '') + '</em>'; }
+			if (target) { showEmpty(target, target.getAttribute('data-empty')); }
 			return;
 		}
 		fetchPreview('price', {

@@ -47,14 +47,40 @@
 			return;
 		}
 
+		/* Built with DOM calls, not an HTML string, so nothing interpolated
+		   here can ever be parsed as markup. */
+		function cell(node) {
+			var td = document.createElement('td');
+			td.appendChild(node);
+			return td;
+		}
+
+		function textInput(name, label, placeholder) {
+			var input = document.createElement('input');
+			input.type = 'text';
+			input.name = name;
+			input.setAttribute('aria-label', label);
+			if (placeholder) {
+				input.placeholder = placeholder;
+			}
+			return input;
+		}
+
 		addButton.addEventListener('click', function() {
 			var tbody = document.querySelector('#rintent-support-rows tbody');
 			var row = document.createElement('tr');
+			var remove = document.createElement('button');
 
-			row.innerHTML = '<td><input type="text" name="support_label[]" aria-label="' + (config.ariaSupportLabel || 'Support entry label') + '" /></td>'
-				+ '<td><input type="text" name="support_number[]" aria-label="' + (config.ariaSupportNumber || 'Support phone number') + '" placeholder="+1-480-000-0000" /></td>'
-				+ '<td><input type="text" name="support_countries[]" aria-label="' + (config.ariaSupportCountries || 'Country codes for this number') + '" placeholder="US,CA" /></td>'
-				+ '<td><button type="button" class="button-link-delete rintent-support-remove" aria-label="Remove row">&times;</button></td>';
+			remove.type = 'button';
+			remove.className = 'button-link-delete rintent-support-remove';
+			remove.setAttribute('aria-label', config.ariaRemoveRow || 'Remove row');
+			remove.textContent = '\u00d7';
+
+			row.appendChild(cell(textInput('support_label[]', config.ariaSupportLabel || 'Support entry label', '')));
+			row.appendChild(cell(textInput('support_number[]', config.ariaSupportNumber || 'Support phone number', '+1-480-000-0000')));
+			row.appendChild(cell(textInput('support_countries[]', config.ariaSupportCountries || 'Country codes for this number', 'US,CA')));
+			row.appendChild(cell(remove));
+
 			tbody.appendChild(row);
 			row.querySelector('input').focus();
 		});

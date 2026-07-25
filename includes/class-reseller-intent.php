@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class Reseller_Intent {
-	const VERSION                  = '1.0.0';
+	const VERSION                  = '1.0.1';
 	const REQUIRED_PLUGIN_BASENAME = 'reseller-store/reseller-store.php';
 	const TESTED_RSTORE            = '3.0.1';
 
@@ -129,7 +129,7 @@ final class Reseller_Intent {
 
 	public function handle_ack_rstore() {
 		if ( ! current_user_can( 'activate_plugins' ) ) {
-			wp_die( esc_html__( 'Sorry, you are not allowed to do that.', 'reseller-intent' ) );
+			wp_die( esc_html__( 'Sorry, you are not allowed to do that.', 'reseller-intent' ), 403 );
 		}
 
 		check_admin_referer( 'rintent_ack_rstore' );

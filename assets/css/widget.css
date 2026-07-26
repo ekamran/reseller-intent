@@ -36,6 +36,12 @@ body {
 	--rintent-price-weight: inherit;
 	--rintent-clear-color: var(--rintent-widget-muted);
 	--rintent-clear-size: 12px;
+
+	/*
+	 * Corner rounding for the search bar, result rows and buttons. Set this
+	 * to whatever your site already uses, 0 for square, 50px for pills.
+	 */
+	--rintent-radius: 8px;
 }
 
 /* ---------- Layout: one shared axis per result row (GD core floats them) ---------- */
@@ -76,7 +82,7 @@ body {
 	width: 100%;
 	min-width: 0;
 	border: 1px solid #8f8f8f33;
-	border-radius: 8px;
+	border-radius: var(--rintent-radius, 8px);
 	margin-bottom: 10px;
 }
 
@@ -150,7 +156,7 @@ body {
 	padding: 14px 28px !important;
 	margin: 0 !important;
 	border: 1px solid var(--rintent-widget-accent) !important;
-	border-radius: 8px !important;
+	border-radius: var(--rintent-radius, 8px) !important;
 	font-size: 16px !important;
 	font-weight: 500 !important;
 	line-height: 1 !important;
@@ -198,7 +204,7 @@ body {
 	box-sizing: border-box !important;
 	padding: 0 22px !important;
 	border: none !important;
-	border-radius: 0 8px 8px 0 !important;
+	border-radius: 0 var(--rintent-radius, 8px) var(--rintent-radius, 8px) 0 !important;
 	background: var(--rintent-widget-accent) !important;
 	color: var(--rintent-widget-accent-text) !important;
 	font-weight: 700;
@@ -207,7 +213,7 @@ body {
 }
 
 .rstore-domain-search .search-form input[type="search"] {
-	border-radius: 8px 0 0 8px !important;
+	border-radius: var(--rintent-radius, 8px) 0 0 var(--rintent-radius, 8px) !important;
 }
 
 /* Quiet focus: just the input border turns accent, no glow anywhere.
@@ -405,7 +411,7 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 	min-height: 88px;
 	padding: 0 20px;
 	border: 1px solid #8f8f8f33;
-	border-radius: 8px;
+	border-radius: var(--rintent-radius, 8px);
 	background: #f7f9fc;
 }
 
@@ -413,7 +419,7 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 .rstore-domain-search .rintent-skeleton-row .sk-price,
 .rstore-domain-search .rintent-skeleton-row .sk-btn {
 	display: block;
-	border-radius: 8px;
+	border-radius: var(--rintent-radius, 8px);
 	background: linear-gradient(90deg, #e7edf5 25%, #f4f7fb 37%, #e7edf5 63%);
 	background-size: 300% 100%;
 	animation: rintentSkeletonShimmer 1.2s ease-in-out infinite;
@@ -434,7 +440,7 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 	height: 46px;
 	width: 150px;
 	justify-self: end;
-	border-radius: 8px;
+	border-radius: var(--rintent-radius, 8px);
 }
 
 @keyframes rintentSkeletonShimmer {

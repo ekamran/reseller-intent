@@ -34,3 +34,11 @@
 .rintent-phone-number {
 	white-space: nowrap;
 }
+
+/*
+ * On a dark section the inherited color is the page's dark body text, so
+ * the number disappears into the background. Lift it to a readable light.
+ */
+:is(.rintent-dark, .rstore-dark) .rintent-phone {
+	color: var(--rintent-dark-text, #e2e8f0);
+}

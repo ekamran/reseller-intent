@@ -4,7 +4,7 @@ Tags: godaddy, godaddy reseller, reseller store, domain reseller, reseller analy
 Requires at least: 6.2
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -119,6 +119,13 @@ The service is operated by GoDaddy: [Universal Terms of Service](https://www.god
 The default support numbers for the phone shortcode are GoDaddy's published numbers, stored inside the plugin. Showing them involves no external request.
 
 == Changelog ==
+
+= 1.0.4 =
+* Fixed: the search button always used a white label, which was hard to read on a light or warm accent color. It now picks light or dark ink by whichever reads better.
+* Fixed: prices in the light TLD strip were hard to read with a warm accent color.
+* Fixed: the price and the support number were dark text on dark sections.
+* Fixed: several faint labels on the dashboard, the shortcode builders and the dashboard widget.
+* New theming variable `--rintent-accent-ink` for the accent used as text on light surfaces.
 
 = 1.0.3 =
 * Corner rounding is now a theming variable, `--rintent-radius`. Use 0 for square corners or 50px for pills.

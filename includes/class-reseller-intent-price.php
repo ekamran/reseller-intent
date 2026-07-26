@@ -95,6 +95,8 @@ final class Reseller_Intent_Price {
 			}
 		}
 
+		$this->enqueue_style();
+
 		$classes = trim( 'rintent-price ' . preg_replace( '/[^A-Za-z0-9 _-]/', '', (string) ( $atts['class'] ?? '' ) ) );
 
 		if ( null === $lowest ) {
@@ -141,5 +143,35 @@ final class Reseller_Intent_Price {
 		$clean = preg_replace( '/[^0-9.]/', '', (string) $label );
 
 		return is_numeric( $clean ) ? (float) $clean : null;
+	}
+
+	/**
+	 * Only the dark-section case needs styling, so this loads on render
+	 * rather than sitewide, and carries the accent tokens the dark rule
+	 * reads (a page can hold this shortcode and nothing else).
+	 */
+	private function enqueue_style() {
+		if ( wp_style_is( 'reseller-intent-price', 'enqueued' ) ) {
+			return;
+		}
+
+		$base_url  = plugin_dir_url( RINTENT_FILE );
+		$base_path = plugin_dir_path( RINTENT_FILE );
+
+		wp_enqueue_style(
+			'reseller-intent-price',
+			$base_url . 'assets/css/price.css',
+			array(),
+			filemtime( $base_path . 'assets/css/price.css' )
+		);
+
+		wp_add_inline_style(
+			'reseller-intent-price',
+			sprintf(
+				'body{--rintent-accent:%s;--rintent-accent-dark:%s;}',
+				Reseller_Intent_Settings::accent_color(),
+				Reseller_Intent_Settings::accent_dark_color()
+			)
+		);
 	}
 }

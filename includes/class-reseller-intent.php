@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class Reseller_Intent {
-	const VERSION                  = '1.0.3';
+	const VERSION                  = '1.0.4';
 	const REQUIRED_PLUGIN_BASENAME = 'reseller-store/reseller-store.php';
 	const TESTED_RSTORE            = '3.0.1';
 

@@ -197,8 +197,9 @@ final class Reseller_Intent_TLD_Strip {
 		wp_add_inline_style(
 			'reseller-intent-tld-strip',
 			sprintf(
-				'body{--rintent-accent:%s;--rintent-accent-dark:%s;}',
+				'body{--rintent-accent:%s;--rintent-accent-ink:%s;--rintent-accent-dark:%s;}',
 				Reseller_Intent_Settings::accent_color(),
+				Reseller_Intent_Settings::accent_ink_color(),
 				Reseller_Intent_Settings::accent_dark_color()
 			)
 		);

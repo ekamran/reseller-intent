@@ -2,7 +2,10 @@
  * Reseller Intent, [rintent_tld_strip] price pills.
  *
  * Theming knobs (set from your own CSS, defaults inherit sensibly):
- *   --rintent-accent            price color (light) / hover border
+ *   --rintent-accent            hover border color
+ *   --rintent-accent-ink        price color on the light theme; defaults to
+ *                               the accent darkened only as far as it needs
+ *                               to stay readable on a pale pill
  *   --rintent-accent-dark       price color on the dark theme; defaults to
  *                               an auto-lightened mix of the accent so any
  *                               accent stays readable on dark surfaces
@@ -58,7 +61,7 @@ body .rintent-tld-strip--light .rintent-tld b {
 }
 
 body .rintent-tld-strip--light .rintent-tld i {
-	color: var(--rintent-accent, #3858e9);
+	color: var(--rintent-accent-ink, var(--rintent-accent, #3858e9));
 }
 
 body .rintent-tld-strip--light .rintent-tld:hover {

@@ -57,23 +57,63 @@ final class Reseller_Intent_Settings {
 	}
 
 	private static function text_color_for( $color ) {
+		$rgb = self::hex_to_rgb( $color );
+
+		if ( null === $rgb ) {
+			return '#ffffff';
+		}
+
+		$on_white = self::contrast_ratio( $rgb, array( 255, 255, 255 ) );
+		$on_ink   = self::contrast_ratio( $rgb, array( 29, 35, 39 ) );
+
+		return $on_white >= $on_ink ? '#ffffff' : '#1d2327';
+	}
+
+	/**
+	 * "#abc" or "#aabbcc" to array( r, g, b ), null for anything else.
+	 */
+	private static function hex_to_rgb( $color ) {
 		$hex = ltrim( (string) $color, '#' );
 
 		if ( 3 === strlen( $hex ) ) {
 			$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
 		}
 
-		if ( 6 !== strlen( $hex ) ) {
-			return '#ffffff';
+		if ( ! preg_match( '/^[0-9a-fA-F]{6}$/', $hex ) ) {
+			return null;
 		}
 
-		$r = hexdec( substr( $hex, 0, 2 ) ) / 255;
-		$g = hexdec( substr( $hex, 2, 2 ) ) / 255;
-		$b = hexdec( substr( $hex, 4, 2 ) ) / 255;
+		return array(
+			hexdec( substr( $hex, 0, 2 ) ),
+			hexdec( substr( $hex, 2, 2 ) ),
+			hexdec( substr( $hex, 4, 2 ) ),
+		);
+	}
 
-		$luminance = 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
+	/**
+	 * WCAG 2.1 contrast ratio between two colors, 1 to 21.
+	 */
+	private static function contrast_ratio( $a, $b ) {
+		$la = self::relative_luminance( $a );
+		$lb = self::relative_luminance( $b );
 
-		return $luminance > 0.6 ? '#1d2327' : '#ffffff';
+		return ( max( $la, $lb ) + 0.05 ) / ( min( $la, $lb ) + 0.05 );
+	}
+
+	/**
+	 * WCAG relative luminance. The gamma curve is the part that matters: a
+	 * plain channel average calls a saturated green bright and pairs it with
+	 * white text, which lands around ratio 2.2.
+	 */
+	private static function relative_luminance( $rgb ) {
+		$parts = array();
+
+		foreach ( $rgb as $value ) {
+			$value   = $value / 255;
+			$parts[] = $value <= 0.03928 ? $value / 12.92 : pow( ( $value + 0.055 ) / 1.055, 2.4 );
+		}
+
+		return 0.2126 * $parts[0] + 0.7152 * $parts[1] + 0.0722 * $parts[2];
 	}
 
 	/**
@@ -88,22 +128,50 @@ final class Reseller_Intent_Settings {
 			return $custom;
 		}
 
-		$hex = ltrim( self::accent_color(), '#' );
+		$rgb = self::hex_to_rgb( self::accent_color() );
 
-		if ( 3 === strlen( $hex ) ) {
-			$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
-		}
-
-		if ( 6 !== strlen( $hex ) ) {
+		if ( null === $rgb ) {
 			return '#7b96ff';
 		}
 
 		$mix = array();
-		foreach ( array( 0, 2, 4 ) as $offset ) {
-			$mix[] = (int) round( hexdec( substr( $hex, $offset, 2 ) ) * 0.45 + 255 * 0.55 );
+		foreach ( $rgb as $value ) {
+			$mix[] = (int) round( $value * 0.45 + 255 * 0.55 );
 		}
 
 		return sprintf( '#%02x%02x%02x', $mix[0], $mix[1], $mix[2] );
+	}
+
+	/**
+	 * Accent darkened just enough to read as text on a light surface. The
+	 * accent is chosen to look right as a button fill, and a warm one like
+	 * #FF6A3D sits at ratio 2.7 against a near-white pill. Step it toward
+	 * black and stop at the first shade that clears AA, so the hue survives.
+	 * The mirror of accent_dark_color(), which lightens for dark surfaces.
+	 */
+	public static function accent_ink_color() {
+		$rgb = self::hex_to_rgb( self::accent_color() );
+
+		if ( null === $rgb ) {
+			return '#3858e9';
+		}
+
+		// The pill background rather than pure white, so the target is real.
+		$surface = array( 245, 247, 251 );
+
+		for ( $mix = 0; $mix <= 100; $mix += 5 ) {
+			$shade = array();
+
+			foreach ( $rgb as $value ) {
+				$shade[] = (int) round( $value * ( 1 - $mix / 100 ) );
+			}
+
+			if ( self::contrast_ratio( $shade, $surface ) >= 4.5 ) {
+				return sprintf( '#%02x%02x%02x', $shade[0], $shade[1], $shade[2] );
+			}
+		}
+
+		return '#1d2327';
 	}
 
 	public function register() {

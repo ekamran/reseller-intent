@@ -1,0 +1,22 @@
+/**
+ * Reseller Intent, [rintent_price] line.
+ *
+ * The light case inherits everything from your theme on purpose, so this
+ * file only carries the dark-section case: inside .rintent-dark the
+ * inherited color is the page's dark body text, which would put dark text
+ * on a dark background.
+ *
+ * Theming: .rintent-price / -before / -amount / -sep / -after.
+ */
+:is(.rintent-dark, .rstore-dark) .rintent-price {
+	color: var(--rintent-dark-text, #e2e8f0);
+}
+
+/*
+ * The saved accent is picked for light surfaces; used as-is it can vanish
+ * on a dark section. Mix it toward white so the hue survives but the value
+ * stays readable. Override with --rintent-accent-dark for full control.
+ */
+:is(.rintent-dark, .rstore-dark) .rintent-price .rintent-price-amount {
+	color: var(--rintent-accent-dark, color-mix(in srgb, var(--rintent-accent, #7b96ff) 45%, #fff));
+}

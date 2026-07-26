@@ -526,6 +526,7 @@ final class Reseller_Intent_Admin {
 										<tr><td><?php esc_html_e( 'Search button / Continue to cart', 'reseller-intent' ); ?></td><td><code>.search-form input[type=submit]</code> &middot; <code>.rstore-domain-continue-button</code></td></tr>
 										<tr><td><?php esc_html_e( 'Select / Selected links', 'reseller-intent' ); ?></td><td><code>.rstore-domain-buy-button.select</code> &middot; <code>.rstore-domain-buy-button.selected</code></td></tr>
 										<tr><td><?php esc_html_e( 'Accent (buttons, focus ring)', 'reseller-intent' ); ?></td><td><code>--rintent-accent</code> <?php esc_html_e( '(set by the color picker above)', 'reseller-intent' ); ?></td></tr>
+										<tr><td><?php esc_html_e( 'Accent as text on light surfaces', 'reseller-intent' ); ?></td><td><code>--rintent-accent-ink</code> <?php esc_html_e( '(the accent darkened only as far as it needs to stay readable, used for prices in the light TLD strip)', 'reseller-intent' ); ?></td></tr>
 										<tr><td><?php esc_html_e( 'Accent on dark surfaces', 'reseller-intent' ); ?></td><td><code>--rintent-accent-dark</code> <?php esc_html_e( '(set by the Dark accent picker above; this variable overrides it)', 'reseller-intent' ); ?></td></tr>
 										<tr><td><?php esc_html_e( 'Text on accent surfaces', 'reseller-intent' ); ?></td><td><code>--rintent-accent-text</code> &middot; <code>--rintent-accent-dark-text</code> <?php esc_html_e( '(auto-computed for contrast; set to force your own)', 'reseller-intent' ); ?></td></tr>
 										<tr><td><?php esc_html_e( 'Buttons on dark sections', 'reseller-intent' ); ?></td><td><code>--rintent-dark-button</code> &middot; <code>--rintent-dark-button-text</code> <?php esc_html_e( '(default: the accent; the Dark accent picker never recolors buttons)', 'reseller-intent' ); ?></td></tr>
@@ -641,8 +642,9 @@ final class Reseller_Intent_Admin {
 			wp_add_inline_style(
 				'reseller-intent-tld-strip',
 				sprintf(
-					'body{--rintent-accent:%s;--rintent-accent-dark:%s;}',
+					'body{--rintent-accent:%s;--rintent-accent-ink:%s;--rintent-accent-dark:%s;}',
 					Reseller_Intent_Settings::accent_color(),
+					Reseller_Intent_Settings::accent_ink_color(),
 					Reseller_Intent_Settings::accent_dark_color()
 				)
 			);
@@ -2006,9 +2008,9 @@ final class Reseller_Intent_Admin {
 		$rate           = $searches_week > 0 ? round( ( $carts_week / $searches_week ) * 100, 1 ) : 0;
 
 		echo '<div class="rintent-glance" style="display:flex;gap:18px;flex-wrap:wrap;">';
-		printf( '<div><strong style="font-size:20px;">%s</strong><br /><span style="color:#787c82;">%s</span></div>', esc_html( number_format_i18n( $searches_today ) ), esc_html__( 'searches today', 'reseller-intent' ) );
-		printf( '<div><strong style="font-size:20px;">%s</strong><br /><span style="color:#787c82;">%s</span></div>', esc_html( number_format_i18n( $searches_week ) ), esc_html__( 'searches, 7 days', 'reseller-intent' ) );
-		printf( '<div><strong style="font-size:20px;">%s%%</strong><br /><span style="color:#787c82;">%s</span></div>', esc_html( number_format_i18n( $rate, 1 ) ), esc_html__( 'search → cart, 7 days', 'reseller-intent' ) );
+		printf( '<div><strong style="font-size:20px;">%s</strong><br /><span style="color:#646970;">%s</span></div>', esc_html( number_format_i18n( $searches_today ) ), esc_html__( 'searches today', 'reseller-intent' ) );
+		printf( '<div><strong style="font-size:20px;">%s</strong><br /><span style="color:#646970;">%s</span></div>', esc_html( number_format_i18n( $searches_week ) ), esc_html__( 'searches, 7 days', 'reseller-intent' ) );
+		printf( '<div><strong style="font-size:20px;">%s%%</strong><br /><span style="color:#646970;">%s</span></div>', esc_html( number_format_i18n( $rate, 1 ) ), esc_html__( 'search → cart, 7 days', 'reseller-intent' ) );
 		echo '</div>';
 		printf(
 			'<p style="margin-bottom:0;"><a href="%s">%s</a></p>',

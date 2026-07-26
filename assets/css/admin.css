@@ -46,7 +46,7 @@
 
 .ri-loading {
 	padding: 48px 0;
-	color: #64748b;
+	color: #59677c;
 	font-size: 14px;
 	font-weight: 600;
 }
@@ -75,7 +75,7 @@
 
 .ri-note {
 	margin: 4px 0 0;
-	color: #64748b;
+	color: #59677c;
 	font-size: 13px;
 }
 
@@ -396,7 +396,7 @@
 
 .ri-kpi-label {
 	margin: 0;
-	color: #64748b;
+	color: #59677c;
 	font-size: 11px;
 	font-weight: 700;
 	text-transform: uppercase;
@@ -441,7 +441,7 @@
 }
 .ri-delta.is-up { background: #ecfdf5; color: #047857; }
 .ri-delta.is-down { background: #fef2f2; color: #b91c1c; }
-.ri-delta.is-flat { background: #f1f5f9; color: #64748b; }
+.ri-delta.is-flat { background: #f1f5f9; color: #59677c; }
 
 /* Layout grids */
 .ri-grid {
@@ -505,7 +505,7 @@
 
 .ri-subhead {
 	margin: 14px 0 8px;
-	color: #64748b;
+	color: #59677c;
 	font-size: 11px;
 	font-weight: 700;
 	text-transform: uppercase;
@@ -538,7 +538,7 @@
 
 .ri-table th {
 	background: #f8fafc;
-	color: #64748b;
+	color: #59677c;
 	font-weight: 700;
 	font-size: 11px;
 	text-transform: uppercase;
@@ -560,7 +560,7 @@
 }
 
 .ri-empty {
-	color: #64748b;
+	color: #59677c;
 	font-size: 12px;
 }
 
@@ -621,7 +621,7 @@
 .ri-chip span {
 	display: block;
 	font-size: 11px;
-	color: #64748b;
+	color: #59677c;
 	margin-top: 2px;
 }
 
@@ -692,7 +692,7 @@
 
 .ri-funnel-rate {
 	margin-left: 8px;
-	color: #64748b;
+	color: #59677c;
 	font-size: 11px;
 	font-weight: 600;
 }
@@ -762,7 +762,7 @@
 
 .ri-pager-state {
 	font-size: 12px;
-	color: #64748b;
+	color: #59677c;
 	font-weight: 700;
 }
 
@@ -824,7 +824,7 @@
 	font-weight: 600;
 	text-transform: uppercase;
 	letter-spacing: 0.4px;
-	color: #64748b;
+	color: #59677c;
 }
 
 .ri-clear-select {
@@ -856,7 +856,7 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	color: #64748b;
+	color: #59677c;
 	font-weight: 600;
 }
 

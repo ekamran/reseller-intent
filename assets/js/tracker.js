@@ -250,6 +250,20 @@
 		}, true);
 	}
 
+	/*
+	 * Bind once per page, not once per script evaluation. If this file is
+	 * loaded twice, say a JS-combine plugin inlines a copy alongside the
+	 * enqueued one, every submit would be recorded twice, and the server
+	 * dedupe cannot catch it because both requests are in flight together.
+	 * A window flag survives a second evaluation where a closure variable
+	 * would not; bindSelectTracking() above already works this way.
+	 */
+	if (window.__rintentTrackingBound) {
+		return;
+	}
+
+	window.__rintentTrackingBound = true;
+
 	$(document).on('submit', '.continue-form', function() {
 		var itemsMeta = parseItemsFromForm($(this));
 

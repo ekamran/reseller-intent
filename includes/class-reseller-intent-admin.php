@@ -981,11 +981,27 @@ final class Reseller_Intent_Admin {
 						$carted[ strtolower( $domain ) ] = true;
 					}
 				}
-				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT domain_query, COALESCE(SUM(event_count),0) AS hits, MAX(created_at) AS last_seen FROM {$table_name} WHERE event_type = 'domain_search' AND is_available = 1 AND domain_query <> '' AND created_at >= %s AND created_at < %s GROUP BY domain_query ORDER BY hits DESC, last_seen DESC LIMIT %d OFFSET %d", $range_start, $range_end, $fetch + 60, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+
+				/*
+				 * Exclude carted names in SQL, not afterwards in PHP. The
+				 * client's offset counts rows it was actually shown, so the
+				 * LIMIT/OFFSET has to page the filtered set. Filtering after
+				 * the fact meant every page re-served names the previous page
+				 * had already dropped.
+				 */
+				$not_in = '';
+				$args   = array( $range_start, $range_end );
+
+				if ( ! empty( $carted ) ) {
+					$not_in = ' AND LOWER(domain_query) NOT IN (' . implode( ',', array_fill( 0, count( $carted ), '%s' ) ) . ')';
+					$args   = array_merge( $args, array_keys( $carted ) );
+				}
+
+				$args[] = $fetch;
+				$args[] = $offset;
+
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT domain_query, COALESCE(SUM(event_count),0) AS hits, MAX(created_at) AS last_seen FROM {$table_name} WHERE event_type = 'domain_search' AND is_available = 1 AND domain_query <> '' AND created_at >= %s AND created_at < %s{$not_in} GROUP BY domain_query ORDER BY hits DESC, last_seen DESC LIMIT %d OFFSET %d", $args ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- the NOT IN placeholders are built dynamically and every value is passed through prepare().
 				foreach ( $rows as $row ) {
-					if ( isset( $carted[ strtolower( (string) $row->domain_query ) ] ) ) {
-						continue;
-					}
 					$items[] = array(
 						'domain' => self::display_domain( $row->domain_query ),
 						'count'  => (int) $row->hits,
@@ -1147,7 +1163,9 @@ final class Reseller_Intent_Admin {
 		// Searches and cart clicks per source page.
 		$pages = $this->get_page_breakdown( $table_name, $range_start, $range_end );
 
-		// Carted domains from items_json (bounded scan).
+		// Carted domains from items_json. The scan is bounded at 2000 rows and
+		// that bound must match ajax_panel_rows 'carted', or the first page and
+		// the Show more pages are ranked from different samples.
 		$carted = $this->get_carted_breakdown( $table_name, $range_start, $range_end );
 
 		// Demand signals: searched, available, never taken to cart.
@@ -1405,14 +1423,24 @@ final class Reseller_Intent_Admin {
 	private function get_page_breakdown( $table_name, $range_start, $range_end ) {
 		global $wpdb;
 
+		/*
+		 * Group on the URL without its query string, not the whole URL. One
+		 * page can carry hundreds of distinct URLs once campaign parameters
+		 * and ?domainToCheck= links are in play, and collapsing those in PHP
+		 * afterwards was too late: the LIMIT had already thrown most of them
+		 * away, so a busy landing page could rank below a quiet one or drop
+		 * off entirely. The limit now bounds distinct paths, of which a real
+		 * site has a handful. normalize_page_path() still merges what is
+		 * left, the scheme, host, casing and trailing slash.
+		 */
 		$page_rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT page_url,
+				"SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(page_url, '#', 1), '?', 1) AS page_url,
 					COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN event_count ELSE 0 END),0) AS searches,
 					COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END),0) AS carts
 				FROM {$table_name}
 				WHERE event_type IN ('domain_search','continue_to_cart') AND page_url IS NOT NULL AND page_url <> '' AND created_at >= %s AND created_at < %s
-				GROUP BY page_url
+				GROUP BY 1
 				ORDER BY searches DESC
 				LIMIT 200",
 				$range_start,
@@ -1570,7 +1598,7 @@ final class Reseller_Intent_Admin {
 				"SELECT items_json FROM {$table_name}
 				WHERE event_type = 'continue_to_cart' AND items_json IS NOT NULL AND items_json <> '' AND created_at >= %s AND created_at < %s
 				ORDER BY id DESC
-				LIMIT 500",
+				LIMIT 2000",
 				$range_start,
 				$range_end
 			)

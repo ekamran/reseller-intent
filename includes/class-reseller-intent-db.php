@@ -115,7 +115,14 @@ final class Reseller_Intent_DB {
 
 		if ( $seconds < 1 ) {
 			$count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table_name}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-			$wpdb->query( "TRUNCATE TABLE {$table_name}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+
+			// TRUNCATE needs the DROP privilege. Hosts that withhold it would
+			// otherwise leave every row in place while the screen reported a
+			// successful clear, so fall back to a plain DELETE.
+			if ( false === $wpdb->query( "TRUNCATE TABLE {$table_name}" ) ) { // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				return (int) $wpdb->query( "DELETE FROM {$table_name}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			}
+
 			return $count;
 		}
 

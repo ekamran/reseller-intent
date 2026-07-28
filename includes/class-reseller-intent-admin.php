@@ -19,10 +19,6 @@ final class Reseller_Intent_Admin {
 	const RANGE_MAX = '9999-12-31 23:59:59';
 
 	/**
-	 * Who can see the dashboard/exports. Filterable so agencies can open it
-	 * to editors etc.: add_filter( 'rintent_dashboard_capability', fn() => 'edit_pages' );
-	 */
-	/**
 	 * Punycode is what gets stored, because that is the real domain, but
 	 * "xn--mnchen-hotels-wob.de" tells a reseller nothing. Show the unicode
 	 * form on screen where the host can decode it, and the stored form
@@ -40,6 +36,10 @@ final class Reseller_Intent_Admin {
 		return ( is_string( $decoded ) && '' !== $decoded ) ? $decoded : $domain;
 	}
 
+	/**
+	 * Who can see the dashboard/exports. Filterable so agencies can open it
+	 * to editors etc.: add_filter( 'rintent_dashboard_capability', fn() => 'edit_pages' );
+	 */
 	public static function capability() {
 		return (string) apply_filters( 'rintent_dashboard_capability', 'manage_options' );
 	}

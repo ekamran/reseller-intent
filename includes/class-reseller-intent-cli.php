@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * WP-CLI: wp rintent <command>
  *
  * stats [--days=<n>]        Event counts and conversion for the window.
- * export [--days=<n>] [--format=<csv|json>] [--output=<file>]
+ * export [--days=<n>] [--format=<csv|json>]
  * clear --range=<range>     Delete events (hour|day|week|month|6months|year|all).
  * refresh-tld               Fetch fresh TLD strip prices right now.
  */

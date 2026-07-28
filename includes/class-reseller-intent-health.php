@@ -72,7 +72,21 @@ final class Reseller_Intent_Health {
 		global $wpdb;
 
 		$table_name = Reseller_Intent_DB::table_name();
-		$last       = $wpdb->get_var( "SELECT MAX(created_at) FROM {$table_name}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$exists     = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) ) === $table_name;
+
+		// Without this the query below errors and the empty result reads as
+		// "no events yet", sending the owner to hunt for a JavaScript problem
+		// when the real fault is that there is nowhere to write.
+		if ( ! $exists ) {
+			return $this->result(
+				'rintent_tracking',
+				'critical',
+				__( 'Tracking has nowhere to store events', 'reseller-intent' ),
+				esc_html__( 'The events table is missing, so nothing can be recorded. Deactivate and reactivate Reseller Intent to recreate it.', 'reseller-intent' )
+			);
+		}
+
+		$last = $wpdb->get_var( "SELECT MAX(created_at) FROM {$table_name}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		if ( ! $last ) {
 			return $this->result(

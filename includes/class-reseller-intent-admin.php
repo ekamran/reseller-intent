@@ -856,6 +856,18 @@ final class Reseller_Intent_Admin {
 	 * fragment is ever built from a variable. Open-ended sides use the
 	 * epoch and a far-future date.
 	 */
+	/**
+	 * Today's local midday as a real UTC timestamp. Day buckets anchor here
+	 * rather than on time(), because 86400 seconds is not one local day across
+	 * a DST change: plain second arithmetic slides a bucket into the next
+	 * calendar day while DATE(created_at) stays on the stored wall clock.
+	 * Midday absorbs any real shift. NOT current_time(), wp_date() already
+	 * adds the site offset.
+	 */
+	private static function day_anchor_ts() {
+		return ( new DateTimeImmutable( wp_date( 'Y-m-d' ) . ' 12:00:00', wp_timezone() ) )->getTimestamp();
+	}
+
 	private function range_bounds( $range_key, $from = '', $to = '' ) {
 		if ( 'custom' === $range_key ) {
 			return array( $from . ' 00:00:00', gmdate( 'Y-m-d', strtotime( $to . ' +1 day' ) ) . ' 00:00:00' );
@@ -867,7 +879,7 @@ final class Reseller_Intent_Admin {
 
 		$len = (int) $range_key;
 
-		return array( wp_date( 'Y-m-d 00:00:00', time() - ( ( $len - 1 ) * DAY_IN_SECONDS ) ), self::RANGE_MAX );
+		return array( wp_date( 'Y-m-d 00:00:00', self::day_anchor_ts() - ( ( $len - 1 ) * DAY_IN_SECONDS ) ), self::RANGE_MAX );
 	}
 
 	/**
@@ -1038,7 +1050,7 @@ final class Reseller_Intent_Admin {
 
 		$bounded = ( 'all' !== $range_key );
 		$custom  = ( 'custom' === $range_key );
-		$now_ts  = time(); // NOT current_time(): wp_date() adds the site offset itself; both = double shift after 18:30 IST.
+		$now_ts  = self::day_anchor_ts(); // NOT current_time(): wp_date() adds the site offset itself; both = double shift after 18:30 IST.
 		$end     = ''; // Exclusive upper bound, custom range only.
 
 		if ( $custom ) {
@@ -1059,9 +1071,18 @@ final class Reseller_Intent_Admin {
 			$range_end   = self::RANGE_MAX;
 		}
 
-		// KPIs: one aggregate query per window.
+		/*
+		 * KPIs: one aggregate query per window, compared like for like. Today
+		 * is only partly over, so the previous window has to stop at the same
+		 * clock time it did $len days ago, otherwise every badge reads as a
+		 * decline all morning and recovers by midnight.
+		 */
+		$prev_end = ( $bounded && ( '' === $end || strtotime( $end ) > $now_ts ) )
+			? wp_date( 'Y-m-d H:i:s', $now_ts - ( $len * DAY_IN_SECONDS ) )
+			: $start;
+
 		$kpi_now  = $this->get_kpi_counts( $table_name, $start, $end );
-		$kpi_prev = $bounded ? $this->get_kpi_counts( $table_name, $prev_start, $start ) : null;
+		$kpi_prev = $bounded ? $this->get_kpi_counts( $table_name, $prev_start, $prev_end ) : null;
 
 		// TLD distribution.
 		$tld_rows  = $wpdb->get_results(
@@ -1310,7 +1331,12 @@ final class Reseller_Intent_Admin {
 				'stale' => $last_event_ts ? ( $last_event_age > 3 * DAY_IN_SECONDS ) : false,
 			),
 			'rangeLabel'    => $custom
-				? sprintf( '%s to %s', wp_date( 'M j, Y', strtotime( $from . ' 12:00:00' ) ), wp_date( 'M j, Y', strtotime( $to . ' 12:00:00' ) ) )
+				? sprintf(
+					/* translators: 1: range start date, 2: range end date */
+					__( '%1$s to %2$s', 'reseller-intent' ),
+					wp_date( 'M j, Y', strtotime( $from . ' 12:00:00' ) ),
+					wp_date( 'M j, Y', strtotime( $to . ' 12:00:00' ) )
+				)
 				: ( $bounded
 					/* translators: %d: number of days */
 					? sprintf( __( 'Last %d days', 'reseller-intent' ), $len )
@@ -2028,9 +2054,11 @@ final class Reseller_Intent_Admin {
 	public function render_glance_widget() {
 		global $wpdb;
 
+		Reseller_Intent_DB::ensure_table();
+
 		$table_name  = Reseller_Intent_DB::table_name();
 		$today_start = wp_date( 'Y-m-d 00:00:00' );
-		$week_start  = wp_date( 'Y-m-d 00:00:00', time() - ( 6 * DAY_IN_SECONDS ) );
+		$week_start  = wp_date( 'Y-m-d 00:00:00', self::day_anchor_ts() - ( 6 * DAY_IN_SECONDS ) );
 
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$row = $wpdb->get_row(

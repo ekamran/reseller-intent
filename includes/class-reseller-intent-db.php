@@ -47,7 +47,16 @@ final class Reseller_Intent_DB {
 		) {$charset_collate};";
 
 		dbDelta( $sql );
-		update_option( self::DB_VERSION_OPTION, self::DB_VERSION );
+
+		// dbDelta() reports nothing useful when the CREATE is refused (a DB
+		// user without CREATE, a full disk, a quota). Only record the version
+		// once the table is really there, so the next request retries instead
+		// of trusting a schema that was never written.
+		$exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) ) === $table_name;
+
+		if ( $exists ) {
+			update_option( self::DB_VERSION_OPTION, self::DB_VERSION );
+		}
 	}
 
 	public static function maybe_create_table() {

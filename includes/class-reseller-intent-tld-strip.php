@@ -35,7 +35,6 @@ final class Reseller_Intent_TLD_Strip {
 
 		add_filter( 'cron_schedules', array( $this, 'add_cron_interval' ) );
 		add_action( self::CRON_HOOK, array( $this, 'prefetch' ) );
-		add_action( 'init', array( $this, 'maybe_schedule' ) );
 
 		// GD Reseller Store product import/sync touches reseller_product
 		// posts; refresh our price cache shortly after (debounced, one
@@ -211,6 +210,11 @@ final class Reseller_Intent_TLD_Strip {
 	 */
 	private function get_prices( array $tlds ) {
 		$this->remember_set( $tlds );
+
+		// Scheduled from the render path, not from init. Only the shortcode
+		// needs the prefetch, and init runs on every request sitewide, so the
+		// old placement cost one option lookup on pages that never use it.
+		$this->maybe_schedule();
 
 		$cached = get_transient( $this->cache_key( $tlds ) );
 

@@ -181,13 +181,6 @@
 		var page = pageState[0];
 		var setPage = pageState[1];
 
-		// New base rows mean the range changed: drop everything fetched.
-		useEffect(function() {
-			setExtra({ rows: [], hasMore: null, loading: false });
-			setPage(1);
-			setExpanded(false);
-		}, [props.rows]);
-
 		// Re-span this table's masonry cell after any size-changing state,
 		// deterministically (ResizeObserver sleeps in background tabs).
 		useEffect(function() {
@@ -1097,6 +1090,13 @@
 						 * end, so no range ever leaves holes in the middle.
 						 */
 						var now = data.kpis.now;
+						/*
+						 * Remount the panels when the RANGE changes, not when the
+						 * rows array is a new object. Every parent render built a
+						 * fresh array, so the old reset effect fired on any render
+						 * at all and threw away pages the visitor had loaded.
+						 */
+						var rangeKey = range + ('custom' === range ? '|' + customApplied.from + '|' + customApplied.to : '');
 						var loadRows = function(panel, offset, mapRow) {
 							return fetchPanelRows(panel, range, customApplied, offset, mapRow);
 						};
@@ -1123,7 +1123,7 @@
 						var filled = defs.filter(function(d) { return !d.isEmpty; });
 						var empties = defs.filter(function(d) { return d.isEmpty; });
 
-						return el('div', { className: 'ri-liquid' }, filled.concat(empties).map(function(d) {
+						return el('div', { className: 'ri-liquid', key: rangeKey }, filled.concat(empties).map(function(d) {
 							var span = d.isEmpty ? 4 : d.span;
 							return el('div', { key: d.key, className: 'ri-cell ri-span-' + span + (d.short ? ' ri-cell--short' : '') + (d.isEmpty ? ' ri-cell--empty' : '') }, d.node);
 						}));

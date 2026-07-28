@@ -155,11 +155,13 @@ final class Reseller_Intent_Tracker {
 		 */
 		$event_data = (array) apply_filters( 'rintent_event_data', $event_data );
 
-		$inserted = $wpdb->insert(
-			Reseller_Intent_DB::table_name(),
-			$event_data,
-			array( '%s', '%s', '%s', '%d', '%d', '%s', '%s', '%s', '%s', '%s' )
-		);
+		/*
+		 * No format array. wpdb applies formats positionally, so a
+		 * rintent_event_data filter that adds or reorders a key would shift
+		 * every column after it. Letting wpdb default to %s is drift proof
+		 * and MySQL casts the numeric columns itself.
+		 */
+		$inserted = $wpdb->insert( Reseller_Intent_DB::table_name(), $event_data );
 
 		if ( false === $inserted ) {
 			wp_send_json_error( array( 'message' => 'Failed to save event' ), 500 );

@@ -820,7 +820,7 @@ final class Reseller_Intent_Admin {
 			case 'price':
 				$ids    = isset( $_POST['ids'] ) ? implode( ',', wp_parse_id_list( wp_unslash( $_POST['ids'] ) ) ) : '';
 				$mode   = isset( $_POST['mode'] ) ? sanitize_key( wp_unslash( $_POST['mode'] ) ) : 'min';
-		$mode   = in_array( $mode, array( 'min', 'max', 'range' ), true ) ? $mode : 'min';
+				$mode   = in_array( $mode, array( 'min', 'max', 'range' ), true ) ? $mode : 'min';
 				$before = isset( $_POST['before'] ) ? sanitize_text_field( wp_unslash( $_POST['before'] ) ) : '';
 				$after  = isset( $_POST['after'] ) ? sanitize_text_field( wp_unslash( $_POST['after'] ) ) : '';
 				$sep    = isset( $_POST['separator'] ) ? sanitize_text_field( wp_unslash( $_POST['separator'] ) ) : '';
@@ -1027,18 +1027,18 @@ final class Reseller_Intent_Admin {
 
 		if ( $custom ) {
 			// Dates are site-local calendar days; created_at is stored site-local.
-			$len        = (int) ( ( strtotime( $to ) - strtotime( $from ) ) / DAY_IN_SECONDS ) + 1;
-			$start      = $from . ' 00:00:00';
-			$end        = gmdate( 'Y-m-d', strtotime( $to . ' +1 day' ) ) . ' 00:00:00';
-			$prev_start = gmdate( 'Y-m-d', strtotime( $from . ' -' . $len . ' days' ) ) . ' 00:00:00';
-			$anchor_ts  = ( new DateTimeImmutable( $to . ' 12:00:00', wp_timezone() ) )->getTimestamp();
+			$len         = (int) ( ( strtotime( $to ) - strtotime( $from ) ) / DAY_IN_SECONDS ) + 1;
+			$start       = $from . ' 00:00:00';
+			$end         = gmdate( 'Y-m-d', strtotime( $to . ' +1 day' ) ) . ' 00:00:00';
+			$prev_start  = gmdate( 'Y-m-d', strtotime( $from . ' -' . $len . ' days' ) ) . ' 00:00:00';
+			$anchor_ts   = ( new DateTimeImmutable( $to . ' 12:00:00', wp_timezone() ) )->getTimestamp();
 			$range_start = $start;
 			$range_end   = $end;
 		} else {
-			$len        = $bounded ? (int) $range_key : 0;
-			$start      = $bounded ? wp_date( 'Y-m-d 00:00:00', $now_ts - ( ( $len - 1 ) * DAY_IN_SECONDS ) ) : '';
-			$prev_start = $bounded ? wp_date( 'Y-m-d 00:00:00', $now_ts - ( ( ( 2 * $len ) - 1 ) * DAY_IN_SECONDS ) ) : '';
-			$anchor_ts  = $now_ts;
+			$len         = $bounded ? (int) $range_key : 0;
+			$start       = $bounded ? wp_date( 'Y-m-d 00:00:00', $now_ts - ( ( $len - 1 ) * DAY_IN_SECONDS ) ) : '';
+			$prev_start  = $bounded ? wp_date( 'Y-m-d 00:00:00', $now_ts - ( ( ( 2 * $len ) - 1 ) * DAY_IN_SECONDS ) ) : '';
+			$anchor_ts   = $now_ts;
 			$range_start = $bounded ? $start : self::RANGE_MIN;
 			$range_end   = self::RANGE_MAX;
 		}
@@ -1097,7 +1097,8 @@ final class Reseller_Intent_Admin {
 					COUNT(*) AS total
 				FROM {$table_name}
 				WHERE event_type = 'continue_to_cart' AND created_at >= %s AND created_at < %s",
-				$range_start, $range_end
+				$range_start,
+				$range_end
 			),
 			ARRAY_A
 		);
@@ -1131,7 +1132,8 @@ final class Reseller_Intent_Admin {
 				HAVING hits >= 2
 				ORDER BY hits DESC
 				LIMIT 25",
-				$range_start, $range_end
+				$range_start,
+				$range_end
 			)
 		);
 		$repeats     = array();
@@ -1162,7 +1164,8 @@ final class Reseller_Intent_Admin {
 					COALESCE(SUM(CASE WHEN is_available = 0 THEN event_count ELSE 0 END),0) AS taken
 				FROM {$table_name}
 				WHERE event_type = 'domain_search' AND is_available IS NOT NULL AND created_at >= %s AND created_at < %s",
-				$range_start, $range_end
+				$range_start,
+				$range_end
 			),
 			ARRAY_A
 		);
@@ -1175,7 +1178,8 @@ final class Reseller_Intent_Admin {
 				FROM {$table_name}
 				WHERE event_type = 'domain_search' AND device IN ('mobile','tablet','desktop') AND created_at >= %s AND created_at < %s
 				GROUP BY device",
-				$range_start, $range_end
+				$range_start,
+				$range_end
 			),
 			ARRAY_A
 		);
@@ -1200,7 +1204,8 @@ final class Reseller_Intent_Admin {
 				GROUP BY country
 				ORDER BY hits DESC
 				LIMIT 20",
-				$range_start, $range_end
+				$range_start,
+				$range_end
 			),
 			ARRAY_A
 		);
@@ -1223,7 +1228,8 @@ final class Reseller_Intent_Admin {
 				WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s
 				ORDER BY id DESC
 				LIMIT 100",
-				$range_start, $range_end
+				$range_start,
+				$range_end
 			)
 		);
 		$recent      = array();
@@ -1409,7 +1415,8 @@ final class Reseller_Intent_Admin {
 				GROUP BY page_url
 				ORDER BY searches DESC
 				LIMIT 200",
-				$range_start, $range_end
+				$range_start,
+				$range_end
 			)
 		);
 
@@ -1513,7 +1520,8 @@ final class Reseller_Intent_Admin {
 				GROUP BY domain_query
 				ORDER BY hits DESC, last_seen DESC
 				LIMIT 40",
-				$range_start, $range_end
+				$range_start,
+				$range_end
 			)
 		);
 
@@ -1521,7 +1529,7 @@ final class Reseller_Intent_Admin {
 		$overlap        = 0;
 		if ( ! empty( $carted ) ) {
 			$placeholders = implode( ',', array_fill( 0, count( $carted ), '%s' ) );
-			$overlap      = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT domain_query) FROM {$table_name} WHERE event_type = 'domain_search' AND is_available = 1 AND LOWER(domain_query) IN ({$placeholders}) AND created_at >= %s AND created_at < %s", array_merge( array_keys( $carted ), array( $range_start, $range_end ) ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- placeholders are built dynamically for the IN list.
+			$overlap      = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT domain_query) FROM {$table_name} WHERE event_type = 'domain_search' AND is_available = 1 AND LOWER(domain_query) IN ({$placeholders}) AND created_at >= %s AND created_at < %s", array_merge( array_keys( $carted ), array( $range_start, $range_end ) ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- placeholders are built dynamically for the IN list, and the replacements arrive as one array, which the sniff cannot count.
 		}
 
 		$items = array();
@@ -1563,7 +1571,8 @@ final class Reseller_Intent_Admin {
 				WHERE event_type = 'continue_to_cart' AND items_json IS NOT NULL AND items_json <> '' AND created_at >= %s AND created_at < %s
 				ORDER BY id DESC
 				LIMIT 500",
-				$range_start, $range_end
+				$range_start,
+				$range_end
 			)
 		);
 
@@ -1634,7 +1643,8 @@ final class Reseller_Intent_Admin {
 				GROUP BY domain_query
 				ORDER BY hits DESC
 				LIMIT 25",
-				$range_start, $range_end
+				$range_start,
+				$range_end
 			)
 		);
 		$top      = array();
@@ -1837,7 +1847,7 @@ final class Reseller_Intent_Admin {
 		return substr( $datetime_raw, 0, 16 );
 	}
 
-	private function sanitize_csv_cell( $value ) {
+	public static function sanitize_csv_cell( $value ) {
 		$value           = (string) $value;
 		$trimmed_leading = ltrim( $value );
 		if ( '' !== $trimmed_leading && preg_match( '/^[=\-+@]/', $trimmed_leading ) ) {
@@ -1875,7 +1885,7 @@ final class Reseller_Intent_Admin {
 		} else {
 			// UTF-8 BOM improves CSV compatibility with spreadsheet apps.
 			fprintf( $output, chr( 0xEF ) . chr( 0xBB ) . chr( 0xBF ) );
-			fputcsv( $output, array( 'Event', 'Domain', 'Related Search', 'Items Count', 'Items', 'Available', 'Device', 'Country', 'Page URL', 'Time (' . $tz_label . ')' ) );
+			fputcsv( $output, array( 'Event', 'Domain', 'Related Search', 'Items Count', 'Items', 'Available', 'Device', 'Country', 'Page URL', 'Time (' . $tz_label . ')' ), ',', '"', '\\' );
 		}
 
 		$json_first = true;
@@ -1895,7 +1905,10 @@ final class Reseller_Intent_Admin {
 					WHERE id < %d AND created_at >= %s AND created_at < %s
 					ORDER BY id DESC
 					LIMIT %d",
-					$last_id, $range_start, $range_end, 5000
+					$last_id,
+					$range_start,
+					$range_end,
+					5000
 				)
 			);
 
@@ -1947,7 +1960,10 @@ final class Reseller_Intent_Admin {
 							$this->sanitize_csv_cell( (string) $row->country ),
 							$this->sanitize_csv_cell( (string) $row->page_url ),
 							$this->sanitize_csv_cell( $this->format_datetime_local( (string) $row->created_at ) ),
-						)
+						),
+						',',
+						'"',
+						'\\'
 					);
 				}
 

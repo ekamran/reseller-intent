@@ -174,7 +174,14 @@
 	}
 
 	function previewPrice() {
-		var mode = document.getElementById('rintent-gen-mode').value;
+		// The mode select only renders when the store has products.
+		var modeEl = document.getElementById('rintent-gen-mode');
+
+		if (!modeEl) {
+			return;
+		}
+
+		var mode = modeEl.value;
 		var ids = priceIds(mode).join(',');
 		var target = document.getElementById('rintent-preview-price');
 		if (!ids) {

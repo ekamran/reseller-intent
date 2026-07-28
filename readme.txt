@@ -4,7 +4,7 @@ Tags: godaddy, godaddy reseller, reseller store, domain reseller, reseller analy
 Requires at least: 6.2
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,6 +63,8 @@ Yes, including full page caching. Tracking avoids nonces, which go stale inside 
 
 No identifiers are stored. Searched names are kept as typed, and people can type anything into a search box, so mention the tracking in your privacy policy if you want to be thorough.
 
+If you run a consent banner, return false from the `rintent_should_track` filter until the visitor has agreed, and nothing is recorded before that.
+
 = Will it change how my search widget looks? =
 
 Only if you let it. The style pack is optional and matches the widget to your accent color and corner rounding. Turn it off in Settings and the plugin loads no CSS at all.
@@ -119,6 +121,19 @@ The service is operated by GoDaddy: [Universal Terms of Service](https://www.god
 The default support numbers for the phone shortcode are GoDaddy's published numbers, stored inside the plugin. Showing them involves no external request.
 
 == Changelog ==
+
+= 1.0.5 =
+* Security: the Clear All button text was placed into the page without escaping, so wording that contained quote characters could inject markup into the search widget. Update if you use the style pack.
+* Fixed: searches that arrive through a `?domainToCheck=` link were never recorded, so traffic from campaigns and emails was missing from the dashboard.
+* Fixed: if a visitor started typing again before results appeared, the availability was recorded against the wrong search.
+* Fixed: TLDs that show a note next to the name, such as .app, were recorded with that note stuck to the domain.
+* Fixed: the loading rows could stay on screen underneath the results.
+* Fixed: the support number shortcode stopped the page on hosts without the mbstring extension.
+* Fixed: the Shortcodes screen previews failed on stores with no products yet.
+* Fixed: an international domain that cannot be encoded is now skipped instead of stored with its accents removed.
+* Fixed: `wp rintent export --format=csv` now guards spreadsheet formula characters, matching the export in the dashboard.
+* Improved: results shown in a modal are capped to the screen and scroll on their own, instead of running off the bottom where they could not be reached.
+* Improved: the exact domain you searched is now marked out from the suggestions below it.
 
 = 1.0.4 =
 * Fixed: the search button always used a white label, which was hard to read on a light or warm accent color. It now picks light or dark ink by whichever reads better.

@@ -149,9 +149,21 @@
 		};
 	}
 
+	/*
+	 * The search box is a controlled input, so it holds whatever is typed
+	 * right now, not the query the results on screen came from. Someone who
+	 * starts typing a second name before the first result lands would
+	 * otherwise have the availability stamped onto the wrong search. Prefer
+	 * the query that was actually submitted; the field is only the fallback.
+	 */
 	function getSearchQuery($scope) {
-		var value = $scope.find('.search-form .search-field').first().val() || '';
-		return String(value).trim();
+		var stored = $scope.attr('data-rintent-query');
+
+		if (undefined !== stored) {
+			return stored;
+		}
+
+		return String($scope.find('.search-form .search-field').first().val() || '').trim();
 	}
 
 	/*
@@ -212,7 +224,19 @@
 
 			$scope = $(button).closest('.rstore-domain-search');
 			$result = $(button).closest('.domain-result');
-			domainName = $result.find('.domain-name').first().text() || '';
+			/*
+			 * Only this element's own text. Restricted TLDs render a
+			 * "Restrictions apply" note inside .domain-name, and .text()
+			 * would glue it on: "example.appRestrictions apply".
+			 */
+			domainName = $result
+				.find('.domain-name')
+				.first()
+				.contents()
+				.filter(function() {
+					return this.nodeType === 3;
+				})
+				.text() || '';
 			domainName = String(domainName).trim();
 
 			if (!domainName) {
@@ -243,13 +267,47 @@
 		// New search = new row; let the outcome reporter fire again.
 		$scope.removeAttr('data-rintent-outcome-sent');
 
-		domainQuery = $form.find('input[name="domainToCheck"], .search-field').first().val() || '';
+		domainQuery = String($form.find('input[name="domainToCheck"], .search-field').first().val() || '').trim();
+
+		/*
+		 * Remember what was actually submitted. The box can change before the
+		 * results land, and an empty submit is ignored by the widget, so it
+		 * must not overwrite the query the results still belong to.
+		 */
+		if (domainQuery) {
+			$scope.attr('data-rintent-query', domainQuery);
+		}
+
 		trackEvent('domain_search', {
-			domain_query: String(domainQuery).trim()
+			domain_query: domainQuery
 		});
 	});
 
 	$(document).ready(function() {
+		/*
+		 * The widget also searches on mount, with no submit, when the URL
+		 * carries ?domainToCheck= (a documented Reseller Store feature). The
+		 * submit handler never sees those, so campaign and email deep links
+		 * were invisible. Fire it here, before the observers attach, so the
+		 * search_result that follows has a row to attach to. URLSearchParams
+		 * is what the widget itself parses with, and it never throws on a
+		 * malformed escape.
+		 */
+		var deepLink = '';
+
+		try {
+			deepLink = String(new URLSearchParams(window.location.search).get('domainToCheck') || '').trim();
+		} catch (error) {
+			deepLink = '';
+		}
+
+		if (deepLink && $('.rstore-domain-search').length) {
+			$('.rstore-domain-search').attr('data-rintent-query', deepLink);
+			trackEvent('domain_search', {
+				domain_query: deepLink
+			});
+		}
+
 		bindSelectTracking();
 		reportSearchOutcome();
 

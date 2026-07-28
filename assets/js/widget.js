@@ -51,9 +51,25 @@
 
 		$('.rstore-domain-search .rstore-loading').each(function() {
 			var $loader = $(this);
+			var $scope = $loader.closest('.rstore-domain-search');
 			var i;
 
 			if ($loader.attr('data-rintent-skeleton') === '1') {
+				return;
+			}
+
+			/*
+			 * The widget re-renders while results are on screen, and a
+			 * re-render can hand us a brand new loader node after the search
+			 * has already finished. Filling that one leaves skeleton rows
+			 * shimmering above the real results, so only dress a loader that
+			 * is genuinely waiting on something.
+			 */
+			if ($loader.hasClass('rstore-loading-hidden')) {
+				return;
+			}
+
+			if ($scope.find('.domain-result').length || $scope.find('p.available, p.not-available').length) {
 				return;
 			}
 
@@ -82,6 +98,8 @@
 		$('.rstore-domain-search').each(function() {
 			var $scope = $(this);
 			var $formContainer = $scope.find('.form-container').first();
+			var button;
+			var label;
 
 			if (!$formContainer.length) {
 				return;
@@ -93,11 +111,20 @@
 				return;
 			}
 
-			$formContainer.append(
-				'<button type="button" class="rintent-clear-btn" aria-label="' + (config.clearLabel || 'Clear all') + '">' +
-					(config.clearLabel || 'Clear All') +
-				'</button>'
-			);
+			/*
+			 * Built with DOM calls, not an HTML string. The label is the site
+			 * owner's own wording and sanitize_text_field() leaves quotes
+			 * alone, so concatenating it into markup let a label like
+			 * `" onfocus="..." autofocus="x` break out of the attribute.
+			 */
+			label = config.clearLabel || 'Clear All';
+			button = document.createElement('button');
+			button.type = 'button';
+			button.className = 'rintent-clear-btn';
+			button.setAttribute('aria-label', label);
+			button.textContent = label;
+
+			$formContainer.append(button);
 		});
 	}
 

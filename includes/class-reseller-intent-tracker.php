@@ -257,8 +257,10 @@ final class Reseller_Intent_Tracker {
 		try {
 			$encoded = \WpOrg\Requests\IdnaEncoder::encode( $host );
 		} catch ( \Throwable $e ) {
-			// Nothing valid to encode (over-long label, malformed input).
-			return $host;
+			// Not encodable (over-long label, ACE prefix). Reject it rather
+			// than let the ASCII filter below strip the accents and store a
+			// domain nobody searched for.
+			return '';
 		}
 
 		return is_string( $encoded ) ? $encoded : $host;

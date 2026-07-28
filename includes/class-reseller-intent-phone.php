@@ -218,6 +218,11 @@ final class Reseller_Intent_Phone {
 
 	/**
 	 * Flag emoji for a 2-letter country code; globe for the global line.
+	 *
+	 * Regional indicators U+1F1E6..U+1F1FF are one contiguous block, so in
+	 * UTF-8 each is the same three bytes plus a trailing byte in A6..BF.
+	 * Building those directly avoids mb_chr(), which core does not polyfill
+	 * and which hosts without mbstring do not have at all.
 	 */
 	public static function flag_for( $country ) {
 		$country = strtoupper( (string) $country );
@@ -226,8 +231,8 @@ final class Reseller_Intent_Phone {
 			return "\u{1F310}";
 		}
 
-		return mb_chr( 0x1F1E6 + ord( $country[0] ) - 65, 'UTF-8' )
-			. mb_chr( 0x1F1E6 + ord( $country[1] ) - 65, 'UTF-8' );
+		return "\xF0\x9F\x87" . chr( 0xA6 + ord( $country[0] ) - 65 )
+			. "\xF0\x9F\x87" . chr( 0xA6 + ord( $country[1] ) - 65 );
 	}
 
 	public function render( $atts ) {

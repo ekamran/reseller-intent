@@ -117,7 +117,7 @@ final class Reseller_Intent_CLI {
 		$last_id = 0;
 
 		if ( 'csv' === $format ) {
-			fputcsv( $handle, $columns );
+			fputcsv( $handle, $columns, ',', '"', '\\' );
 		} else {
 			fwrite( $handle, '{"generated":' . wp_json_encode( gmdate( 'c' ) ) . ',"timezone":' . wp_json_encode( wp_timezone_string() ) . ',"events":[' );
 		}
@@ -140,7 +140,7 @@ final class Reseller_Intent_CLI {
 				$last_id = (int) $row['id'];
 
 				if ( 'csv' === $format ) {
-					fputcsv( $handle, $row );
+					fputcsv( $handle, array_map( array( 'Reseller_Intent_Admin', 'sanitize_csv_cell' ), $row ), ',', '"', '\\' );
 				} else {
 					fwrite( $handle, ( $total ? ',' : '' ) . wp_json_encode( $row ) );
 				}

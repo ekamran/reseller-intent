@@ -9,7 +9,7 @@
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Requires Plugins: reseller-store
  * Requires at least: 6.2
- * Requires PHP: 8.1
+ * Requires PHP: 7.4
  * Text Domain: reseller-intent
  * Domain Path: /languages
  */

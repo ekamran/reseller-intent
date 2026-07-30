@@ -1,6 +1,7 @@
 /**
  * Reseller Intent, optional styling for the Reseller Store domain-search
- * widget (GD Reseller Store 3.x / domain-search v5).
+ * widget. Works on Reseller Store 2.x and 3.x: both ship the same widget
+ * markup, but 2.x omits some of its own type rules, so this file sets them.
  *
  * Loaded only when "Style the domain search widget" is enabled in Settings.
  * Colors flow from one accent token so the widget matches your brand.
@@ -64,9 +65,20 @@ body {
 	-webkit-appearance: none;
 	flex: 1 1 auto;
 	min-width: 0;
+	/*
+	 * Own the type as well as the box. Reseller Store 3.x sets 1rem on the
+	 * field and the submit, but 2.x ships no such rule, so both fell back to
+	 * the browser's 13.33px input default and sat a size below the Continue
+	 * button. Setting it here means the pair matches on either version.
+	 */
+	font-size: 1rem !important;
+	font-family: inherit !important;
 	height: 44px !important;
 	box-sizing: border-box !important;
 	margin: 0 !important;
+	/* 3.x gives the field its 16px text inset, 2.x gives it nothing, so the
+	 * typed domain sat on the border while the button kept its 22px. */
+	padding: 0 16px !important;
 	/* Own the border: themes ship thick dark input borders that melt into
 	 * dark sections, making the white area look shorter than the button. */
 	border: 1px solid #cfd7e3 !important;
@@ -80,6 +92,10 @@ body {
 	gap: 1rem;
 	float: none !important;
 	width: 100%;
+	/* Reseller Store pads and borders the row but never pins box-sizing, so
+	 * width:100% resolved to content width and every row jutted ~37px past
+	 * the search bar on themes without a global border-box. */
+	box-sizing: border-box;
 	min-width: 0;
 	border: 1px solid #8f8f8f33;
 	border-radius: var(--rintent-radius, 8px);
@@ -158,6 +174,15 @@ body {
 	border: 1px solid var(--rintent-widget-accent) !important;
 	border-radius: var(--rintent-radius, 8px) !important;
 	font-size: 16px !important;
+	/*
+	 * Own the family and the affordance. Nothing declares font-family for the
+	 * continue button on either Reseller Store version, so it fell back to the
+	 * UA button font while every other word used the theme font. 3.x sets
+	 * font-family and cursor on the buy button, 2.x does not, so this pins
+	 * Select/Selected there too.
+	 */
+	font-family: inherit !important;
+	cursor: pointer !important;
 	font-weight: 500 !important;
 	line-height: 1 !important;
 	color: var(--rintent-widget-accent-text) !important;
@@ -187,6 +212,21 @@ body {
 	margin: 0 !important;
 }
 
+/* 3.x sets this itself; 2.x does not, so a long custom or translated
+ * text_select / text_selected label wrapped inside the mobile width pin. */
+.rstore-domain-search .rstore-domain-buy-button {
+	white-space: nowrap !important;
+}
+
+/* The availability headline inherits nowrap from Reseller Store's own
+ * .rstore-domain-search rule at >=1200px, so a long domain pushed
+ * "is available!" out of view, which is the one line that matters. */
+.rstore-domain-search p.available,
+.rstore-domain-search p.not-available {
+	white-space: normal;
+	overflow-wrap: break-word;
+}
+
 /* ---------- Search submit: defensive visibility + brand pairing ----------
  * Some themes style generic `.search-form input[type=submit]` as an
  * invisible icon overlay (opacity 0 / absolute), which hides the widget's
@@ -198,17 +238,30 @@ body {
 	opacity: 1 !important;
 	position: static !important;
 	left: auto !important;
+	/*
+	 * Pin the flex behaviour, do not just set width. Reseller Store 3.x makes
+	 * this an inline-flex, nowrap item so it sizes to its label; 2.x ships no
+	 * such rule, so the button inherited flex-grow from the theme and ate 44%
+	 * of the search bar instead of 15%. Own it here and both versions match.
+	 */
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	flex: 0 1 auto !important;
+	white-space: nowrap !important;
 	width: auto !important;
 	height: 44px !important;
 	margin: 0 !important;
 	box-sizing: border-box !important;
 	padding: 0 22px !important;
+	font-size: 1rem !important;
+	font-family: inherit !important;
+	line-height: 1 !important;
 	border: none !important;
 	border-radius: 0 var(--rintent-radius, 8px) var(--rintent-radius, 8px) 0 !important;
 	background: var(--rintent-widget-accent) !important;
 	color: var(--rintent-widget-accent-text) !important;
 	font-weight: 700;
-	font-family: inherit;
 	cursor: pointer;
 }
 
@@ -349,6 +402,9 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 	border-radius: 0;
 	background: transparent !important;
 	color: var(--rintent-clear-color);
+	/* Our own button, so no Reseller Store rule reaches it on either
+	 * version and it fell back to the UA button font on both. */
+	font-family: inherit;
 	font-size: var(--rintent-clear-size);
 	font-weight: 600;
 	line-height: 1;

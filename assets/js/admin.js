@@ -668,9 +668,9 @@
 		var pageRows = filtered.slice((safePage - 1) * perPage, safePage * perPage).map(function(row) {
 			var availCell = '-';
 			if (row.available === true) {
-				availCell = el('span', { className: 'ri-tag is-good' }, 'free');
+				availCell = el('span', { className: 'ri-tag is-good' }, __( 'Available', 'reseller-intent' ));
 			} else if (row.available === false) {
-				availCell = el('span', { className: 'ri-tag is-bad' }, 'taken');
+				availCell = el('span', { className: 'ri-tag is-bad' }, __( 'Registered', 'reseller-intent' ));
 			}
 			return [row.domain, availCell, row.device || '-', row.time];
 		});

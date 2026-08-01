@@ -1259,14 +1259,14 @@ final class Reseller_Intent_Admin {
 			);
 		}
 
-		// Recent search log: latest 100 in range; filtered/paged client-side.
+		// Recent search log: latest 1000 in range; filtered/paged client-side.
 		$recent_rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT domain_query, created_at, is_available, device
 				FROM {$table_name}
 				WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s
 				ORDER BY id DESC
-				LIMIT 100",
+				LIMIT 1000",
 				$range_start,
 				$range_end
 			)

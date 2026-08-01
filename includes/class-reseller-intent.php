@@ -93,6 +93,9 @@ final class Reseller_Intent {
 		return '' !== $rstore_version && version_compare( $rstore_version, self::MIN_RSTORE, '<' );
 	}
 
+	/**
+	 * Hard-stop error notice while Reseller Store sits below the floor.
+	 */
 	public function show_outdated_notice() {
 		if ( ! current_user_can( 'activate_plugins' ) || ! $this->is_reseller_store_active() || ! $this->is_reseller_store_outdated() ) {
 			return;

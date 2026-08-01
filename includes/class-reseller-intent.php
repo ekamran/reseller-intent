@@ -4,9 +4,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class Reseller_Intent {
-	const VERSION                  = '1.0.5';
+	const VERSION                  = '1.0.6';
 	const REQUIRED_PLUGIN_BASENAME = 'reseller-store/reseller-store.php';
 	const TESTED_RSTORE            = '3.0.1';
+	const MIN_RSTORE               = '2.2.17';
 
 	private $assets;
 	private $tracker;
@@ -31,12 +32,17 @@ final class Reseller_Intent {
 
 		add_action( 'plugins_loaded', array( $this, 'bootstrap' ) );
 		add_action( 'admin_notices', array( $this, 'show_dependency_notice' ) );
+		add_action( 'admin_notices', array( $this, 'show_outdated_notice' ) );
 		add_action( 'admin_notices', array( $this, 'show_compat_notice' ) );
 		add_action( 'admin_post_rintent_ack_rstore', array( $this, 'handle_ack_rstore' ) );
 	}
 
 	public function bootstrap() {
 		if ( ! $this->is_reseller_store_active() ) {
+			return;
+		}
+
+		if ( $this->is_reseller_store_outdated() ) {
 			return;
 		}
 
@@ -71,6 +77,39 @@ final class Reseller_Intent {
 		// Optional auto-purge (only scheduled when retention is enabled).
 		add_action( 'rintent_auto_purge', array( 'Reseller_Intent_DB', 'run_auto_purge' ) );
 		add_action( 'init', array( $this->settings, 'sync_purge_schedule' ) );
+	}
+
+	/**
+	 * Reseller Store 2.2.17 is the oldest build this plugin is tested
+	 * against (its widget markup matches 3.x byte for byte; older 2.x
+	 * is unknown territory). Below the floor nothing initializes: no
+	 * tracking, no assets, no dashboard, only this notice. An empty
+	 * version reading does not block, a broken detection must never
+	 * brick a working site.
+	 */
+	private function is_reseller_store_outdated() {
+		$rstore_version = $this->reseller_store_version();
+
+		return '' !== $rstore_version && version_compare( $rstore_version, self::MIN_RSTORE, '<' );
+	}
+
+	public function show_outdated_notice() {
+		if ( ! current_user_can( 'activate_plugins' ) || ! $this->is_reseller_store_active() || ! $this->is_reseller_store_outdated() ) {
+			return;
+		}
+
+		echo '<div class="notice notice-error"><p><strong>'
+			. esc_html__( 'Reseller Intent is paused.', 'reseller-intent' )
+			. '</strong> '
+			. esc_html(
+				sprintf(
+					/* translators: 1: minimum supported Reseller Store version, 2: installed Reseller Store version */
+					__( 'It needs Reseller Store %1$s or newer, but %2$s is running. Please update the Reseller Store plugin to start tracking again.', 'reseller-intent' ),
+					self::MIN_RSTORE,
+					$this->reseller_store_version()
+				)
+			)
+			. '</p></div>';
 	}
 
 	public function show_dependency_notice() {

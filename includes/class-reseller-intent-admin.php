@@ -18,6 +18,48 @@ final class Reseller_Intent_Admin {
 	const RANGE_MIN = '1970-01-01 00:00:00';
 	const RANGE_MAX = '9999-12-31 23:59:59';
 
+	/*
+	 * Per-page filter, appended verbatim to range-bound queries. Strips
+	 * query string and fragment, then cuts the path off after the host
+	 * (the first slash past "https://"), so the comparison is an exact
+	 * path match, never a substring one: filtering /domains/ must not
+	 * count /old-domains/ or /foo/domains/. Two placeholders cover the
+	 * stored URL with and without its trailing slash; a URL with no path
+	 * at all yields '' from SUBSTRING, which the home filter passes as
+	 * its second value.
+	 */
+	const PAGE_FILTER_SQL = " AND LOWER(SUBSTRING(SUBSTRING_INDEX(SUBSTRING_INDEX(page_url, '#', 1), '?', 1), LOCATE('/', SUBSTRING_INDEX(SUBSTRING_INDEX(page_url, '#', 1), '?', 1), 9))) IN (%s, %s)";
+
+	/**
+	 * Sanitized page filter from the request, '' = all pages.
+	 *
+	 * @param string $raw Raw request value.
+	 * @return string Normalized path ('/', '/domains/', ...) or ''.
+	 */
+	private function sanitize_page_filter( $raw ) {
+		$path = strtolower( trim( (string) $raw ) );
+
+		if ( '' === $path || '/' === $path ) {
+			return $path;
+		}
+
+		if ( strlen( $path ) > 191 || ! preg_match( '#^/[a-z0-9/._%\-]*$#', $path ) ) {
+			return '';
+		}
+
+		return untrailingslashit( $path ) . '/';
+	}
+
+	/**
+	 * The two IN() values for PAGE_FILTER_SQL.
+	 *
+	 * @param string $page_path Normalized path from sanitize_page_filter().
+	 * @return string[] With-slash and without-slash variants.
+	 */
+	private static function page_filter_params( $page_path ) {
+		return array( $page_path, '/' === $page_path ? '' : untrailingslashit( $page_path ) );
+	}
+
 	/**
 	 * Punycode is what gets stored, because that is the real domain, but
 	 * "xn--mnchen-hotels-wob.de" tells a reseller nothing. Show the unicode
@@ -689,12 +731,13 @@ final class Reseller_Intent_Admin {
 
 		$from = isset( $_POST['from'] ) ? sanitize_text_field( wp_unslash( $_POST['from'] ) ) : '';
 		$to   = isset( $_POST['to'] ) ? sanitize_text_field( wp_unslash( $_POST['to'] ) ) : '';
+		$page = $this->sanitize_page_filter( isset( $_POST['page_path'] ) ? sanitize_text_field( wp_unslash( $_POST['page_path'] ) ) : '' );
 
 		if ( 'custom' === $range_key && ! self::valid_custom_range( $from, $to ) ) {
 			$range_key = '90';
 		}
 
-		wp_send_json_success( $this->get_dashboard_data( $range_key, $from, $to ) );
+		wp_send_json_success( $this->get_dashboard_data( $range_key, $from, $to, $page ) );
 	}
 
 	/**
@@ -815,9 +858,17 @@ final class Reseller_Intent_Admin {
 		$range_key = isset( $_POST['range'] ) ? sanitize_key( wp_unslash( $_POST['range'] ) ) : '90';
 		$from      = isset( $_POST['from'] ) ? sanitize_text_field( wp_unslash( $_POST['from'] ) ) : '';
 		$to        = isset( $_POST['to'] ) ? sanitize_text_field( wp_unslash( $_POST['to'] ) ) : '';
+		$page      = $this->sanitize_page_filter( isset( $_POST['page_path'] ) ? sanitize_text_field( wp_unslash( $_POST['page_path'] ) ) : '' );
 		// Deep paging stops at 500 rows; past that the export is the tool.
 		$offset    = isset( $_POST['offset'] ) ? min( 500, absint( $_POST['offset'] ) ) : 0;
 		$limit     = 25;
+
+		$page_sql    = '';
+		$page_params = array();
+		if ( '' !== $page ) {
+			$page_sql    = self::PAGE_FILTER_SQL;
+			$page_params = self::page_filter_params( $page );
+		}
 
 		if ( ! in_array( $range_key, array( '7', '30', '90', 'all', 'custom' ), true ) ) {
 			$range_key = '90';
@@ -834,7 +885,7 @@ final class Reseller_Intent_Admin {
 
 		switch ( $panel ) {
 			case 'tlds':
-				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT LOWER(SUBSTRING_INDEX(domain_query, '.', -1)) AS tld, SUM(event_count) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s GROUP BY tld ORDER BY hits DESC LIMIT %d OFFSET %d", '%' . $wpdb->esc_like( '.' ) . '%', $range_start, $range_end, $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT LOWER(SUBSTRING_INDEX(domain_query, '.', -1)) AS tld, SUM(event_count) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s{$page_sql} GROUP BY tld ORDER BY hits DESC LIMIT %d OFFSET %d", array_merge( array( '%' . $wpdb->esc_like( '.' ) . '%', $range_start, $range_end ), $page_params, array( $fetch, $offset ) ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				foreach ( $rows as $row ) {
 					$items[] = array(
 						'label' => '.' . (string) $row->tld,
@@ -844,7 +895,7 @@ final class Reseller_Intent_Admin {
 				break;
 
 			case 'repeats':
-				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT domain_query AS domain, SUM(event_count) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s GROUP BY domain_query HAVING hits >= 2 ORDER BY hits DESC LIMIT %d OFFSET %d", $range_start, $range_end, $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT domain_query AS domain, SUM(event_count) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql} GROUP BY domain_query HAVING hits >= 2 ORDER BY hits DESC LIMIT %d OFFSET %d", array_merge( array( $range_start, $range_end ), $page_params, array( $fetch, $offset ) ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				foreach ( $rows as $row ) {
 					$items[] = array(
 						'domain' => self::display_domain( $row->domain ),
@@ -854,7 +905,7 @@ final class Reseller_Intent_Admin {
 				break;
 
 			case 'countries':
-				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT country, COALESCE(SUM(event_count),0) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND country <> '' AND created_at >= %s AND created_at < %s GROUP BY country ORDER BY hits DESC LIMIT %d OFFSET %d", $range_start, $range_end, $fetch, $offset ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT country, COALESCE(SUM(event_count),0) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND country <> '' AND created_at >= %s AND created_at < %s{$page_sql} GROUP BY country ORDER BY hits DESC LIMIT %d OFFSET %d", array_merge( array( $range_start, $range_end ), $page_params, array( $fetch, $offset ) ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				foreach ( $rows as $row ) {
 					$items[] = array(
 						'code'  => (string) $row->country,
@@ -865,7 +916,7 @@ final class Reseller_Intent_Admin {
 
 			case 'carted':
 				// Aggregated from items_json, so paging slices the aggregate.
-				$json_rows     = $wpdb->get_results( $wpdb->prepare( "SELECT items_json FROM {$table_name} WHERE event_type = 'continue_to_cart' AND items_json IS NOT NULL AND items_json <> '' AND created_at >= %s AND created_at < %s ORDER BY id DESC LIMIT 2000", $range_start, $range_end ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$json_rows     = $wpdb->get_results( $wpdb->prepare( "SELECT items_json FROM {$table_name} WHERE event_type = 'continue_to_cart' AND items_json IS NOT NULL AND items_json <> '' AND created_at >= %s AND created_at < %s{$page_sql} ORDER BY id DESC LIMIT 2000", array_merge( array( $range_start, $range_end ), $page_params ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$domain_counts = array();
 				foreach ( $json_rows as $json_row ) {
 					foreach ( $this->extract_carted_domains( (string) $json_row->items_json ) as $domain ) {
@@ -895,10 +946,21 @@ final class Reseller_Intent_Admin {
 		);
 	}
 
-	private function get_dashboard_data( $range_key, $from = '', $to = '' ) {
+	private function get_dashboard_data( $range_key, $from = '', $to = '', $page_path = '' ) {
 		global $wpdb;
 
 		$table_name = Reseller_Intent_DB::table_name();
+
+		// Optional per-page filter: a constant clause with two placeholders,
+		// appended to every panel query below. The Search by Page panel
+		// stays unfiltered on purpose, it is the page comparator and feeds
+		// the filter dropdown its options.
+		$page_sql    = '';
+		$page_params = array();
+		if ( '' !== $page_path ) {
+			$page_sql    = self::PAGE_FILTER_SQL;
+			$page_params = self::page_filter_params( $page_path );
+		}
 
 		$bounded = ( 'all' !== $range_key );
 		$custom  = ( 'custom' === $range_key );
@@ -933,21 +995,19 @@ final class Reseller_Intent_Admin {
 			? wp_date( 'Y-m-d H:i:s', $now_ts - ( $len * DAY_IN_SECONDS ) )
 			: $start;
 
-		$kpi_now  = $this->get_kpi_counts( $table_name, $start, $end );
-		$kpi_prev = $bounded ? $this->get_kpi_counts( $table_name, $prev_start, $prev_end ) : null;
+		$kpi_now  = $this->get_kpi_counts( $table_name, $start, $end, $page_sql, $page_params );
+		$kpi_prev = $bounded ? $this->get_kpi_counts( $table_name, $prev_start, $prev_end, $page_sql, $page_params ) : null;
 
 		// TLD ranking: a plain top slice, the pager fetches deeper rows.
 		$tld_rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT LOWER(SUBSTRING_INDEX(domain_query, '.', -1)) AS tld, SUM(event_count) AS hits
 				FROM {$table_name}
-				WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s
+				WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s{$page_sql}
 				GROUP BY tld
 				ORDER BY hits DESC
-				LIMIT 25",
-				'%' . $wpdb->esc_like( '.' ) . '%',
-				$range_start,
-				$range_end
+				LIMIT 25", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $page_sql is a class constant with its own placeholders.
+				array_merge( array( '%' . $wpdb->esc_like( '.' ) . '%', $range_start, $range_end ), $page_params )
 			)
 		);
 		$tlds     = array();
@@ -959,7 +1019,7 @@ final class Reseller_Intent_Admin {
 		}
 
 		// Trend: daily for bounded ranges, monthly for lifetime.
-		$trend = $this->get_trend_series( $table_name, $bounded, $len, $anchor_ts );
+		$trend = $this->get_trend_series( $table_name, $bounded, $len, $anchor_ts, $page_sql, $page_params );
 
 		// Cart size split: how many domains each cart click carried.
 		$cart_row   = $wpdb->get_row(
@@ -970,9 +1030,8 @@ final class Reseller_Intent_Admin {
 					COALESCE(SUM(CASE WHEN items_count = 3 THEN 1 ELSE 0 END),0) AS b3,
 					COALESCE(SUM(CASE WHEN items_count >= 4 THEN 1 ELSE 0 END),0) AS b4
 				FROM {$table_name}
-				WHERE event_type = 'continue_to_cart' AND created_at >= %s AND created_at < %s",
-				$range_start,
-				$range_end
+				WHERE event_type = 'continue_to_cart' AND created_at >= %s AND created_at < %s{$page_sql}", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $page_sql is a class constant with its own placeholders.
+				array_merge( array( $range_start, $range_end ), $page_params )
 			),
 			ARRAY_A
 		);
@@ -1001,13 +1060,12 @@ final class Reseller_Intent_Admin {
 			$wpdb->prepare(
 				"SELECT domain_query AS domain, SUM(event_count) AS hits
 				FROM {$table_name}
-				WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s
+				WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql}
 				GROUP BY domain_query
 				HAVING hits >= 2
 				ORDER BY hits DESC
-				LIMIT 25",
-				$range_start,
-				$range_end
+				LIMIT 25", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $page_sql is a class constant with its own placeholders.
+				array_merge( array( $range_start, $range_end ), $page_params )
 			)
 		);
 		$repeats     = array();
@@ -1024,7 +1082,7 @@ final class Reseller_Intent_Admin {
 		// Carted domains from items_json. The scan is bounded at 2000 rows and
 		// that bound must match ajax_panel_rows 'carted', or the first page and
 		// the Show more pages are ranked from different samples.
-		$carted = $this->get_carted_breakdown( $table_name, $range_start, $range_end );
+		$carted = $this->get_carted_breakdown( $table_name, $range_start, $range_end, $page_sql, $page_params );
 
 		// Availability + devices.
 		$availability_row = $wpdb->get_row(
@@ -1033,9 +1091,8 @@ final class Reseller_Intent_Admin {
 					COALESCE(SUM(CASE WHEN is_available = 1 THEN event_count ELSE 0 END),0) AS avail,
 					COALESCE(SUM(CASE WHEN is_available = 0 THEN event_count ELSE 0 END),0) AS taken
 				FROM {$table_name}
-				WHERE event_type = 'domain_search' AND is_available IS NOT NULL AND created_at >= %s AND created_at < %s",
-				$range_start,
-				$range_end
+				WHERE event_type = 'domain_search' AND is_available IS NOT NULL AND created_at >= %s AND created_at < %s{$page_sql}", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $page_sql is a class constant with its own placeholders.
+				array_merge( array( $range_start, $range_end ), $page_params )
 			),
 			ARRAY_A
 		);
@@ -1046,10 +1103,9 @@ final class Reseller_Intent_Admin {
 			$wpdb->prepare(
 				"SELECT device, COALESCE(SUM(event_count),0) AS hits
 				FROM {$table_name}
-				WHERE event_type = 'domain_search' AND device IN ('mobile','tablet','desktop') AND created_at >= %s AND created_at < %s
-				GROUP BY device",
-				$range_start,
-				$range_end
+				WHERE event_type = 'domain_search' AND device IN ('mobile','tablet','desktop') AND created_at >= %s AND created_at < %s{$page_sql}
+				GROUP BY device", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $page_sql is a class constant with its own placeholders.
+				array_merge( array( $range_start, $range_end ), $page_params )
 			),
 			ARRAY_A
 		);
@@ -1070,12 +1126,11 @@ final class Reseller_Intent_Admin {
 			$wpdb->prepare(
 				"SELECT country, COALESCE(SUM(event_count),0) AS hits
 				FROM {$table_name}
-				WHERE event_type = 'domain_search' AND country <> '' AND created_at >= %s AND created_at < %s
+				WHERE event_type = 'domain_search' AND country <> '' AND created_at >= %s AND created_at < %s{$page_sql}
 				GROUP BY country
 				ORDER BY hits DESC
-				LIMIT 20",
-				$range_start,
-				$range_end
+				LIMIT 20", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $page_sql is a class constant with its own placeholders.
+				array_merge( array( $range_start, $range_end ), $page_params )
 			),
 			ARRAY_A
 		);
@@ -1095,11 +1150,10 @@ final class Reseller_Intent_Admin {
 			$wpdb->prepare(
 				"SELECT domain_query, created_at, is_available, device
 				FROM {$table_name}
-				WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s
+				WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql}
 				ORDER BY id DESC
-				LIMIT 1000",
-				$range_start,
-				$range_end
+				LIMIT 1000", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $page_sql is a class constant with its own placeholders.
+				array_merge( array( $range_start, $range_end ), $page_params )
 			)
 		);
 		$recent      = array();
@@ -1153,8 +1207,8 @@ final class Reseller_Intent_Admin {
 			'pages'         => $pages,
 			'carted'        => $carted,
 			'totals'        => array(
-				'tlds'           => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT LOWER(SUBSTRING_INDEX(domain_query, '.', -1))) FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s", '%' . $wpdb->esc_like( '.' ) . '%', $range_start, $range_end ) ), // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				'repeats'        => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM (SELECT 1 FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s GROUP BY domain_query HAVING SUM(event_count) >= 2) grouped", $range_start, $range_end ) ), // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				'tlds'           => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT LOWER(SUBSTRING_INDEX(domain_query, '.', -1))) FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s{$page_sql}", array_merge( array( '%' . $wpdb->esc_like( '.' ) . '%', $range_start, $range_end ), $page_params ) ) ), // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $page_sql is a class constant with its own placeholders.
+				'repeats'        => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM (SELECT 1 FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql} GROUP BY domain_query HAVING SUM(event_count) >= 2) grouped", array_merge( array( $range_start, $range_end ), $page_params ) ) ), // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $page_sql is a class constant with its own placeholders.
 				'carted'         => (int) $carted['total'],
 			),
 			'availability'  => array(
@@ -1170,7 +1224,7 @@ final class Reseller_Intent_Admin {
 		);
 	}
 
-	private function get_trend_series( $table_name, $bounded, $len, $now_ts ) {
+	private function get_trend_series( $table_name, $bounded, $len, $now_ts, $page_sql = '', $page_params = array() ) {
 		global $wpdb;
 
 		if ( $bounded ) {
@@ -1181,9 +1235,9 @@ final class Reseller_Intent_Admin {
 						COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN event_count ELSE 0 END),0) AS searches,
 						COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END),0) AS carts
 					FROM {$table_name}
-					WHERE created_at >= %s
-					GROUP BY DATE(created_at)",
-					$start
+					WHERE created_at >= %s{$page_sql}
+					GROUP BY DATE(created_at)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $page_sql is a class constant with its own placeholders.
+					array_merge( array( $start ), $page_params )
 				),
 				OBJECT_K
 			);
@@ -1206,13 +1260,19 @@ final class Reseller_Intent_Admin {
 		}
 
 		// Lifetime: monthly buckets, capped at the last 24 months of data.
+		// The epoch lower bound keeps the query shape identical to the
+		// bounded one, so the page filter appends the same way.
 		$rows     = $wpdb->get_results(
-			"SELECT DATE_FORMAT(created_at, '%Y-%m') AS bucket,
-				COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN event_count ELSE 0 END),0) AS searches,
-				COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END),0) AS carts
-			FROM {$table_name}
-			GROUP BY bucket
-			ORDER BY bucket ASC" // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			$wpdb->prepare(
+				"SELECT DATE_FORMAT(created_at, '%%Y-%%m') AS bucket,
+					COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN event_count ELSE 0 END),0) AS searches,
+					COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END),0) AS carts
+				FROM {$table_name}
+				WHERE created_at >= %s{$page_sql}
+				GROUP BY bucket
+				ORDER BY bucket ASC", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $page_sql is a class constant with its own placeholders.
+				array_merge( array( self::RANGE_MIN ), $page_params )
+			)
 		);
 		$rows     = array_slice( (array) $rows, -24 );
 		$labels   = array();
@@ -1328,17 +1388,16 @@ final class Reseller_Intent_Admin {
 		return substr( $path, 0, 191 );
 	}
 
-	private function get_carted_breakdown( $table_name, $range_start, $range_end ) {
+	private function get_carted_breakdown( $table_name, $range_start, $range_end, $page_sql = '', $page_params = array() ) {
 		global $wpdb;
 
 		$json_rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT items_json FROM {$table_name}
-				WHERE event_type = 'continue_to_cart' AND items_json IS NOT NULL AND items_json <> '' AND created_at >= %s AND created_at < %s
+				WHERE event_type = 'continue_to_cart' AND items_json IS NOT NULL AND items_json <> '' AND created_at >= %s AND created_at < %s{$page_sql}
 				ORDER BY id DESC
-				LIMIT 2000",
-				$range_start,
-				$range_end
+				LIMIT 2000", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $page_sql is a class constant with its own placeholders.
+				array_merge( array( $range_start, $range_end ), $page_params )
 			)
 		);
 
@@ -1367,7 +1426,7 @@ final class Reseller_Intent_Admin {
 	/**
 	 * Aggregate KPI counts for a window. Empty bounds mean open ended.
 	 */
-	private function get_kpi_counts( $table_name, $start = '', $end = '' ) {
+	private function get_kpi_counts( $table_name, $start = '', $end = '', $page_sql = '', $page_params = array() ) {
 		global $wpdb;
 
 		$start = '' !== $start ? $start : self::RANGE_MIN;
@@ -1381,9 +1440,8 @@ final class Reseller_Intent_Admin {
 					COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN items_count ELSE 0 END),0) AS domains_added,
 					COUNT(DISTINCT CASE WHEN event_type = 'domain_search' AND domain_query <> '' THEN domain_query END) AS unique_searches
 				FROM {$table_name}
-				WHERE created_at >= %s AND created_at < %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- prefixed table name.
-				$start,
-				$end
+				WHERE created_at >= %s AND created_at < %s{$page_sql}", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- prefixed table name; $page_sql is a class constant with its own placeholders.
+				array_merge( array( $start, $end ), $page_params )
 			),
 			ARRAY_A
 		);

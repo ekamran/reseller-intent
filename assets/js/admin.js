@@ -44,7 +44,7 @@
 	var PAGE_SIZE = 10;
 	var DEEP_CAP = 500;
 
-	function fetchPanelRows(panel, range, custom, offset, mapRow) {
+	function fetchPanelRows(panel, range, custom, pagePath, offset, mapRow) {
 		var body = new window.FormData();
 		body.append('action', 'rintent_panel_rows');
 		body.append('nonce', resellerIntentAdmin.nonce);
@@ -53,6 +53,9 @@
 		if (range === 'custom' && custom) {
 			body.append('from', custom.from);
 			body.append('to', custom.to);
+		}
+		if (pagePath) {
+			body.append('page_path', pagePath);
 		}
 		body.append('offset', String(offset));
 
@@ -747,6 +750,7 @@
 			saveHiddenPanels(next);
 		}
 
+		var _pf = useState(''), pageFilter = _pf[0], setPageFilter = _pf[1];
 		var _n2 = useState(resellerIntentAdmin.notice || ''), notice = _n2[0], setNotice = _n2[1];
 		var today = new Date().toISOString().slice(0, 10);
 		var _cf = useState(today), customFrom = _cf[0], setCustomFrom = _cf[1];
@@ -765,6 +769,9 @@
 			if (range === 'custom') {
 				body.append('from', customApplied.from);
 				body.append('to', customApplied.to);
+			}
+			if (pageFilter) {
+				body.append('page_path', pageFilter);
 			}
 
 			window.fetch(resellerIntentAdmin.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: body })
@@ -791,7 +798,7 @@
 				});
 
 			return function() { cancelled = true; };
-		}, [range, customApplied]);
+		}, [range, customApplied, pageFilter]);
 
 		function confirmClear(rangeKey) {
 			var form = document.createElement('form');
@@ -830,9 +837,9 @@
 
 		var grid = null;
 		if (data) {
-			var rangeKey = range + ('custom' === range ? '|' + customApplied.from + '|' + customApplied.to : '');
+			var rangeKey = range + ('custom' === range ? '|' + customApplied.from + '|' + customApplied.to : '') + '|' + pageFilter;
 			var loadRows = function(panel, offset, mapRow) {
-				return fetchPanelRows(panel, range, customApplied, offset, mapRow);
+				return fetchPanelRows(panel, range, customApplied, pageFilter, offset, mapRow);
 			};
 			var totals = data.totals || {};
 			var cells = [];
@@ -890,6 +897,17 @@
 							onClick: function() { setRange(option.key); }
 						}, option.label);
 					})),
+					data && (data.pages || []).length > 1 ? el('select', {
+						className: 'ri-page-filter' + (pageFilter ? ' is-active' : ''),
+						value: pageFilter,
+						'aria-label': __( 'Filter by page', 'reseller-intent' ),
+						title: __( 'Every panel follows this page filter. Search by Page keeps comparing all pages.', 'reseller-intent' ),
+						onChange: function(event) { setPageFilter(event.target.value); }
+					}, [el('option', { key: '', value: '' }, __( 'All pages', 'reseller-intent' ))].concat(
+						(data.pages || []).map(function(row) {
+							return el('option', { key: row.path, value: row.path }, row.label || row.path);
+						})
+					)) : null,
 					el('span', { className: 'ri-export-group' },
 						el('a', { className: 'ri-btn', href: exportHref, title: __( 'Export CSV', 'reseller-intent' ) }, __( 'CSV', 'reseller-intent' )),
 						el('a', { className: 'ri-btn', href: exportJsonHref, title: __( 'Export JSON', 'reseller-intent' ) }, __( 'JSON', 'reseller-intent' ))

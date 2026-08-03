@@ -277,7 +277,7 @@
  * the primary. The color picker's composite controls are excluded and
  * keep their stock WordPress look, our radius/border there cuts the
  * swatch half out of its frame. */
-.rintent-pages .button:not(.wp-color-result):not(.wp-picker-clear):not(.wp-picker-default) {
+.rintent-pages .button:not(.wp-color-result):not(.wp-picker-clear):not(.wp-picker-default):not(.button-primary) {
 	border-radius: var(--ri-r-el);
 	border-color: var(--ri-line);
 	color: var(--ri-ink);
@@ -285,10 +285,16 @@
 	box-shadow: none;
 }
 
-.rintent-pages .button:not(.wp-color-result):not(.wp-picker-clear):not(.wp-picker-default):hover {
+.rintent-pages .button:not(.wp-color-result):not(.wp-picker-clear):not(.wp-picker-default):not(.button-primary):hover {
 	border-color: var(--ri-accent-soft-line);
 	background: var(--ri-accent-soft);
 	color: var(--ri-accent-ink);
+}
+
+/* The :not() chain above outranks a plain class pair, so the primary
+ * keeps its own weight explicitly */
+.rintent-pages .button-primary.button-primary {
+	border-radius: var(--ri-r-el);
 }
 
 .rintent-pages .button-primary,

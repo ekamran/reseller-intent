@@ -11,7 +11,6 @@ final class Reseller_Intent_Settings {
 		'accent_dark'         => '',    // '' = auto: the accent lightened for dark surfaces.
 		'retention_days'      => 0,     // 0 = keep forever.
 		'delete_on_uninstall' => false,
-		'track_bots'          => false, // Bot filtering ON by default (track_bots=false).
 		'style_widget'        => true,
 		'widget_skeletons'    => true,
 		'widget_clear_all'    => true,
@@ -255,7 +254,6 @@ final class Reseller_Intent_Settings {
 			'accent_dark'         => empty( $_POST['accent_dark_custom'] ) ? '' : (string) sanitize_hex_color( isset( $_POST['accent_dark'] ) ? sanitize_text_field( wp_unslash( $_POST['accent_dark'] ) ) : '' ),
 			'retention_days'      => $this->sanitize_retention( isset( $_POST['retention_days'] ) ? sanitize_text_field( wp_unslash( $_POST['retention_days'] ) ) : '0' ),
 			'delete_on_uninstall' => ! empty( $_POST['delete_on_uninstall'] ),
-			'track_bots'          => ! empty( $_POST['track_bots'] ),
 			'style_widget'        => ! empty( $_POST['style_widget'] ),
 			'widget_skeletons'    => ! empty( $_POST['widget_skeletons'] ),
 			'widget_clear_all'    => ! empty( $_POST['widget_clear_all'] ),

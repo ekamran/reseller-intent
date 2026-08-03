@@ -371,11 +371,13 @@ final class Reseller_Intent_Tracker {
 	}
 
 	/**
-	 * Server-side bot filter (default ON). The widget is JS-driven so most
-	 * crawlers never reach here, but headless browsers do.
+	 * Server-side bot filter, always on. The widget is JS-driven so most
+	 * crawlers never reach here, but headless browsers do. The
+	 * rintent_track_bots filter exists for the rare debugging session
+	 * that needs bot traffic recorded.
 	 */
 	private function is_bot_request() {
-		if ( Reseller_Intent_Settings::get( 'track_bots' ) ) {
+		if ( apply_filters( 'rintent_track_bots', false ) ) {
 			return false;
 		}
 

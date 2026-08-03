@@ -440,7 +440,6 @@ final class Reseller_Intent_Admin {
 		$accent    = Reseller_Intent_Settings::accent_color();
 		$retention = (int) Reseller_Intent_Settings::get( 'retention_days' );
 		$uninstall = (bool) Reseller_Intent_Settings::get( 'delete_on_uninstall' );
-		$bots      = (bool) Reseller_Intent_Settings::get( 'track_bots' );
 
 		$retention_choices = array(
 			0   => __( 'Keep forever (default)', 'reseller-intent' ),
@@ -569,15 +568,6 @@ final class Reseller_Intent_Admin {
 						<span>
 							<textarea id="rintent-blocklist" name="blocklist" rows="4" class="large-text code" placeholder="mytestdomain.com&#10;*.internal&#10;staging*"><?php echo esc_textarea( implode( "\n", (array) Reseller_Intent_Settings::get( 'blocklist' ) ) ); ?></textarea>
 							<p class="description"><?php esc_html_e( 'One pattern per line, matched against searched domains. Use * as a wildcard. Handy for ignoring your own test searches.', 'reseller-intent' ); ?></p>
-						</span>
-					</div>
-					<div class="rintent-field">
-						<span class="rintent-label"><?php esc_html_e( 'Bots', 'reseller-intent' ); ?></span>
-						<span>
-							<label for="rintent-bots">
-								<input type="checkbox" id="rintent-bots" name="track_bots" value="1" <?php checked( $bots ); ?> />
-								<?php esc_html_e( 'Also record events from known bots and crawlers (off recommended)', 'reseller-intent' ); ?>
-							</label>
 						</span>
 					</div>
 				</div>

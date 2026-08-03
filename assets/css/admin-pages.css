@@ -162,12 +162,13 @@
 	margin: 1px 0 0 24px;
 }
 
-/* Indented children under a parent toggle */
+/* Indented children under a parent toggle (logical, mirrors in RTL) */
 .rintent-children {
 	display: block;
-	margin: 6px 0 0 24px;
-	padding-left: 12px;
-	border-left: 2px solid var(--ri-line);
+	margin-block-start: 6px;
+	margin-inline-start: 24px;
+	padding-inline-start: 12px;
+	border-inline-start: 2px solid var(--ri-line);
 }
 
 @media ( max-width: 782px ) {
@@ -320,18 +321,20 @@
 }
 
 .rintent-pages #rintent-support-rows th {
-	text-align: left;
+	text-align: start;
 	font-size: 10.5px;
 	letter-spacing: 0.05em;
 	text-transform: uppercase;
 	color: var(--ri-muted);
 	font-weight: 600;
-	padding: 0 10px 6px 0;
+	padding-block: 0 6px;
+	padding-inline: 0 10px;
 	border-bottom: 1px solid var(--ri-line);
 }
 
 .rintent-pages #rintent-support-rows td {
-	padding: 6px 10px 6px 0;
+	padding-block: 6px;
+	padding-inline: 0 10px;
 	border-bottom: 1px solid color-mix(in srgb, var(--ri-line) 55%, transparent);
 }
 
@@ -492,10 +495,11 @@
 .rintent-theming-ref td,
 .rintent-theming-ref th {
 	font-size: 12.5px;
-	padding: 8px 10px 8px 0;
+	padding-block: 8px;
+	padding-inline: 0 10px;
 	vertical-align: top;
 	line-height: 1.9;
-	text-align: left;
+	text-align: start;
 }
 
 .rintent-theming-ref th {
@@ -504,7 +508,8 @@
 	text-transform: uppercase;
 	color: var(--ri-muted);
 	font-weight: 600;
-	padding: 0 10px 6px 0;
+	padding-block: 0 6px;
+	padding-inline: 0 10px;
 	border-bottom: 1px solid var(--ri-line);
 }
 

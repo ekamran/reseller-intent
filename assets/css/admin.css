@@ -389,6 +389,7 @@
 	font-size: 11.5px;
 	font-weight: 600;
 	font-variant-numeric: tabular-nums;
+	direction: ltr; /* +4.1% never renders as %4.1+ in RTL locales */
 }
 .ri-delta.is-up { background: var(--ri-good-bg); color: var(--ri-good); }
 .ri-delta.is-down { background: var(--ri-bad-bg); color: var(--ri-bad); }
@@ -526,20 +527,23 @@
 	font-variant-numeric: tabular-nums;
 }
 
+/* Logical directions throughout so RTL admin locales mirror cleanly */
 .ri-table th {
-	text-align: left;
+	text-align: start;
 	font-size: 10.5px;
 	letter-spacing: 0.05em;
 	text-transform: uppercase;
 	color: var(--ri-muted);
 	font-weight: 600;
-	padding: 0 8px 6px 0;
+	padding-block: 0 6px;
+	padding-inline: 0 8px;
 	border-bottom: 1px solid var(--ri-line);
 }
 
 .ri-table td {
 	height: var(--ri-row-h);
-	padding: 0 8px 0 0;
+	padding-block: 0;
+	padding-inline: 0 8px;
 	border-bottom: 1px solid color-mix(in srgb, var(--ri-line) 55%, transparent);
 	font-size: 13px;
 	color: var(--ri-ink-soft);
@@ -563,8 +567,8 @@
 }
 
 .ri-table .ri-col-tight {
-	text-align: right;
-	padding-right: 0;
+	text-align: end;
+	padding-inline-end: 0;
 }
 
 .ri-empty {

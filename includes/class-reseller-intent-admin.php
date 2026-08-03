@@ -87,16 +87,19 @@ final class Reseller_Intent_Admin {
 	}
 
 	/**
-	 * Custom menu glyph: radar scope, ring with a sweep wedge and a blip
-	 * dot. Reads as "detecting visitor intent", not another generic chart.
-	 * Fill-only paths in a neutral base color so WordPress repaints it to
-	 * match the active admin color scheme (svg-painter skips strokes).
+	 * The brand mark's path from the design file: the hexagon shield with
+	 * the asterisk cut. Never redrawn by hand, only recolored per context.
+	 */
+	const MARK_PATH = 'M0.000,40.172 L0.000,19.578 C0.000,16.136 1.836,12.956 4.817,11.235 C9.510,8.526 16.603,4.430 21.295,1.721 C24.276,0.000 27.949,0.000 30.930,1.721 C35.622,4.430 42.716,8.526 47.408,11.235 C50.389,12.956 52.225,16.136 52.225,19.578 L52.225,38.606 C52.225,42.048 50.389,45.228 47.408,46.949 C42.716,49.658 35.622,53.754 30.930,56.463 C27.949,58.184 24.276,58.184 21.295,56.463 C14.645,52.623 3.461,46.166 3.461,46.166 L22.652,35.086 L22.652,44.991 L29.573,44.991 L29.573,35.086 L38.151,40.038 L41.612,34.044 L33.034,29.092 L41.612,24.140 L38.151,18.146 L29.573,23.098 L29.573,13.193 L22.652,13.193 L22.652,23.098 L14.074,18.146 L10.614,24.140 L19.191,29.092 L0.000,40.172 Z';
+
+	/**
+	 * Menu glyph: the brand mark in a neutral fill-only path so WordPress
+	 * repaints it to match the active admin color scheme (svg-painter
+	 * skips strokes and gradients).
 	 */
 	private static function menu_icon() {
-		$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">'
-			. '<path fill="#a7aaad" fill-rule="evenodd" d="M10 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16Zm0 1.7a6.3 6.3 0 1 0 0 12.6 6.3 6.3 0 0 0 0-12.6Z"/>'
-			. '<path fill="#a7aaad" d="M10 10 11.08 3.89a6.2 6.2 0 0 1 4.54 3.49Z"/>'
-			. '<circle fill="#a7aaad" cx="6.4" cy="12.2" r="1.5"/>'
+		$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52.225 58.184">'
+			. '<path fill="#a7aaad" fill-rule="evenodd" d="' . self::MARK_PATH . '"/>'
 			. '</svg>';
 
 		return 'data:image/svg+xml;base64,' . base64_encode( $svg ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- standard WP menu icon data URI.
@@ -142,15 +145,13 @@ final class Reseller_Intent_Admin {
 	}
 
 	/**
-	 * Cobalt brand mark, white on an accent field, shared by the page
-	 * headers. Same radar glyph as the menu icon.
+	 * The brand mark, white on the accent field, shared by the page
+	 * headers. Same design-file path as the menu icon.
 	 */
 	private static function brand_mark() {
 		return '<span class="rintent-mark" aria-hidden="true">'
-			. '<svg viewBox="0 0 20 20" width="18" height="18">'
-			. '<path fill="#fff" fill-rule="evenodd" d="M10 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16Zm0 1.7a6.3 6.3 0 1 0 0 12.6 6.3 6.3 0 0 0 0-12.6Z"/>'
-			. '<path fill="#fff" d="M10 10 11.08 3.89a6.2 6.2 0 0 1 4.54 3.49Z"/>'
-			. '<circle fill="#fff" cx="6.4" cy="12.2" r="1.5"/>'
+			. '<svg viewBox="0 0 52.225 58.184" width="16" height="18">'
+			. '<path fill="#fff" fill-rule="evenodd" d="' . self::MARK_PATH . '"/>'
 			. '</svg></span>';
 	}
 

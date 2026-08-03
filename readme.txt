@@ -18,7 +18,8 @@ Your analytics tell you about pages and traffic. They tell you nothing about the
 
 = What you get =
 
-* A dashboard: searches, cart clicks, trends, top TLDs, repeat searches, each compared to the previous period
+* A dashboard of search intent: searches, cart clicks, trends, top TLDs, repeat searches and carted domains, every number compared to the previous period and explained with a tooltip
+* Filter the whole dashboard by the page a search happened on, or watch all pages together
 * Every list pages through the full dataset; any range exports as CSV or JSON
 * An optional style pack for the search widget, plus three shortcodes: TLD price strip, live product price, regional support number
 * Today and this week at a glance on your WordPress dashboard
@@ -29,13 +30,13 @@ Events are written to one table in your own database and never leave your site. 
 
 = For developers =
 
-Filter `rintent_should_track` to pause tracking, `rintent_event_data` to change or drop an event, and `rintent_page_needs_store` when a page builder hides the widget from detection. Everything lives in one indexed custom table.
+Filter `rintent_should_track` to pause tracking, `rintent_event_data` to change or drop an event, `rintent_page_needs_store` when a page builder hides the widget from detection, and `rintent_track_bots` for the rare debugging session that needs bot traffic recorded. Everything lives in one indexed custom table.
 
 == Installation ==
 
 1. Install and set up the free Reseller Store plugin first.
 2. Install and activate Reseller Intent.
-3. Tracking starts straight away on any page that shows the domain search. Everything under Settings is optional.
+3. Tracking starts straight away on any page that shows the domain search. Open Reseller Intent in the admin menu and watch it come in. Everything under Settings is optional.
 
 == Frequently Asked Questions ==
 
@@ -63,6 +64,18 @@ Yes, including full page caching. Tracking avoids nonces, which go stale inside 
 
 No identifiers are stored. Searched names are kept as typed, and people can type anything into a search box, so mention the tracking in your privacy policy if you want to be thorough. Running a consent banner? Return false from the `rintent_should_track` filter until the visitor agrees, and nothing is recorded before that.
 
+= Where does the visitor country come from? =
+
+From your edge or host, when it says: Cloudflare and similar CDNs send an exact country header with every request. Without one, the visitor's browser timezone is mapped to a country, approximate but right for most visitors. No lookup service is called and no IP address is stored either way.
+
+= Can I see the numbers for one page only? =
+
+Yes. The page filter next to the date ranges follows every panel: KPIs, trend, TLDs, repeats, carted domains and the recent log. Search by Page keeps comparing all pages so you always see the whole field, and exports always carry everything.
+
+= I updated to 2.0 and some panels are gone =
+
+Three low-value panels were removed on purpose: Missed Opportunities, Conversion Funnel and Selection Behavior. The useful part of the funnel, the cart-size split, lives on inside Carted Domains. Your data was not touched, only the panels reading it.
+
 = Will it change how my search widget looks? =
 
 Only if you let it. The style pack is optional and matches the widget to your accent color and corner rounding. Turn it off in Settings and the plugin loads no CSS at all.
@@ -73,14 +86,14 @@ Nothing is deleted unless you asked for it. Tick the uninstall option in Setting
 
 == Screenshots ==
 
-1. The intent dashboard: KPIs with 7-day sparklines, search vs cart trend, conversion funnel and availability at a glance.
-2. Every list panel pages through the full dataset, with real totals.
-3. Shortcode builders with live previews: the TLD price strip and the live product price.
-4. The shortcodes on a real page: TLD price strip, price lines and the support number, on light and dark sections.
-5. The styled domain search widget on light and dark sections.
-6. Settings: accent colors, widget styling, performance trim and privacy controls.
-7. Browser-style clear data with a preview count before anything is deleted.
-8. Today and this week on your WordPress dashboard, without opening the plugin.
+1. The intent dashboard: six KPI cards with tooltips, search vs cart trend, and every list paging in place.
+2. The whole dashboard following one page through the page filter.
+3. Repeat Demand, Carted Domains with the cart-size split, and Search by Page on one row.
+4. The Shortcodes page: the family-first price builder with a live preview.
+5. The TLD price strip builder, with the refresh clock in the card footer.
+6. The support number card, previewed with your own timezone.
+7. Settings: four cards, everything optional.
+8. Browser-style clear data with a preview count before anything is deleted.
 
 == Shortcodes ==
 
@@ -90,9 +103,9 @@ Each one has a visual builder with a live preview under Reseller Intent, Shortco
 
 A row of price pills using live prices from your own catalog. `theme` is light or dark; dark sections are also detected on their own.
 
-`[rintent_price ids="12,14,15" mode="min" before="Starting at " after=" per year"]`
+`[rintent_price family="cpanel" mode="range" before="cPanel from" after="per month"]`
 
-A real price from the products you select. `mode` is `min`, `max` or `range`. `before`, `after` and `fallback` are your own wording.
+A live price from a product family in your catalog: cheapest, highest or the range across its plans. Build it visually on the Shortcodes page, the family keeps the number correct when prices change. Older `ids=""` embeds keep working unchanged.
 
 `[rintent_phone]`
 
@@ -114,26 +127,41 @@ The optional TLD price strip fetches live domain prices from GoDaddy's storefron
 
 What is sent: your public reseller ID and one static probe domain name per TLD you configured. This happens from your server about twice a day, plus whenever you press refresh, and only while the shortcode is in use. No visitor data is ever sent.
 
-The service is operated by GoDaddy: [Universal Terms of Service](https://www.godaddy.com/legal/agreements/universal-terms-of-service-agreement), [Privacy Policy](https://www.godaddy.com/legal/agreements/privacy-policy).
+That API is operated by GoDaddy: [Universal Terms of Service](https://www.godaddy.com/legal/agreements/universal-terms-of-service-agreement), [Privacy Policy](https://www.godaddy.com/legal/agreements/privacy-policy). Reseller Intent itself is an independent plugin, built for GoDaddy resellers but not made by, endorsed by or affiliated with GoDaddy.
 
 The default support numbers for the phone shortcode are GoDaddy's published numbers, stored inside the plugin. Showing them involves no external request.
+
+== Upgrade Notice ==
+
+= 2.0.0 =
+The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value panels are gone. The price shortcode is now family-first; every old embed keeps working. Your data is untouched.
 
 == Changelog ==
 
 = 2.0.0 =
+* Added: filter the whole dashboard by the page a search happened on.
+* Added: the plugin version back in the dashboard header.
+* Added: the live preview blueprint seeds several widget pages and six months of sample data.
 * Changed: the dashboard is rebuilt on a fixed grid. Every list panel is the same machine: ten rows per page with a pager pinned in the footer. Show more is gone, and panels sharing a row always match height.
 * Changed: the dashboard runs the plugin's own fixed palette. Your accent color keeps styling the search widget and the TLD price strip, and the picker now lives with them on the Settings Widget card.
 * Changed: KPI cards renamed to say what they count. Repeat Searches replaces Unique Searches and counts searches beyond the first for a name. Domains Sent to Cart replaces Domains Added. Avg per Cart Click replaces Avg Domains / Cart. Every card explains itself with a hover tooltip.
 * Changed: Availability and Devices folded into two chips on the trend panel, Available % and Mobile %.
+* Changed: the cart-size split reads 1x, 2x, 3x and 4+.
+* Changed: Search by Page lists plain paths, only the homepage gets a word.
 * Changed: Top Countries starts hidden in the panel picker and hides itself while it has no data.
 * Changed: the price shortcode is family-first. Pick a product family and every plan is included automatically, so the number stays correct when prices change. Old `ids=""` embeds keep working unchanged.
 * Changed: the Settings page slimmed to four cards. Retention is a plain day count, 0 keeps everything forever.
 * Changed: the phone preview on the Shortcodes page localizes with your own browser timezone, using the same script visitors get.
+* Changed: price wording pre-fills follow the family and the mode, per month by default.
+* Changed: fresher green and red for the good and bad numbers.
 * Removed: the Missed Opportunities, Conversion Funnel and Selection Behavior panels. The cart-size split lives on inside Carted Domains.
 * Removed: the bot-tracking option. Bots are simply never recorded, developers can opt back in with the `rintent_track_bots` filter.
 * Removed: the separate skeleton-loading toggle, folded into the style pack.
 * Removed: the phone shortcode's unused `prefix` attribute.
 * Fixed: tables, tooltips and delta badges render correctly in right-to-left admin languages.
+* Fixed: modal search results keep a breathing gap instead of sticking to the top of the screen.
+* Fixed: the documented `--rintent-accent-dark-text` variable now actually recolors text on dark sections.
+* Fixed: the color picker keeps its Clear button beside the hex input.
 * Improved: the TLD strip card shows when prices were last refreshed and when the next automatic refresh runs.
 
 = 1.0.6 =

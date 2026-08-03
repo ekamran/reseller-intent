@@ -20,7 +20,7 @@ body {
 	 * theme to give dark-section buttons their own color.
 	 */
 	--rintent-widget-accent-dark: var(--rintent-dark-button, var(--rintent-accent, #3858e9));
-	--rintent-widget-accent-dark-text: var(--rintent-dark-button-text, var(--rintent-accent-text, #ffffff));
+	--rintent-widget-accent-dark-text: var(--rintent-dark-button-text, var(--rintent-accent-dark-text, var(--rintent-accent-text, #ffffff)));
 
 	/*
 	 * Theming knobs, override these (or target the classes listed in

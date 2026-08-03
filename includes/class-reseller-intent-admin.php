@@ -1177,16 +1177,16 @@ final class Reseller_Intent_Admin {
 		$last_event_age = $last_event_ts ? max( 0, strtotime( current_time( 'mysql' ) ) - $last_event_ts ) : 0;
 
 		return array(
-			'range'         => $range_key,
-			'bounded'       => $bounded,
-			'lastEvent'     => array(
+			'range'        => $range_key,
+			'bounded'      => $bounded,
+			'lastEvent'    => array(
 				'ago'   => $last_event_ts
 					/* translators: %s: human readable time difference */
 					? sprintf( __( 'Last event %s ago', 'reseller-intent' ), human_time_diff( $last_event_ts, strtotime( current_time( 'mysql' ) ) ) )
 					: __( 'No events yet', 'reseller-intent' ),
 				'stale' => $last_event_ts ? ( $last_event_age > 3 * DAY_IN_SECONDS ) : false,
 			),
-			'rangeLabel'    => $custom
+			'rangeLabel'   => $custom
 				? sprintf(
 					/* translators: 1: range start date, 2: range end date */
 					__( '%1$s to %2$s', 'reseller-intent' ),
@@ -1197,33 +1197,33 @@ final class Reseller_Intent_Admin {
 					/* translators: %d: number of days */
 					? sprintf( __( 'Last %d days', 'reseller-intent' ), $len )
 					: __( 'Lifetime', 'reseller-intent' ) ),
-			'kpis'          => array(
+			'kpis'         => array(
 				'now'  => $kpi_now,
 				'prev' => $kpi_prev,
 			),
-			'tlds'          => array(
+			'tlds'         => array(
 				'items' => $tlds,
 			),
-			'trend'         => $trend,
-			'cartSizes'     => $cart_sizes,
-			'repeats'       => $repeats,
-			'pages'         => $pages,
-			'carted'        => $carted,
-			'totals'        => array(
-				'tlds'           => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT LOWER(SUBSTRING_INDEX(domain_query, '.', -1))) FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s{$page_sql}", array_merge( array( '%' . $wpdb->esc_like( '.' ) . '%', $range_start, $range_end ), $page_params ) ) ),
-				'repeats'        => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM (SELECT 1 FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql} GROUP BY domain_query HAVING SUM(event_count) >= 2) grouped", array_merge( array( $range_start, $range_end ), $page_params ) ) ),
-				'carted'         => (int) $carted['total'],
+			'trend'        => $trend,
+			'cartSizes'    => $cart_sizes,
+			'repeats'      => $repeats,
+			'pages'        => $pages,
+			'carted'       => $carted,
+			'totals'       => array(
+				'tlds'    => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT LOWER(SUBSTRING_INDEX(domain_query, '.', -1))) FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s{$page_sql}", array_merge( array( '%' . $wpdb->esc_like( '.' ) . '%', $range_start, $range_end ), $page_params ) ) ),
+				'repeats' => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM (SELECT 1 FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql} GROUP BY domain_query HAVING SUM(event_count) >= 2) grouped", array_merge( array( $range_start, $range_end ), $page_params ) ) ),
+				'carted'  => (int) $carted['total'],
 			),
-			'availability'  => array(
+			'availability' => array(
 				'available' => $avail,
 				'taken'     => $taken,
 			),
-			'devices'       => $devices,
-			'countries'     => array(
+			'devices'      => $devices,
+			'countries'    => array(
 				'items' => $countries,
 				'total' => $countries_total,
 			),
-			'recent'        => $recent,
+			'recent'       => $recent,
 		);
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders
 	}

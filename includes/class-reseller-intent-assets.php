@@ -70,7 +70,7 @@ final class Reseller_Intent_Assets {
 			'reseller-intent-widget',
 			'resellerIntentWidget',
 			array(
-				'skeletons'  => true, // part of the style pack since 2.0, no separate switch
+				'skeletons'  => true, // Part of the style pack since 2.0, no separate switch.
 				'clearAll'   => (bool) Reseller_Intent_Settings::get( 'widget_clear_all' ),
 				'clearLabel' => '' !== (string) Reseller_Intent_Settings::get( 'clear_all_label' )
 					? (string) Reseller_Intent_Settings::get( 'clear_all_label' )

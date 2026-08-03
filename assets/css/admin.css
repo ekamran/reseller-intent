@@ -1,16 +1,16 @@
 /* Reseller Intent admin dashboard.
  *
- * Cobalt D2, light only: the accent owns every control, text accents get
- * the darker ink variant, and three radius tokens (card / element / pill)
+ * Blue #435FE8, D2 dose, light only: the accent owns every control,
+ * text accents get the darker ink variant, and three radius tokens
  * cover every corner. One number rules the list geometry: 10 rows of
  * --ri-row-h per panel body, pager pinned in the footer, so row partners
  * always match height and the grid never opens gaps.
  */
 .ri-app {
-	--ri-accent: #2456C4;
-	--ri-accent-soft: #E4EAF7;
-	--ri-accent-soft-line: #C3D2EF;
-	--ri-accent-ink: #1D4390;
+	--ri-accent: #435FE8;
+	--ri-accent-soft: #E8ECFC;
+	--ri-accent-soft-line: #C6CFF8;
+	--ri-accent-ink: #2C43B8;
 	--ri-ink: #1A222C;
 	--ri-ink-soft: #4a5160;
 	--ri-muted: #6d7585;

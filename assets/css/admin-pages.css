@@ -1,14 +1,14 @@
 /* Reseller Intent, Settings and Shortcodes pages.
  *
- * Cobalt D2, light only, same tokens as the dashboard: the accent owns
+ * Blue #435FE8, D2 dose, light only, same tokens as the dashboard: the accent owns
  * every control, radius tokens 10 (card) / 6 (element) / 999 (pill),
  * system font pinned on the page wrapper.
  */
 .rintent-pages {
-	--ri-accent: #2456C4;
-	--ri-accent-soft: #E4EAF7;
-	--ri-accent-soft-line: #C3D2EF;
-	--ri-accent-ink: #1D4390;
+	--ri-accent: #435FE8;
+	--ri-accent-soft: #E8ECFC;
+	--ri-accent-soft-line: #C6CFF8;
+	--ri-accent-ink: #2C43B8;
 	--ri-ink: #1A222C;
 	--ri-ink-soft: #4a5160;
 	--ri-muted: #6d7585;

@@ -12,10 +12,10 @@
 	var sprintf = wp.i18n.sprintf;
 
 	/*
-	 * Cobalt D2: the dashboard's own fixed palette (assets/css/admin.css owns
+	 * Blue D2: the dashboard's own fixed palette (assets/css/admin.css owns
 	 * the tokens). Only the SVG chart needs the raw values here.
 	 */
-	var ACCENT = '#2456C4';
+	var ACCENT = '#435FE8';
 	var INK = '#1A222C';
 
 	/**

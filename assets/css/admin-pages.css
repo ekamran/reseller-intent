@@ -15,10 +15,10 @@
 	--ri-line: #e4e7ed;
 	--ri-surface: #ffffff;
 	--ri-page: #f5f7f8;
-	--ri-good: #1C7A3D;
-	--ri-good-bg: #E6F0EA;
-	--ri-bad: #a0442f;
-	--ri-bad-bg: #f8ece8;
+	--ri-good: #147A38;
+	--ri-good-bg: #E0F5E7;
+	--ri-bad: #B42318;
+	--ri-bad-bg: #FBEAE8;
 	--ri-r-card: 10px;
 	--ri-r-el: 6px;
 	--ri-raise: 0 1px 2px rgba(27, 31, 39, 0.05), 0 6px 20px -14px rgba(27, 31, 39, 0.18);
@@ -256,7 +256,9 @@
 	padding: 0 10px;
 }
 
-.rintent-numbers-scroll thead th {
+/* ID selector below outweighs a class chain, so the gap rule carries
+ * the same weight to actually win */
+.rintent-pages .rintent-numbers-scroll #rintent-support-rows th {
 	position: sticky;
 	top: 0;
 	background: var(--ri-surface);
@@ -272,8 +274,10 @@
 }
 
 /* WP buttons on these pages follow the token shapes; the accent owns
- * the primary. */
-.rintent-pages .button {
+ * the primary. The color picker's composite controls are excluded and
+ * keep their stock WordPress look, our radius/border there cuts the
+ * swatch half out of its frame. */
+.rintent-pages .button:not(.wp-color-result):not(.wp-picker-clear):not(.wp-picker-default) {
 	border-radius: var(--ri-r-el);
 	border-color: var(--ri-line);
 	color: var(--ri-ink);
@@ -281,7 +285,7 @@
 	box-shadow: none;
 }
 
-.rintent-pages .button:hover {
+.rintent-pages .button:not(.wp-color-result):not(.wp-picker-clear):not(.wp-picker-default):hover {
 	border-color: var(--ri-accent-soft-line);
 	background: var(--ri-accent-soft);
 	color: var(--ri-accent-ink);
@@ -469,7 +473,12 @@
 	border-color: #2a2f4a;
 }
 
+/* One-line previews center their content so the padding reads equal */
 .rintent-preview--inline {
+	display: flex;
+	align-items: center;
+	min-height: 52px;
+	box-sizing: border-box;
 	font-size: 15px;
 }
 

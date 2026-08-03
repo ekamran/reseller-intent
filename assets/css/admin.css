@@ -17,10 +17,10 @@
 	--ri-line: #e4e7ed;
 	--ri-surface: #ffffff;
 	--ri-page: #f5f7f8;
-	--ri-good: #1C7A3D;
-	--ri-good-bg: #E6F0EA;
-	--ri-bad: #a0442f;
-	--ri-bad-bg: #f8ece8;
+	--ri-good: #147A38;
+	--ri-good-bg: #E0F5E7;
+	--ri-bad: #B42318;
+	--ri-bad-bg: #FBEAE8;
 	--ri-r-card: 10px;
 	--ri-r-el: 6px;
 	--ri-raise: 0 1px 2px rgba(27, 31, 39, 0.05), 0 6px 20px -14px rgba(27, 31, 39, 0.18);
@@ -198,6 +198,25 @@
 	color: #fff;
 }
 
+/* Page filter: every panel follows it, Search by Page stays the comparator */
+.ri-app .ri-page-filter {
+	min-height: 30px;
+	max-width: 180px;
+	padding: 0 26px 0 10px;
+	font-size: 12.5px;
+	border: 1px solid var(--ri-line);
+	border-radius: var(--ri-r-el);
+	background-color: var(--ri-surface);
+	color: var(--ri-ink);
+	box-shadow: none;
+}
+
+.ri-app .ri-page-filter.is-active {
+	border-color: var(--ri-accent);
+	color: var(--ri-accent-ink);
+	font-weight: 600;
+}
+
 /* Plain button, blueprint .btn */
 .ri-btn {
 	display: inline-flex;
@@ -268,8 +287,8 @@
 }
 
 .ri-danger.button:hover {
-	background: #8a3a28;
-	border-color: #8a3a28;
+	background: #8f1c13;
+	border-color: #8f1c13;
 	color: #fff;
 }
 

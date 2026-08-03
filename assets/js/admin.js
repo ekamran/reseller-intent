@@ -580,11 +580,14 @@
 			TZ_LABEL
 		);
 
-		var footLabel = totalSearches > rows.length
-			/* translators: 1: number of listed searches, 2: total number of searches */
-			? sprintf( __( '%1$s of %2$s. Export has everything.', 'reseller-intent' ), fmt(filtered.length), fmt(totalSearches) )
+		var footLabel;
+		if (totalSearches > rows.length) {
+			/* translators: 1: number of listed rows, 2: total number of rows */
+			footLabel = sprintf( __( '%1$s of %2$s. Export has everything.', 'reseller-intent' ), fmt(filtered.length), fmt(totalSearches) );
+		} else {
 			/* translators: %s: number of searches */
-			: sprintf( _n( '%s search', '%s searches', filtered.length, 'reseller-intent' ), fmt(filtered.length) );
+			footLabel = sprintf( _n( '%s search', '%s searches', filtered.length, 'reseller-intent' ), fmt(filtered.length) );
+		}
 
 		return el(ListPanel, {
 			key: filter, // new filter, back to page 1

@@ -373,9 +373,8 @@ final class Reseller_Intent_Settings {
 	}
 
 	private function sanitize_retention( $value ) {
-		$allowed = array( 0, 30, 90, 180, 365, 730 );
-		$days    = (int) $value;
-
-		return in_array( $days, $allowed, true ) ? $days : 0;
+		// Any day count now, 0 = keep forever. Capped at ten years; the
+		// old preset values (30/90/.../730) all pass through unchanged.
+		return min( 3650, max( 0, absint( $value ) ) );
 	}
 }

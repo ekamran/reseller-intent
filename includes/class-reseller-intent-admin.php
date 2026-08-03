@@ -361,20 +361,14 @@ final class Reseller_Intent_Admin {
 		$accent    = Reseller_Intent_Settings::accent_color();
 		$retention = (int) Reseller_Intent_Settings::get( 'retention_days' );
 		$uninstall = (bool) Reseller_Intent_Settings::get( 'delete_on_uninstall' );
-
-		$retention_choices = array(
-			0   => __( 'Keep forever (default)', 'reseller-intent' ),
-			30  => __( '30 days', 'reseller-intent' ),
-			90  => __( '90 days', 'reseller-intent' ),
-			180 => __( '180 days', 'reseller-intent' ),
-			365 => __( '1 year', 'reseller-intent' ),
-			730 => __( '2 years', 'reseller-intent' ),
-		);
-		$notice            = isset( $_GET['rintent_notice'] ) ? sanitize_key( wp_unslash( $_GET['rintent_notice'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$notice    = isset( $_GET['rintent_notice'] ) ? sanitize_key( wp_unslash( $_GET['rintent_notice'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		?>
 		<div class="wrap rintent-pages rintent-settings">
-			<h1><?php esc_html_e( 'Settings', 'reseller-intent' ); ?></h1>
-			<p class="rintent-intro"><?php esc_html_e( 'Everything is optional. Tracking works out of the box.', 'reseller-intent' ); ?></p>
+			<div class="rintent-topbar">
+				<?php echo self::brand_mark(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG markup built above. ?>
+				<h1><?php esc_html_e( 'Settings', 'reseller-intent' ); ?></h1>
+				<p><?php esc_html_e( 'Everything is optional. Tracking works out of the box.', 'reseller-intent' ); ?></p>
+			</div>
 
 			<?php if ( 'settings_saved' === $notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Settings saved.', 'reseller-intent' ); ?></p></div>
@@ -385,54 +379,55 @@ final class Reseller_Intent_Admin {
 				<?php wp_nonce_field( 'rintent_save_settings' ); ?>
 
 				<div class="rintent-card">
-					<h2><?php esc_html_e( 'Appearance', 'reseller-intent' ); ?></h2>
-					<div class="rintent-field">
-						<span class="rintent-label"><label for="rintent-accent"><?php esc_html_e( 'Accent color', 'reseller-intent' ); ?></label></span>
-						<span>
-							<input type="text" id="rintent-accent" name="accent_color" class="rintent-colorpicker" value="<?php echo esc_attr( $accent ); ?>" />
-							<p class="description"><?php esc_html_e( 'Used on the dashboard, the styled widget and the TLD price strip.', 'reseller-intent' ); ?></p>
-						</span>
+					<div class="rintent-card-head">
+						<h2><?php esc_html_e( 'Search widget', 'reseller-intent' ); ?></h2>
+						<p><?php esc_html_e( 'Styling for the Reseller Store domain search widget on your site. Turn the style pack off if it fights with your theme. Tracking is never affected.', 'reseller-intent' ); ?></p>
 					</div>
-					<div class="rintent-field">
-						<span class="rintent-label"><label for="rintent-accent-dark"><?php esc_html_e( 'Dark accent color', 'reseller-intent' ); ?></label></span>
-						<span>
-							<?php $accent_dark_custom = '' !== (string) Reseller_Intent_Settings::get( 'accent_dark' ); ?>
-							<label for="rintent-accent-dark-custom" style="display:block;margin-bottom:8px;">
-								<input type="checkbox" id="rintent-accent-dark-custom" name="accent_dark_custom" value="1" <?php checked( $accent_dark_custom ); ?> />
-								<?php esc_html_e( 'Pick my own color for dark sections', 'reseller-intent' ); ?>
-							</label>
-							<input type="text" id="rintent-accent-dark" name="accent_dark" class="rintent-colorpicker" value="<?php echo esc_attr( Reseller_Intent_Settings::accent_dark_color() ); ?>" <?php disabled( ! $accent_dark_custom ); ?> />
-							<p class="description"><?php esc_html_e( 'Recolors text accents on dark surfaces, like the prices in the dark TLD strip. Auto lightens your accent just enough to stay readable and follows whenever the accent changes. Buttons are not affected, they keep the accent color everywhere.', 'reseller-intent' ); ?></p>
-						</span>
-					</div>
-				</div>
-
-				<div class="rintent-card">
-					<h2><?php esc_html_e( 'Widget styling', 'reseller-intent' ); ?></h2>
-					<p class="rintent-card-desc"><?php esc_html_e( 'Optional polish for the Reseller Store search widget. Turn the first toggle off if it fights with your theme. Tracking is not affected.', 'reseller-intent' ); ?></p>
-					<div class="rintent-field">
-						<span class="rintent-label"><?php esc_html_e( 'Options', 'reseller-intent' ); ?></span>
-						<span class="rintent-check-group">
-							<label for="rintent-style-widget">
-								<input type="checkbox" id="rintent-style-widget" name="style_widget" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'style_widget' ) ); ?> />
-								<?php esc_html_e( 'Style the domain search widget (accent buttons, aligned rows, skeleton loading, mobile layout)', 'reseller-intent' ); ?>
-							</label>
-							<label for="rintent-clear-all">
-								<input type="checkbox" id="rintent-clear-all" name="widget_clear_all" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'widget_clear_all' ) ); ?> />
-								<?php esc_html_e( 'Floating "Clear All" button under the search bar', 'reseller-intent' ); ?>
-							</label>
-							<span id="rintent-clear-label-row" <?php echo Reseller_Intent_Settings::get( 'widget_clear_all' ) ? '' : 'style="display:none;"'; ?>>
-								<p style="margin:8px 0 0;">
-									<input type="text" name="clear_all_label" class="regular-text" maxlength="40" aria-label="<?php esc_attr_e( 'Clear All button text', 'reseller-intent' ); ?>" value="<?php echo esc_attr( (string) Reseller_Intent_Settings::get( 'clear_all_label' ) ); ?>" placeholder="<?php esc_attr_e( 'Clear All', 'reseller-intent' ); ?>" />
-								</p>
-								<p class="description"><?php esc_html_e( 'Its button text, any wording or language. Leave empty for the default.', 'reseller-intent' ); ?></p>
+					<div class="rintent-card-body">
+						<div class="rintent-field">
+							<span class="rintent-label"><?php esc_html_e( 'Style pack', 'reseller-intent' ); ?></span>
+							<span class="rintent-check-group">
+								<label for="rintent-style-widget">
+									<input type="checkbox" id="rintent-style-widget" name="style_widget" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'style_widget' ) ); ?> />
+									<?php esc_html_e( 'Style the domain search widget', 'reseller-intent' ); ?>
+								</label>
+								<small><?php esc_html_e( 'Accent buttons, aligned rows, skeleton loading, mobile layout. Dark page sections are detected automatically; force either way with a .rintent-dark or .rintent-light wrapper class.', 'reseller-intent' ); ?></small>
+								<span class="rintent-children">
+									<label for="rintent-clear-all">
+										<input type="checkbox" id="rintent-clear-all" name="widget_clear_all" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'widget_clear_all' ) ); ?> />
+										<?php esc_html_e( 'Floating "Clear All" button under the search bar', 'reseller-intent' ); ?>
+									</label>
+									<span id="rintent-clear-label-row" <?php echo Reseller_Intent_Settings::get( 'widget_clear_all' ) ? '' : 'style="display:none;"'; ?>>
+										<p style="margin:6px 0 0;">
+											<input type="text" name="clear_all_label" maxlength="40" aria-label="<?php esc_attr_e( 'Clear All button text', 'reseller-intent' ); ?>" value="<?php echo esc_attr( (string) Reseller_Intent_Settings::get( 'clear_all_label' ) ); ?>" placeholder="<?php esc_attr_e( 'Clear All', 'reseller-intent' ); ?>" />
+										</p>
+										<p class="description"><?php esc_html_e( 'Its button text, any wording or language. Leave empty for the default.', 'reseller-intent' ); ?></p>
+									</span>
+								</span>
 							</span>
-							<p class="description"><?php esc_html_e( 'Dark sections are detected automatically and the widget switches to light-on-dark colors on its own. To force it either way, wrap the section in a .rintent-dark or .rintent-light class.', 'reseller-intent' ); ?></p>
+						</div>
+						<div class="rintent-field">
+							<span class="rintent-label"><label for="rintent-accent"><?php esc_html_e( 'Accent color', 'reseller-intent' ); ?></label></span>
+							<span>
+								<input type="text" id="rintent-accent" name="accent_color" class="rintent-colorpicker" value="<?php echo esc_attr( $accent ); ?>" />
+								<p class="description"><?php esc_html_e( 'Used by the styled widget and the TLD price strip.', 'reseller-intent' ); ?></p>
+							</span>
+						</div>
+						<div class="rintent-field">
+							<span class="rintent-label"><label for="rintent-accent-dark"><?php esc_html_e( 'Dark accent', 'reseller-intent' ); ?></label></span>
+							<span class="rintent-check-group">
+								<?php $accent_dark_custom = '' !== (string) Reseller_Intent_Settings::get( 'accent_dark' ); ?>
+								<label for="rintent-accent-dark-custom">
+									<input type="checkbox" id="rintent-accent-dark-custom" name="accent_dark_custom" value="1" <?php checked( $accent_dark_custom ); ?> />
+									<?php esc_html_e( 'Pick my own color for dark sections', 'reseller-intent' ); ?>
+								</label>
+								<small><?php esc_html_e( 'Otherwise your accent is auto-lightened just enough to stay readable on dark surfaces. Buttons keep the accent everywhere.', 'reseller-intent' ); ?></small>
+								<input type="text" id="rintent-accent-dark" name="accent_dark" class="rintent-colorpicker" value="<?php echo esc_attr( Reseller_Intent_Settings::accent_dark_color() ); ?>" <?php disabled( ! $accent_dark_custom ); ?> />
 
 							<details class="rintent-theming-ref">
 								<summary><?php esc_html_e( 'Theming reference: CSS classes and variables', 'reseller-intent' ); ?></summary>
 								<p class="description"><?php esc_html_e( 'Target these from your theme or Additional CSS to restyle any part of the widget.', 'reseller-intent' ); ?></p>
-								<table class="widefat striped">
+								<table>
 									<thead><tr><th><?php esc_html_e( 'Element', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'CSS class / variable', 'reseller-intent' ); ?></th></tr></thead>
 									<tbody>
 										<tr><td><?php esc_html_e( 'Domain name in results', 'reseller-intent' ); ?></td><td><code>.rstore-domain-search .domain-name</code><br /><code>--rintent-domain-size</code> &middot; <code>--rintent-domain-color</code> &middot; <code>--rintent-domain-font</code> &middot; <code>--rintent-domain-weight</code></td></tr>
@@ -454,66 +449,83 @@ final class Reseller_Intent_Admin {
 							</details>
 						</span>
 					</div>
-				</div>
-
-				<div class="rintent-card">
-					<h2><?php esc_html_e( 'Performance', 'reseller-intent' ); ?></h2>
-					<p class="rintent-card-desc"><?php esc_html_e( 'Reseller Store loads React, jQuery add-ons and its styles on every page of the site, even pages with no store element. Trim that to only the pages that need it.', 'reseller-intent' ); ?></p>
-					<div class="rintent-field">
-						<span class="rintent-label"><?php esc_html_e( 'Asset trim', 'reseller-intent' ); ?></span>
-						<span>
-							<label for="rintent-trim-gd">
-								<input type="checkbox" id="rintent-trim-gd" name="trim_gd_assets" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'trim_gd_assets' ) ); ?> />
-								<?php esc_html_e( 'Load Reseller Store assets only where they are used', 'reseller-intent' ); ?>
-							</label>
-							<p class="description"><?php esc_html_e( 'Kept automatically: pages whose content has any Reseller Store shortcode, product pages, and every page when a Reseller Store widget sits in a sidebar. Tracking follows along, pages without the widget load nothing from this plugin either.', 'reseller-intent' ); ?></p>
-						</span>
-					</div>
-					<div class="rintent-field">
-						<span class="rintent-label"><label for="rintent-gd-pages"><?php esc_html_e( 'Always keep on', 'reseller-intent' ); ?></label></span>
-						<span>
-							<input type="text" id="rintent-gd-pages" name="gd_asset_pages" class="regular-text" value="<?php echo esc_attr( implode( ', ', (array) Reseller_Intent_Settings::get( 'gd_asset_pages' ) ) ); ?>" placeholder="12, 34, 56" />
-							<p class="description"><?php esc_html_e( 'Page or post IDs, comma-separated. For pages where a builder or popup renders the widget outside the content, detection cannot see those. Developers can also use the rintent_page_needs_store filter.', 'reseller-intent' ); ?></p>
-						</span>
 					</div>
 				</div>
 
 				<div class="rintent-card">
-					<h2><?php esc_html_e( 'Tracking and privacy', 'reseller-intent' ); ?></h2>
-					<div class="rintent-field">
-						<span class="rintent-label"><label for="rintent-blocklist"><?php esc_html_e( 'Ignore searches', 'reseller-intent' ); ?></label></span>
-						<span>
-							<textarea id="rintent-blocklist" name="blocklist" rows="4" class="large-text code" placeholder="mytestdomain.com&#10;*.internal&#10;staging*"><?php echo esc_textarea( implode( "\n", (array) Reseller_Intent_Settings::get( 'blocklist' ) ) ); ?></textarea>
-							<p class="description"><?php esc_html_e( 'One pattern per line, matched against searched domains. Use * as a wildcard. Handy for ignoring your own test searches.', 'reseller-intent' ); ?></p>
-						</span>
+					<div class="rintent-card-head">
+						<h2><?php esc_html_e( 'Performance', 'reseller-intent' ); ?></h2>
+						<p><?php esc_html_e( 'Reseller Store loads React, jQuery add-ons and styles on every page of the site, even pages with no store element. Trim that to the pages that need it.', 'reseller-intent' ); ?></p>
+					</div>
+					<div class="rintent-card-body">
+						<div class="rintent-field">
+							<span class="rintent-label"><?php esc_html_e( 'Asset trim', 'reseller-intent' ); ?></span>
+							<span class="rintent-check-group">
+								<label for="rintent-trim-gd">
+									<input type="checkbox" id="rintent-trim-gd" name="trim_gd_assets" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'trim_gd_assets' ) ); ?> />
+									<?php esc_html_e( 'Load Reseller Store assets only where they are used', 'reseller-intent' ); ?>
+								</label>
+								<small><?php esc_html_e( 'Kept automatically: pages with any Reseller Store shortcode, product pages, and everywhere when a store widget sits in a sidebar. This plugin\'s own assets follow the same rule.', 'reseller-intent' ); ?></small>
+							</span>
+						</div>
+						<div class="rintent-field">
+							<span class="rintent-label"><label for="rintent-gd-pages"><?php esc_html_e( 'Always keep on', 'reseller-intent' ); ?></label></span>
+							<span>
+								<input type="text" id="rintent-gd-pages" name="gd_asset_pages" class="rintent-wide" value="<?php echo esc_attr( implode( ', ', (array) Reseller_Intent_Settings::get( 'gd_asset_pages' ) ) ); ?>" placeholder="<?php esc_attr_e( 'Page or post IDs, comma-separated', 'reseller-intent' ); ?>" />
+								<p class="description"><?php esc_html_e( 'For builders or popups that render the widget outside the content, where detection cannot see it. Developers: rintent_page_needs_store filter.', 'reseller-intent' ); ?></p>
+							</span>
+						</div>
 					</div>
 				</div>
 
 				<div class="rintent-card">
-					<h2><?php esc_html_e( 'Data storage', 'reseller-intent' ); ?></h2>
-					<div class="rintent-field">
-						<span class="rintent-label"><label for="rintent-retention"><?php esc_html_e( 'Retention', 'reseller-intent' ); ?></label></span>
-						<span>
-							<select id="rintent-retention" name="retention_days">
-								<?php foreach ( $retention_choices as $days => $label ) : ?>
-									<option value="<?php echo esc_attr( $days ); ?>" <?php selected( $retention, $days ); ?>><?php echo esc_html( $label ); ?></option>
-								<?php endforeach; ?>
-							</select>
-							<p class="description"><?php esc_html_e( 'Events older than this are deleted once a day. You can also clear specific windows from the dashboard any time.', 'reseller-intent' ); ?></p>
-						</span>
+					<div class="rintent-card-head">
+						<h2><?php esc_html_e( 'Tracking', 'reseller-intent' ); ?></h2>
+						<p><?php esc_html_e( 'Anonymous by design. No cookies, no fingerprints, no IP stored. Bots are never recorded.', 'reseller-intent' ); ?></p>
 					</div>
-					<div class="rintent-field">
-						<span class="rintent-label"><?php esc_html_e( 'Uninstall', 'reseller-intent' ); ?></span>
-						<span>
-							<label for="rintent-uninstall">
-								<input type="checkbox" id="rintent-uninstall" name="delete_on_uninstall" value="1" <?php checked( $uninstall ); ?> />
-								<?php esc_html_e( 'Delete all tracked data and settings when the plugin is uninstalled', 'reseller-intent' ); ?>
-							</label>
-						</span>
+					<div class="rintent-card-body">
+						<div class="rintent-field">
+							<span class="rintent-label"><label for="rintent-blocklist"><?php esc_html_e( 'Ignore searches', 'reseller-intent' ); ?></label></span>
+							<span>
+								<textarea id="rintent-blocklist" name="blocklist" rows="3" placeholder="mytestdomain.com&#10;*.internal&#10;staging*"><?php echo esc_textarea( implode( "\n", (array) Reseller_Intent_Settings::get( 'blocklist' ) ) ); ?></textarea>
+								<p class="description"><?php esc_html_e( 'One pattern per line, matched against searched domains. * is a wildcard. Handy for your own test searches.', 'reseller-intent' ); ?></p>
+							</span>
+						</div>
 					</div>
 				</div>
 
-				<?php submit_button( __( 'Save Settings', 'reseller-intent' ) ); ?>
+				<div class="rintent-card">
+					<div class="rintent-card-head">
+						<h2><?php esc_html_e( 'Data', 'reseller-intent' ); ?></h2>
+						<p><?php esc_html_e( 'Everything lives in one table in your own database. Nothing leaves the site.', 'reseller-intent' ); ?></p>
+					</div>
+					<div class="rintent-card-body">
+						<div class="rintent-field">
+							<span class="rintent-label"><label for="rintent-retention"><?php esc_html_e( 'Retention', 'reseller-intent' ); ?></label></span>
+							<span>
+								<span class="rintent-inline">
+									<input type="number" id="rintent-retention" name="retention_days" min="0" max="3650" step="1" value="<?php echo esc_attr( $retention ); ?>" style="width:80px;" />
+									<span><?php esc_html_e( 'days', 'reseller-intent' ); ?></span>
+								</span>
+								<p class="description"><?php esc_html_e( 'Events older than this are deleted once a day. 0 keeps everything forever. Specific windows can be cleared from the dashboard any time.', 'reseller-intent' ); ?></p>
+							</span>
+						</div>
+						<div class="rintent-field">
+							<span class="rintent-label"><?php esc_html_e( 'Uninstall', 'reseller-intent' ); ?></span>
+							<span class="rintent-check-group">
+								<label for="rintent-uninstall">
+									<input type="checkbox" id="rintent-uninstall" name="delete_on_uninstall" value="1" <?php checked( $uninstall ); ?> />
+									<?php esc_html_e( 'Delete all tracked data and settings when the plugin is uninstalled', 'reseller-intent' ); ?>
+								</label>
+								<small class="rintent-danger-note"><?php esc_html_e( 'Irreversible at uninstall time. Off by default so your history survives a reinstall.', 'reseller-intent' ); ?></small>
+							</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="rintent-savebar">
+					<button type="submit" class="button button-primary"><?php esc_html_e( 'Save settings', 'reseller-intent' ); ?></button>
+				</div>
 			</form>
 
 		</div>

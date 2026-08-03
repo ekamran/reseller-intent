@@ -4,7 +4,7 @@ Tags: godaddy, godaddy reseller, reseller store, domain reseller, reseller analy
 Requires at least: 6.2
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.6
+Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -119,6 +119,22 @@ The service is operated by GoDaddy: [Universal Terms of Service](https://www.god
 The default support numbers for the phone shortcode are GoDaddy's published numbers, stored inside the plugin. Showing them involves no external request.
 
 == Changelog ==
+
+= 2.0.0 =
+* Changed: the dashboard is rebuilt on a fixed grid. Every list panel is the same machine: ten rows per page with a pager pinned in the footer. Show more is gone, and panels sharing a row always match height.
+* Changed: the dashboard runs the plugin's own fixed palette. Your accent color keeps styling the search widget and the TLD price strip, and the picker now lives with them on the Settings Widget card.
+* Changed: KPI cards renamed to say what they count. Repeat Searches replaces Unique Searches and counts searches beyond the first for a name. Domains Sent to Cart replaces Domains Added. Avg per Cart Click replaces Avg Domains / Cart. Every card explains itself with a hover tooltip.
+* Changed: Availability and Devices folded into two chips on the trend panel, Available % and Mobile %.
+* Changed: Top Countries starts hidden in the panel picker and hides itself while it has no data.
+* Changed: the price shortcode is family-first. Pick a product family and every plan is included automatically, so the number stays correct when prices change. Old `ids=""` embeds keep working unchanged.
+* Changed: the Settings page slimmed to four cards. Retention is a plain day count, 0 keeps everything forever.
+* Changed: the phone preview on the Shortcodes page localizes with your own browser timezone, using the same script visitors get.
+* Removed: the Missed Opportunities, Conversion Funnel and Selection Behavior panels. The cart-size split lives on inside Carted Domains.
+* Removed: the bot-tracking option. Bots are simply never recorded, developers can opt back in with the `rintent_track_bots` filter.
+* Removed: the separate skeleton-loading toggle, folded into the style pack.
+* Removed: the phone shortcode's unused `prefix` attribute.
+* Fixed: tables, tooltips and delta badges render correctly in right-to-left admin languages.
+* Improved: the TLD strip card shows when prices were last refreshed and when the next automatic refresh runs.
 
 = 1.0.6 =
 * Changed: Reseller Store 2.2.17 is now the minimum supported version. On older builds the plugin pauses itself with a clear notice instead of running against untested widget markup. The PHP requirement is lowered to 7.4 so Reseller Store 2.x sites can install.

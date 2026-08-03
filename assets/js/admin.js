@@ -170,8 +170,10 @@
 		var loadedTotal = allRows.length;
 		var serverTotal = props.totalRows || 0;
 		var knownTotal = Math.max(serverTotal, loadedTotal);
-		var capped = knownTotal > DEEP_CAP;
-		var cappedTotal = Math.min(knownTotal, DEEP_CAP);
+		// The 500-row cap protects server-backed deep paging only; panels
+		// that already hold every row client-side page through all of them.
+		var capped = !!props.loadMore && knownTotal > DEEP_CAP;
+		var cappedTotal = capped ? DEEP_CAP : knownTotal;
 		var totalPages = Math.max(1, Math.ceil(cappedTotal / pageSize));
 		// Until the server says otherwise, a full first slice means there
 		// is probably more on the server.

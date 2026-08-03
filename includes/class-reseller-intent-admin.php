@@ -494,11 +494,7 @@ final class Reseller_Intent_Admin {
 						<span class="rintent-check-group">
 							<label for="rintent-style-widget">
 								<input type="checkbox" id="rintent-style-widget" name="style_widget" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'style_widget' ) ); ?> />
-								<?php esc_html_e( 'Style the domain search widget (accent buttons, aligned rows, mobile layout)', 'reseller-intent' ); ?>
-							</label>
-							<label for="rintent-skeletons">
-								<input type="checkbox" id="rintent-skeletons" name="widget_skeletons" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'widget_skeletons' ) ); ?> />
-								<?php esc_html_e( 'Skeleton loading rows while results load', 'reseller-intent' ); ?>
+								<?php esc_html_e( 'Style the domain search widget (accent buttons, aligned rows, skeleton loading, mobile layout)', 'reseller-intent' ); ?>
 							</label>
 							<label for="rintent-clear-all">
 								<input type="checkbox" id="rintent-clear-all" name="widget_clear_all" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'widget_clear_all' ) ); ?> />

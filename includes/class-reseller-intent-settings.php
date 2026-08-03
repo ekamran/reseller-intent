@@ -12,7 +12,6 @@ final class Reseller_Intent_Settings {
 		'retention_days'      => 0,     // 0 = keep forever.
 		'delete_on_uninstall' => false,
 		'style_widget'        => true,
-		'widget_skeletons'    => true,
 		'widget_clear_all'    => true,
 		'clear_all_label'     => '',    // '' = translated default "Clear All".
 		'blocklist'           => array(),
@@ -255,7 +254,6 @@ final class Reseller_Intent_Settings {
 			'retention_days'      => $this->sanitize_retention( isset( $_POST['retention_days'] ) ? sanitize_text_field( wp_unslash( $_POST['retention_days'] ) ) : '0' ),
 			'delete_on_uninstall' => ! empty( $_POST['delete_on_uninstall'] ),
 			'style_widget'        => ! empty( $_POST['style_widget'] ),
-			'widget_skeletons'    => ! empty( $_POST['widget_skeletons'] ),
 			'widget_clear_all'    => ! empty( $_POST['widget_clear_all'] ),
 			'clear_all_label'     => substr( sanitize_text_field( isset( $_POST['clear_all_label'] ) ? wp_unslash( $_POST['clear_all_label'] ) : '' ), 0, 40 ),
 			'blocklist'           => $this->sanitize_blocklist( isset( $_POST['blocklist'] ) ? sanitize_textarea_field( wp_unslash( $_POST['blocklist'] ) ) : '' ),

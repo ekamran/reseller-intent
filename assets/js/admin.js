@@ -68,12 +68,9 @@
 
 	var PANELS = [
 		{ key: 'trend', label: __( 'Search vs Cart Trend', 'reseller-intent' ) },
-		{ key: 'funnel', label: __( 'Conversion Funnel', 'reseller-intent' ) },
 		{ key: 'tlds', label: __( 'Searched TLDs', 'reseller-intent' ) },
 		{ key: 'carted', label: __( 'Carted Domains', 'reseller-intent' ) },
-		{ key: 'opportunities', label: __( 'Missed Opportunities', 'reseller-intent' ) },
 		{ key: 'repeats', label: __( 'Repeat Demand', 'reseller-intent' ) },
-		{ key: 'selection', label: __( 'Selection Behavior', 'reseller-intent' ) },
 		{ key: 'quality', label: __( 'Availability & Devices', 'reseller-intent' ) },
 		{ key: 'pages', label: __( 'Search by Page', 'reseller-intent' ) },
 		{ key: 'countries', label: __( 'Top Countries', 'reseller-intent' ) },
@@ -492,58 +489,29 @@
 
 	function CartedPanel(props) {
 		var carted = props.carted || { domains: [], tlds: [] };
+		var cartSizes = props.cartSizes || [];
+		var cartTotal = cartSizes.reduce(function(sum, b) { return sum + b.count; }, 0);
 		function mapItem(row) {
 			return [row.domain, fmt(row.count)];
 		}
 		var rows = carted.domains.map(mapItem);
 		return el(Panel, { title: __( 'Carted Domains', 'reseller-intent' ), note: __( 'What shoppers actually sent to cart.', 'reseller-intent' ) },
+			cartTotal > 0
+				? el('div', { className: 'ri-bars ri-cart-split' }, cartSizes.map(function(bucket, i) {
+					return el(BarRow, {
+						key: i,
+						label: bucket.label,
+						width: pct(bucket.count, cartTotal),
+						value: fmt(bucket.count) + ' (' + fmt(pct(bucket.count, cartTotal), 1) + '%)'
+					});
+				}))
+				: null,
 			carted.tlds.length
 				? el('div', { className: 'ri-chips' }, carted.tlds.map(function(tld, i) {
 					return el(StatChip, { key: i, value: fmt(tld.count), label: tld.label });
 				}))
 				: null,
 			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Added', 'reseller-intent' )], rows: rows, empty: __( 'Cart clicks will land here. Tracking is live, watch the Last event chip up top.', 'reseller-intent' ), colWidths: ['', '80px'], initialFetched: 15, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('carted', offset, mapItem); } : null })
-		);
-	}
-
-	function OpportunitiesPanel(props) {
-		var items = props.items || [];
-		function mapItem(row) {
-			return [row.domain, fmt(row.count), row.last];
-		}
-		var rows = items.map(mapItem);
-
-		return el(Panel, { title: __( 'Missed Opportunities', 'reseller-intent' ), note: __( 'Searched and available, but never taken to cart.', 'reseller-intent' ) },
-			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Last seen', 'reseller-intent' )], rows: rows, empty: __( 'Nothing missed. Names that were searched and available but never bought will show here.', 'reseller-intent' ), colWidths: ['', '100px', '125px'], copyList: true, initialFetched: 15, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('opportunities', offset, mapItem); } : null })
-		);
-	}
-
-	function SelectionPanel(props) {
-		var selection = props.selection || { total: 0, exact: 0, top: [], pairs: [] };
-		var exactRate = pct(selection.exact, selection.total);
-		function mapTop(row) {
-			return [row.domain, fmt(row.hits)];
-		}
-		function mapPair(row) {
-			return [row.searched, row.selected, fmt(row.hits)];
-		}
-		var topRows = selection.top.map(mapTop);
-		var pairRows = selection.pairs.map(mapPair);
-
-		return el(Panel, { title: __( 'Selection Behavior', 'reseller-intent' ), note: __( 'What gets picked, and what taken searches settle for.', 'reseller-intent' ) },
-			selection.total > 0
-				? el('div', { className: 'ri-chips' },
-					el(StatChip, { value: fmt(selection.total), label: __( 'Select clicks', 'reseller-intent' ) }),
-					el(StatChip, { value: fmt(exactRate, 1) + '%', label: __( 'Kept searched name', 'reseller-intent' ) })
-				)
-				: null,
-			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Selects', 'reseller-intent' )], rows: topRows, empty: __( 'Select clicks will appear once visitors pick a result from the list.', 'reseller-intent' ), colWidths: ['', '95px'], initialFetched: 25, totalRows: (props.totals || {}).selectionTop, loadMore: props.loadRows ? function(offset) { return props.loadRows('selection_top', offset, mapTop); } : null }),
-			pairRows.length
-				? el(Fragment, null,
-					el('p', { className: 'ri-subhead' }, __( 'Searched → settled for', 'reseller-intent' )),
-					el(MiniTable, { columns: [__( 'Searched', 'reseller-intent' ), __( 'Selected instead', 'reseller-intent' ), __( 'Times', 'reseller-intent' )], rows: pairRows, empty: '', colWidths: ['', '', '80px'], initialFetched: 25, totalRows: (props.totals || {}).selectionPairs, loadMore: props.loadRows ? function(offset) { return props.loadRows('selection_pairs', offset, mapPair); } : null })
-				)
-				: null
 		);
 	}
 
@@ -601,49 +569,6 @@
 						: el('p', { className: 'ri-empty' }, __( 'No device data in this range yet.', 'reseller-intent' ))
 				)
 			)
-		);
-	}
-
-	function FunnelPanel(props) {
-		var now = props.now || {};
-		var cartSizes = props.cartSizes || [];
-		var maxStage = Math.max(1, now.searches || 0);
-		var stages = [
-			{ label: __( 'Searches', 'reseller-intent' ), value: now.searches || 0, color: '#f0f0f1' },
-			{ label: __( 'Cart Clicks', 'reseller-intent' ), value: now.cartClicks || 0, color: '#dcdcde' },
-			{ label: __( 'Domains Added', 'reseller-intent' ), value: now.domainsAdded || 0, color: '#DCE3F2' }
-		];
-		var cartTotal = cartSizes.reduce(function(sum, b) { return sum + b.count; }, 0);
-
-		return el(Panel, { title: __( 'Conversion Funnel', 'reseller-intent' ), note: __( 'Searches → Cart Clicks → Domains Added.', 'reseller-intent' ) },
-			el('div', { className: 'ri-funnel' }, stages.map(function(stage, i) {
-				var carry = i > 0 && stages[i - 1].value > 0
-					? fmt(pct(stage.value, stages[i - 1].value), 1) + '%'
-					: null;
-				return el('div', { className: 'ri-funnel-bar', key: i },
-					el('span', { className: 'ri-funnel-fill', style: { width: pct(stage.value, maxStage) + '%', background: stage.color } }),
-					el('span', { className: 'ri-funnel-text' },
-						el('span', null, stage.label),
-						el('span', null,
-							fmt(stage.value),
-							carry ? el('span', { className: 'ri-funnel-rate' }, carry + ' of prev') : null
-						)
-					)
-				);
-			})),
-			cartTotal > 0
-				? el(Fragment, null,
-					el('p', { className: 'ri-subhead' }, __( 'Cart size split', 'reseller-intent' )),
-					el('div', { className: 'ri-bars' }, cartSizes.map(function(bucket, i) {
-						return el(BarRow, {
-							key: i,
-							label: bucket.label,
-							width: pct(bucket.count, cartTotal),
-							value: fmt(bucket.count) + ' (' + fmt(pct(bucket.count, cartTotal), 1) + '%)'
-						});
-					}))
-				)
-				: null
 		);
 	}
 
@@ -1109,12 +1034,9 @@
 									el('span', null, el('i', { className: 'ri-dot', style: { background: INK } }), __( 'Cart clicks', 'reseller-intent' ))
 								)
 							) },
-							{ key: 'funnel', span: 4, short: true, isEmpty: !now.searches, node: el(FunnelPanel, { now: now, cartSizes: data.cartSizes }) },
 							{ key: 'tlds', span: 4, isEmpty: !data.tlds.items.length, node: el(TldPanel, { items: data.tlds.items, total: data.tlds.total, totalRows: (data.totals || {}).tlds, loadRows: loadRows }) },
-							{ key: 'carted', span: 4, isEmpty: !data.carted.domains.length, node: el(CartedPanel, { carted: data.carted, totalRows: (data.totals || {}).carted, loadRows: loadRows }) },
-							{ key: 'opportunities', span: 4, isEmpty: !data.opportunities.length, node: el(OpportunitiesPanel, { items: data.opportunities, totalRows: (data.totals || {}).opportunities, loadRows: loadRows }) },
+							{ key: 'carted', span: 4, isEmpty: !data.carted.domains.length, node: el(CartedPanel, { carted: data.carted, cartSizes: data.cartSizes, totalRows: (data.totals || {}).carted, loadRows: loadRows }) },
 							{ key: 'repeats', span: 4, isEmpty: !data.repeats.length, node: el(DemandPanel, { repeats: data.repeats, totalRows: (data.totals || {}).repeats, loadRows: loadRows }) },
-							{ key: 'selection', span: 8, isEmpty: !data.selection.total, node: el(SelectionPanel, { selection: data.selection, totals: data.totals, loadRows: loadRows }) },
 							{ key: 'pages', span: 4, short: true, isEmpty: !data.pages.length, node: el(PagesPanel, { pages: data.pages }) },
 							{ key: 'countries', span: 4, short: true, isEmpty: !data.countries.items.length, node: el(CountriesPanel, { countries: data.countries }) },
 							{ key: 'recent', span: 12, isEmpty: !data.recent.length, node: el(RecentLog, { recent: data.recent }) }

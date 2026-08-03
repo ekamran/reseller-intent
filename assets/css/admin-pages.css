@@ -150,9 +150,18 @@
 	font-size: 13.5px;
 }
 
-.rintent-check-group label {
+/* Direct children only: the WP color picker nests its own label around
+ * the hex input, block-ifying that one wraps its Clear button to the
+ * next line */
+.rintent-check-group > label,
+.rintent-children > label {
 	display: block;
 	padding: 3px 0;
+}
+
+.rintent-check-group .wp-picker-input-wrap label {
+	display: inline-block;
+	padding: 0;
 }
 
 .rintent-check-group small {

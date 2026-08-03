@@ -719,8 +719,6 @@ final class Reseller_Intent_Admin {
 				'actionNonce' => wp_create_nonce( 'rintent_admin_actions' ),
 				'notice'      => isset( $_GET['rintent_notice'] ) ? sanitize_key( wp_unslash( $_GET['rintent_notice'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display-only notice slug from our own redirects.
 				'tzLabel'     => wp_timezone_string(),
-				'accentColor' => Reseller_Intent_Settings::accent_color(),
-				'accentText'  => Reseller_Intent_Settings::accent_text_color(),
 			)
 		);
 	}
@@ -1006,39 +1004,25 @@ final class Reseller_Intent_Admin {
 		$kpi_now  = $this->get_kpi_counts( $table_name, $start, $end );
 		$kpi_prev = $bounded ? $this->get_kpi_counts( $table_name, $prev_start, $prev_end ) : null;
 
-		// TLD distribution.
-		$tld_rows  = $wpdb->get_results(
+		// TLD ranking: a plain top slice, the pager fetches deeper rows.
+		$tld_rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT LOWER(SUBSTRING_INDEX(domain_query, '.', -1)) AS tld, SUM(event_count) AS hits
 				FROM {$table_name}
 				WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s
 				GROUP BY tld
 				ORDER BY hits DESC
-				LIMIT 40",
+				LIMIT 25",
 				'%' . $wpdb->esc_like( '.' ) . '%',
 				$range_start,
 				$range_end
 			)
 		);
-		$tlds      = array();
-		$tld_total = 0;
-		$others    = 0;
-		foreach ( $tld_rows as $i => $tld_row ) {
-			$hits       = (int) $tld_row->hits;
-			$tld_total += $hits;
-			if ( $i < 12 ) {
-				$tlds[] = array(
-					'label' => '.' . sanitize_key( (string) $tld_row->tld ),
-					'count' => $hits,
-				);
-			} else {
-				$others += $hits;
-			}
-		}
-		if ( $others > 0 ) {
+		$tlds     = array();
+		foreach ( $tld_rows as $tld_row ) {
 			$tlds[] = array(
-				'label' => __( 'Others', 'reseller-intent' ),
-				'count' => $others,
+				'label' => '.' . sanitize_key( (string) $tld_row->tld ),
+				'count' => (int) $tld_row->hits,
 			);
 		}
 
@@ -1225,7 +1209,6 @@ final class Reseller_Intent_Admin {
 			),
 			'tlds'          => array(
 				'items' => $tlds,
-				'total' => $tld_total,
 			),
 			'trend'         => $trend,
 			'cartSizes'     => $cart_sizes,
@@ -1438,17 +1421,6 @@ final class Reseller_Intent_Admin {
 		}
 		arsort( $domain_counts );
 
-		$tld_counts = array();
-		foreach ( $domain_counts as $domain => $count ) {
-			$dot = strrpos( $domain, '.' );
-			if ( false === $dot ) {
-				continue;
-			}
-			$tld                = '.' . substr( $domain, $dot + 1 );
-			$tld_counts[ $tld ] = isset( $tld_counts[ $tld ] ) ? $tld_counts[ $tld ] + $count : $count;
-		}
-		arsort( $tld_counts );
-
 		$domains = array();
 		foreach ( array_slice( $domain_counts, 0, 15, true ) as $domain => $count ) {
 			$domains[] = array(
@@ -1456,17 +1428,9 @@ final class Reseller_Intent_Admin {
 				'count'  => (int) $count,
 			);
 		}
-		$tlds = array();
-		foreach ( array_slice( $tld_counts, 0, 6, true ) as $tld => $count ) {
-			$tlds[] = array(
-				'label' => (string) $tld,
-				'count' => (int) $count,
-			);
-		}
 
 		return array(
 			'domains' => $domains,
-			'tlds'    => $tlds,
 			'total'   => count( $domain_counts ),
 		);
 	}

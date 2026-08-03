@@ -6,35 +6,29 @@
 	var useState = wp.element.useState;
 	var useEffect = wp.element.useEffect;
 	var useMemo = wp.element.useMemo;
-	var useRef = wp.element.useRef;
-	var Fragment = wp.element.Fragment;
 
 	var __ = wp.i18n.__;
+	var _n = wp.i18n._n;
 	var sprintf = wp.i18n.sprintf;
 
-	var ACCENT = (window.resellerIntentAdmin && resellerIntentAdmin.accentColor) || '#3858e9';
-	var ACCENT_TEXT = (window.resellerIntentAdmin && resellerIntentAdmin.accentText) || '#ffffff';
+	/*
+	 * Cobalt D2: the dashboard's own fixed palette (assets/css/admin.css owns
+	 * the tokens). Only the SVG chart needs the raw values here.
+	 */
+	var ACCENT = '#2456C4';
+	var INK = '#1A222C';
 
 	/**
-	 * The accent at a given alpha, for chart fills. Derived rather than
-	 * hard coded so the chart always matches whatever accent is saved.
+	 * The accent at a given alpha, for the chart's area fill.
 	 */
 	function accentAlpha(alpha) {
-		var hex = String(ACCENT).replace('#', '');
-
-		if (3 === hex.length) {
-			hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-		}
-
-		if (6 !== hex.length || /[^0-9a-f]/i.test(hex)) {
-			return 'rgba(56,88,233,' + alpha + ')';
-		}
+		var hex = ACCENT.replace('#', '');
 
 		return 'rgba(' + parseInt(hex.slice(0, 2), 16) + ','
 			+ parseInt(hex.slice(2, 4), 16) + ','
 			+ parseInt(hex.slice(4, 6), 16) + ',' + alpha + ')';
 	}
-	var INK = '#1d2327';
+
 	var TZ_LABEL = (window.resellerIntentAdmin && resellerIntentAdmin.tzLabel) || '';
 
 	var RANGES = [
@@ -43,6 +37,12 @@
 		{ key: '90', label: __( '90d', 'reseller-intent' ) },
 		{ key: 'all', label: __( 'Lifetime', 'reseller-intent' ) }
 	];
+
+	// One geometry for every list panel: 10 rows per page, pager pinned in
+	// the footer, deep paging stops at 500 rows; past that the export is
+	// the tool.
+	var PAGE_SIZE = 10;
+	var DEEP_CAP = 500;
 
 	function fetchPanelRows(panel, range, custom, offset, mapRow) {
 		var body = new window.FormData();
@@ -69,13 +69,16 @@
 	var PANELS = [
 		{ key: 'trend', label: __( 'Search vs Cart Trend', 'reseller-intent' ) },
 		{ key: 'tlds', label: __( 'Searched TLDs', 'reseller-intent' ) },
-		{ key: 'carted', label: __( 'Carted Domains', 'reseller-intent' ) },
 		{ key: 'repeats', label: __( 'Repeat Demand', 'reseller-intent' ) },
-		{ key: 'quality', label: __( 'Availability & Devices', 'reseller-intent' ) },
+		{ key: 'carted', label: __( 'Carted Domains', 'reseller-intent' ) },
 		{ key: 'pages', label: __( 'Search by Page', 'reseller-intent' ) },
 		{ key: 'countries', label: __( 'Top Countries', 'reseller-intent' ) },
 		{ key: 'recent', label: __( 'Recent Searches', 'reseller-intent' ) }
 	];
+
+	// Panels hidden until the visitor opts in. Countries needs an edge geo
+	// header most sites do not send, so it starts off.
+	var DEFAULT_HIDDEN = { countries: true };
 
 	var PANELS_STORAGE = 'rintentHiddenPanels';
 
@@ -114,7 +117,7 @@
 		});
 	}
 
-	function pct(part, total, decimals) {
+	function pct(part, total) {
 		if (!total) {
 			return 0;
 		}
@@ -152,74 +155,51 @@
 		return el('span', { className: cls, title: previous === null ? '' : __( 'vs previous period', 'reseller-intent' ) }, text);
 	}
 
-	function Panel(props) {
-		return el(
-			'section',
-			{ className: 'ri-panel' + (props.className ? ' ' + props.className : '') },
-			el('header', { className: 'ri-panel-head' },
-				el('h2', null, props.title),
-				props.note ? el('p', { className: 'ri-note' }, props.note) : null
-			),
-			props.children
-		);
-	}
-
-	function MiniTable(props) {
-		var shellRef = useRef(null);
-		var expandState = useState(false);
-		var expanded = expandState[0];
-		var setExpanded = expandState[1];
-		var extraState = useState({ rows: [], hasMore: null, loading: false });
-		var extra = extraState[0];
-		var setExtra = extraState[1];
-		var maxRows = props.maxRows || 6;
-		var PAGE_SIZE = 15;
-		var pageState = useState(1);
-		var page = pageState[0];
-		var setPage = pageState[1];
-
-		// Re-span this table's masonry cell after any size-changing state,
-		// deterministically (ResizeObserver sleeps in background tabs).
-		useEffect(function() {
-			var node = shellRef.current;
-			var cell = node && node.closest ? node.closest('.ri-cell') : null;
-			var panel = cell ? cell.querySelector('.ri-panel') : null;
-
-			if (panel) {
-				cell.style.gridRowEnd = 'span ' + Math.max(2, Math.ceil((panel.getBoundingClientRect().height + 16) / 8));
-			}
-		});
+	/**
+	 * The one list-panel machine: header, exactly 10 rows of 36px, pager
+	 * pinned in the footer. Row partners always match height, so the grid
+	 * never opens gaps. Short pages keep the height; the structured space
+	 * reads as room to grow.
+	 */
+	function ListPanel(props) {
+		var pageSize = props.pageSize || PAGE_SIZE;
+		var _p = useState(1), page = _p[0], setPage = _p[1];
+		var _x = useState({ rows: [], hasMore: null, loading: false }), extra = _x[0], setExtra = _x[1];
 
 		var allRows = props.rows.concat(extra.rows);
-		// Expanded view is PAGED at a fixed height instead of growing
-		// forever: 15 rows per page, next fetches quietly when needed.
-		var visible = expanded ? allRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) : allRows.slice(0, maxRows);
-		var hidden = Math.max(props.totalRows || 0, allRows.length) - maxRows;
+		var loadedTotal = allRows.length;
+		var serverTotal = props.totalRows || 0;
+		var knownTotal = Math.max(serverTotal, loadedTotal);
+		var capped = knownTotal > DEEP_CAP;
+		var cappedTotal = Math.min(knownTotal, DEEP_CAP);
+		var totalPages = Math.max(1, Math.ceil(cappedTotal / pageSize));
 		// Until the server says otherwise, a full first slice means there
 		// is probably more on the server.
 		var hasMore = extra.hasMore === null
 			? !!(props.loadMore && props.rows.length >= (props.initialFetched || 25))
 			: extra.hasMore;
-		var lastLoadedPage = Math.ceil(allRows.length / PAGE_SIZE);
-		var totalRows = props.totalRows || 0;
-		var totalPages = totalRows ? Math.max(1, Math.ceil(totalRows / PAGE_SIZE)) : 0;
-		var canNext = totalPages ? page < totalPages : (page < lastLoadedPage || hasMore);
+		// With a known server total the page count is authoritative; without
+		// one (Countries) the pager keeps going while the server has more.
+		var canNext = (page * pageSize < cappedTotal)
+			|| (!serverTotal && !!props.loadMore && hasMore && page * pageSize < DEEP_CAP);
+
+		var visible = allRows.slice((page - 1) * pageSize, page * pageSize);
 
 		function goNext() {
-			if (page < lastLoadedPage) {
+			if (!canNext || extra.loading) {
+				return;
+			}
+			// Fetch ahead when the next page would render short of rows the
+			// server still has, so middle pages always arrive full.
+			var nextEnd = (page + 1) * pageSize;
+			if (nextEnd <= loadedTotal || !props.loadMore || !hasMore) {
 				setPage(page + 1);
 				return;
 			}
-			if (totalPages && page >= totalPages) {
-				return;
-			}
-			if ((!totalPages && !hasMore) || extra.loading || !props.loadMore) {
-				return;
-			}
 			setExtra({ rows: extra.rows, hasMore: extra.hasMore, loading: true });
-			props.loadMore(allRows.length).then(function(result) {
+			props.loadMore(loadedTotal).then(function(result) {
 				setExtra({ rows: extra.rows.concat(result.rows), hasMore: result.hasMore, loading: false });
-				if (result.rows.length) {
+				if (loadedTotal + result.rows.length > page * pageSize) {
 					setPage(page + 1);
 				}
 			}).catch(function() {
@@ -227,84 +207,54 @@
 			});
 		}
 
-		/*
-		 * Column sizing: the first column flexes and truncates long values
-		 * with a full-value tooltip; fixed-width columns (numbers, dates)
-		 * hug the right so a lone "1" never floats in a wide gap.
-		 */
+		var footLabel = props.footLabel || '';
+		if (capped) {
+			/* translators: 1: number of listed rows, 2: total number of rows */
+			footLabel = sprintf( __( '%1$s of %2$s. Export has everything.', 'reseller-intent' ), fmt(DEEP_CAP), fmt(knownTotal) );
+		}
+
 		var colWidths = props.colWidths || props.columns.map(function(c, i) { return i === 0 ? '' : '110px'; });
 
-		return el('div', { className: 'ri-table-shell', ref: shellRef },
-			el('table', { className: 'ri-table ri-table--fixed' + (props.tableClass ? ' ' + props.tableClass : '') },
-				el('colgroup', null, colWidths.map(function(w, i) {
-					return el('col', { key: i, style: w ? { width: w } : null });
-				})),
-				el('thead', null,
-					el('tr', null, props.columns.map(function(col, i) {
-						return el('th', { key: i, className: colWidths[i] ? 'ri-col-tight' : null, title: typeof col === 'string' ? col : null }, col);
-					}))
-				),
-				el('tbody', null,
-					visible.length
-						? visible.map(function(cells, r) {
-							return el('tr', { key: r }, cells.map(function(cell, c) {
-								return el('td', {
-									key: c,
-									className: colWidths[c] ? 'ri-col-tight' : null,
-									title: typeof cell === 'string' ? cell : null
-								}, cell);
-							}));
-						})
-						: el('tr', null, el('td', { className: 'ri-empty', colSpan: props.columns.length }, props.empty))
+		return el('section', { className: 'ri-panel' + (props.className ? ' ' + props.className : '') },
+			el('header', { className: 'ri-panel-head' },
+				el('h2', null, props.title),
+				props.note ? el('p', { className: 'ri-note' }, props.note) : null
+			),
+			props.tools || null,
+			el('div', { className: 'ri-panel-body' },
+				props.children,
+				el('table', { className: 'ri-table' },
+					el('colgroup', null, colWidths.map(function(w, i) {
+						return el('col', { key: i, style: w ? { width: w } : null });
+					})),
+					el('thead', null,
+						el('tr', null, props.columns.map(function(col, i) {
+							return el('th', { key: i, className: colWidths[i] ? 'ri-col-tight' : null, title: typeof col === 'string' ? col : null }, col);
+						}))
+					),
+					el('tbody', null,
+						visible.length
+							? visible.map(function(cells, r) {
+								return el('tr', { key: r }, cells.map(function(cell, c) {
+									return el('td', {
+										key: c,
+										className: colWidths[c] ? 'ri-col-tight' : null,
+										title: typeof cell === 'string' ? cell : null
+									}, cell);
+								}));
+							})
+							: el('tr', null, el('td', { className: 'ri-empty', colSpan: props.columns.length }, props.empty))
+					)
 				)
 			),
-			el('span', { className: 'ri-showmore-row' },
-				props.copyList && allRows.length ? el('button', {
-					className: 'ri-showmore',
-					onClick: function(event) {
-						var text = allRows.map(function(r) { return typeof r[0] === 'string' ? r[0] : ''; }).filter(Boolean).join('\n');
-						if (navigator.clipboard && text) {
-							navigator.clipboard.writeText(text);
-							var btn = event.currentTarget;
-							var original = btn.textContent;
-							btn.textContent = __( 'Copied!', 'reseller-intent' );
-							window.setTimeout(function() { btn.textContent = original; }, 1200);
-						}
-					}
-				}, sprintf( /* translators: %s: number of domains */ __( 'Copy %s domains', 'reseller-intent' ), fmt(allRows.length) )) : null,
-				hidden > 0 && ! expanded ? el('button', {
-					className: 'ri-showmore',
-					'aria-expanded': false,
-					onClick: function() { setExpanded(true); setPage(1); }
-				}, sprintf( /* translators: %s: number of hidden rows */ __( 'Show %s more', 'reseller-intent' ), fmt(hidden) )) : null,
-				expanded && (canNext || page > 1) ? el('span', { className: 'ri-pager' },
-					el('button', { className: 'button', disabled: page <= 1, 'aria-label': __( 'Previous page', 'reseller-intent' ), onClick: function() { setPage(Math.max(1, page - 1)); } }, '\u2039'),
-					el('span', { className: 'ri-pager-state' }, extra.loading ? '\u2026' : (totalPages ? fmt(page) + ' / ' + fmt(totalPages) : fmt(page))),
-					el('button', { className: 'button', disabled: !canNext || extra.loading, 'aria-label': __( 'Next page', 'reseller-intent' ), onClick: goNext }, '\u203a')
-				) : null,
-				expanded ? el('button', {
-					className: 'ri-showmore',
-					'aria-expanded': true,
-					onClick: function() { setExpanded(false); setPage(1); }
-				}, __( 'Show less', 'reseller-intent' )) : null
+			el('footer', { className: 'ri-panel-foot' },
+				el('span', { className: 'ri-foot-label' }, footLabel),
+				el('span', { className: 'ri-pager' },
+					el('button', { className: 'ri-page-btn', disabled: page <= 1, 'aria-label': __( 'Previous page', 'reseller-intent' ), onClick: function() { setPage(Math.max(1, page - 1)); } }, '‹'),
+					el('span', { className: 'ri-pager-state' }, extra.loading ? '…' : fmt(page) + ' / ' + fmt(totalPages)),
+					el('button', { className: 'ri-page-btn', disabled: !canNext || extra.loading, 'aria-label': __( 'Next page', 'reseller-intent' ), onClick: goNext }, '›')
+				)
 			)
-		);
-	}
-
-	function BarRow(props) {
-		return el('div', { className: 'ri-bar-row' },
-			el('span', { className: 'ri-bar-label' }, props.label),
-			el('span', { className: 'ri-bar-track' },
-				el('span', { className: 'ri-bar-fill', style: { width: Math.min(100, props.width) + '%' } })
-			),
-			el('span', { className: 'ri-bar-value' }, props.value)
-		);
-	}
-
-	function StatChip(props) {
-		return el('div', { className: 'ri-chip' },
-			el('strong', null, props.value),
-			el('span', null, props.label)
 		);
 	}
 
@@ -315,7 +265,7 @@
 		var searches = props.searches || [];
 		var carts = props.carts || [];
 		var W = 640;
-		var H = 190;
+		var H = 260;
 		var padX = 36;
 		var padY = 14;
 		var plotW = W - padX - 10;
@@ -342,13 +292,13 @@
 			return el('line', {
 				key: 'g' + frac,
 				x1: padX, y1: y, x2: padX + plotW, y2: y,
-				stroke: '#eef2f7', strokeDasharray: '3 4'
+				stroke: '#eceff3', strokeDasharray: '3 4'
 			});
 		});
 
 		var yLabels = [
-			el('text', { key: 'ymax', x: padX - 6, y: padY + 4, fontSize: 9, textAnchor: 'end', fill: '#64748b' }, fmt(maxVal)),
-			el('text', { key: 'y0', x: padX - 6, y: padY + plotH + 3, fontSize: 9, textAnchor: 'end', fill: '#64748b' }, '0')
+			el('text', { key: 'ymax', x: padX - 6, y: padY + 4, fontSize: 9, textAnchor: 'end', fill: '#6d7585' }, fmt(maxVal)),
+			el('text', { key: 'y0', x: padX - 6, y: padY + plotH + 3, fontSize: 9, textAnchor: 'end', fill: '#6d7585' }, '0')
 		];
 
 		// sparse data renders as a near-invisible sliver, mark the active days
@@ -383,7 +333,7 @@
 					y: H - 8,
 					fontSize: 9,
 					textAnchor: isLast ? 'end' : (i === 0 ? 'start' : 'middle'),
-					fill: '#64748b'
+					fill: '#6d7585'
 				}, label));
 			}
 		});
@@ -394,10 +344,10 @@
 
 		return el('svg', { className: 'ri-trend', viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': __( 'Search vs cart trend chart', 'reseller-intent' ) },
 			gridLines,
-			el('line', { x1: padX, y1: padY + plotH, x2: padX + plotW, y2: padY + plotH, stroke: '#e2e8f0' }),
-			el('polygon', { points: areaPoints(searches), fill: accentAlpha(0.08) }),
+			el('line', { x1: padX, y1: padY + plotH, x2: padX + plotW, y2: padY + plotH, stroke: '#e4e7ed' }),
+			el('polygon', { points: areaPoints(searches), fill: accentAlpha(0.1) }),
 			el('polyline', { points: points(searches), fill: 'none', stroke: ACCENT, strokeWidth: 2.5, strokeLinejoin: 'round', strokeLinecap: 'round' }),
-			el('polyline', { points: points(carts), fill: 'none', stroke: INK, strokeWidth: 2.5, strokeLinejoin: 'round', strokeLinecap: 'round' }),
+			el('polyline', { points: points(carts), fill: 'none', stroke: INK, strokeWidth: 2, strokeOpacity: 0.55, strokeLinejoin: 'round', strokeLinecap: 'round' }),
 			dots,
 			yLabels,
 			axisLabels
@@ -434,187 +384,141 @@
 		}));
 	}
 
-	function TldPanel(props) {
-		var items = props.items || [];
-		var total = props.total || 0;
-		function mapItem(item) {
-			return [
-				item.label,
-				el(Fragment, null,
-					el('span', { className: 'ri-inline-track' },
-						el('span', { className: 'ri-inline-fill', style: { width: pct(item.count, total) + '%' } })
-					),
-					fmt(item.count) + ' (' + fmt(pct(item.count, total), 1) + '%)'
-				)
-			];
+	function TrendPanel(props) {
+		var trend = props.trend || {};
+		var availability = props.availability || { available: 0, taken: 0 };
+		var devices = props.devices || { mobile: 0, tablet: 0, desktop: 0 };
+		var availTotal = availability.available + availability.taken;
+		var deviceTotal = devices.mobile + (devices.tablet || 0) + devices.desktop;
+
+		var chips = [];
+		if (availTotal > 0) {
+			chips.push(el('span', { className: 'ri-stat-chip', key: 'avail', title: __( 'How often the searched name was free to register.', 'reseller-intent' ) },
+				__( 'Available', 'reseller-intent' ), ' ', el('b', null, fmt(pct(availability.available, availTotal), 0) + '%')
+			));
 		}
-		var rows = items.map(mapItem);
-		return el(Panel, { title: __( 'Searched TLDs', 'reseller-intent' ), note: __( 'Which extensions people look for.', 'reseller-intent' ) },
-			el(MiniTable, { columns: [__( 'TLD', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )], rows: rows, empty: __( 'No searches yet. Every search adds its TLD here.', 'reseller-intent' ), colWidths: ['', '200px'], initialFetched: 25, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('tlds', offset, mapItem); } : null })
+		if (deviceTotal > 0) {
+			chips.push(el('span', { className: 'ri-stat-chip', key: 'mobile', title: __( 'Share of searches made on a phone.', 'reseller-intent' ) },
+				__( 'Mobile', 'reseller-intent' ), ' ', el('b', null, fmt(pct(devices.mobile, deviceTotal), 0) + '%')
+			));
+		}
+
+		return el('section', { className: 'ri-panel' },
+			el('header', { className: 'ri-panel-head' },
+				el('h2', null, __( 'Search vs Cart Trend', 'reseller-intent' )),
+				el('p', { className: 'ri-note' }, props.bounded ? __( 'Daily activity in this range.', 'reseller-intent' ) : __( 'Monthly activity, all time.', 'reseller-intent' ))
+			),
+			el('div', { className: 'ri-panel-body ri-chart' },
+				chips.length ? el('div', { className: 'ri-stat-chips' }, chips) : null,
+				el(TrendChart, trend),
+				el('div', { className: 'ri-legend' },
+					el('span', null, el('i', { className: 'ri-dot', style: { background: ACCENT } }), __( 'Searches', 'reseller-intent' )),
+					el('span', null, el('i', { className: 'ri-dot ri-dot--ink' }), __( 'Cart clicks', 'reseller-intent' ))
+				)
+			),
+			el('footer', { className: 'ri-panel-foot' },
+				el('span', { className: 'ri-foot-label' }, props.rangeLabel || ''),
+				el('span', null)
+			)
 		);
+	}
+
+	function TldPanel(props) {
+		function mapItem(item) {
+			return [item.label, fmt(item.count)];
+		}
+		return el(ListPanel, {
+			title: __( 'Searched TLDs', 'reseller-intent' ),
+			note: __( 'Which extensions people look for.', 'reseller-intent' ),
+			columns: [__( 'TLD', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )],
+			colWidths: ['', '110px'],
+			rows: (props.items || []).map(mapItem),
+			empty: __( 'No searches yet. Every search adds its TLD here.', 'reseller-intent' ),
+			initialFetched: 25,
+			totalRows: props.totalRows,
+			/* translators: %s: number of TLDs */
+			footLabel: sprintf( _n( '%s TLD', '%s TLDs', props.totalRows || 0, 'reseller-intent' ), fmt(props.totalRows || 0) ),
+			loadMore: props.loadRows ? function(offset) { return props.loadRows('tlds', offset, mapItem); } : null
+		});
 	}
 
 	function DemandPanel(props) {
 		function mapItem(row) {
 			return [row.domain, fmt(row.hits)];
 		}
-		var repeats = (props.repeats || []).map(mapItem);
-		return el(Panel, { title: __( 'Repeat Demand', 'reseller-intent' ), note: __( 'Domains searched 2+ times, buyers circling.', 'reseller-intent' ) },
-			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )], rows: repeats, empty: __( 'Quiet so far. When a visitor searches the same name twice, it lands here, a buyer circling.', 'reseller-intent' ), colWidths: ['', '100px'], initialFetched: 25, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('repeats', offset, mapItem); } : null })
-		);
+		return el(ListPanel, {
+			title: __( 'Repeat Demand', 'reseller-intent' ),
+			note: __( 'Domains searched 2+ times, buyers circling.', 'reseller-intent' ),
+			columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )],
+			colWidths: ['', '100px'],
+			rows: (props.repeats || []).map(mapItem),
+			empty: __( 'Quiet so far. When a visitor searches the same name twice, it lands here, a buyer circling.', 'reseller-intent' ),
+			initialFetched: 25,
+			totalRows: props.totalRows,
+			/* translators: %s: number of repeated domains */
+			footLabel: sprintf( _n( '%s repeat', '%s repeats', props.totalRows || 0, 'reseller-intent' ), fmt(props.totalRows || 0) ),
+			loadMore: props.loadRows ? function(offset) { return props.loadRows('repeats', offset, mapItem); } : null
+		});
 	}
 
 	function CartedPanel(props) {
-		var carted = props.carted || { domains: [], tlds: [] };
+		var carted = props.carted || { domains: [] };
 		var cartSizes = props.cartSizes || [];
 		var cartTotal = cartSizes.reduce(function(sum, b) { return sum + b.count; }, 0);
 		function mapItem(row) {
 			return [row.domain, fmt(row.count)];
 		}
-		var rows = carted.domains.map(mapItem);
-		return el(Panel, { title: __( 'Carted Domains', 'reseller-intent' ), note: __( 'What shoppers actually sent to cart.', 'reseller-intent' ) },
-			cartTotal > 0
-				? el('div', { className: 'ri-bars ri-cart-split' }, cartSizes.map(function(bucket, i) {
-					return el(BarRow, {
-						key: i,
-						label: bucket.label,
-						width: pct(bucket.count, cartTotal),
-						value: fmt(bucket.count) + ' (' + fmt(pct(bucket.count, cartTotal), 1) + '%)'
-					});
-				}))
-				: null,
-			carted.tlds.length
-				? el('div', { className: 'ri-chips' }, carted.tlds.map(function(tld, i) {
-					return el(StatChip, { key: i, value: fmt(tld.count), label: tld.label });
-				}))
-				: null,
-			el(MiniTable, { columns: [__( 'Domain', 'reseller-intent' ), __( 'Added', 'reseller-intent' )], rows: rows, empty: __( 'Cart clicks will land here. Tracking is live, watch the Last event chip up top.', 'reseller-intent' ), colWidths: ['', '80px'], initialFetched: 15, totalRows: props.totalRows, loadMore: props.loadRows ? function(offset) { return props.loadRows('carted', offset, mapItem); } : null })
-		);
+
+		// The split strip takes about three rows of the body, so the table
+		// pages at seven to keep the panel's height on the shared grid.
+		var split = cartTotal > 0
+			? el('div', { className: 'ri-split' }, cartSizes.map(function(bucket, i) {
+				return el('div', { className: 'ri-split-row', key: i },
+					el('span', { className: 'ri-split-lbl' }, bucket.label),
+					el('span', { className: 'ri-split-bar' },
+						el('i', { style: { width: Math.min(100, pct(bucket.count, cartTotal)) + '%' } })
+					),
+					el('span', { className: 'ri-split-val' }, fmt(bucket.count) + ' (' + fmt(pct(bucket.count, cartTotal), 0) + '%)')
+				);
+			}))
+			: null;
+
+		return el(ListPanel, {
+			title: __( 'Carted Domains', 'reseller-intent' ),
+			note: __( 'What shoppers sent to cart.', 'reseller-intent' ),
+			columns: [__( 'Domain', 'reseller-intent' ), __( 'Sent', 'reseller-intent' )],
+			colWidths: ['', '80px'],
+			rows: carted.domains.map(mapItem),
+			empty: __( 'Cart clicks will land here. Tracking is live, watch the Last event chip up top.', 'reseller-intent' ),
+			pageSize: split ? 7 : PAGE_SIZE,
+			initialFetched: 15,
+			totalRows: props.totalRows,
+			/* translators: %s: number of carted domains */
+			footLabel: sprintf( _n( '%s domain', '%s domains', props.totalRows || 0, 'reseller-intent' ), fmt(props.totalRows || 0) ),
+			loadMore: props.loadRows ? function(offset) { return props.loadRows('carted', offset, mapItem); } : null,
+			children: split
+		});
 	}
 
 	function PagesPanel(props) {
 		var items = props.pages || [];
-		var total = items.reduce(function(sum, row) { return sum + (row.searches || 0); }, 0);
 		var rows = items.map(function(row) {
 			return [
 				el('span', { title: row.path }, row.label || row.path),
-				el(Fragment, null,
-					el('span', { className: 'ri-inline-track' },
-						el('span', { className: 'ri-inline-fill', style: { width: pct(row.searches, total) + '%' } })
-					),
-					fmt(row.searches) + ' (' + fmt(pct(row.searches, total), 1) + '%)'
-				),
+				fmt(row.searches),
 				fmt(row.carts)
 			];
 		});
-		return el(Panel, { title: __( 'Search by Page', 'reseller-intent' ), note: __( 'Which page each search and cart click came from.', 'reseller-intent' ) },
-			el(MiniTable, { columns: [__( 'Page', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Cart clicks', 'reseller-intent' )], rows: rows, colWidths: ['', '158px', '78px'], tableClass: 'ri-table--pages', empty: __( 'Once searches come in, you will see which page they happen on.', 'reseller-intent' ) })
-		);
-	}
-
-	function QualityPanel(props) {
-		var availability = props.availability || { available: 0, taken: 0 };
-		var devices = props.devices || { mobile: 0, tablet: 0, desktop: 0 };
-		var availTotal = availability.available + availability.taken;
-		var availRate = pct(availability.available, availTotal);
-		var deviceTotal = devices.mobile + (devices.tablet || 0) + devices.desktop;
-
-		/*
-		 * This panel's content is fixed size forever (3 chips, 2 device
-		 * bars), so it renders as a wide short strip instead of being
-		 * stretched down a tall column it can never fill.
-		 */
-		return el(Panel, { title: __( 'Availability & Devices', 'reseller-intent' ), note: __( 'How often the searched name is free, and who is searching.', 'reseller-intent' ) },
-			el('div', { className: 'ri-quality-wide' },
-				el('div', { className: 'ri-quality-col' },
-					availTotal > 0
-						? el('div', { className: 'ri-chips' },
-							el(StatChip, { value: fmt(availRate, 1) + '%', label: __( 'Available', 'reseller-intent' ) }),
-							el(StatChip, { value: fmt(availability.available), label: __( 'Free', 'reseller-intent' ) }),
-							el(StatChip, { value: fmt(availability.taken), label: __( 'Taken', 'reseller-intent' ) })
-						)
-						: el('p', { className: 'ri-empty' }, __( 'No availability data in this range yet.', 'reseller-intent' ))
-				),
-				el('div', { className: 'ri-quality-col' },
-					el('p', { className: 'ri-subhead' }, __( 'Searches by device', 'reseller-intent' )),
-					deviceTotal > 0
-						? el('div', { className: 'ri-bars' },
-							el(BarRow, { label: __( 'Desktop', 'reseller-intent' ), width: pct(devices.desktop, deviceTotal), value: fmt(devices.desktop) + ' (' + fmt(pct(devices.desktop, deviceTotal), 1) + '%)' }),
-							el(BarRow, { label: __( 'Tablet', 'reseller-intent' ), width: pct(devices.tablet || 0, deviceTotal), value: fmt(devices.tablet || 0) + ' (' + fmt(pct(devices.tablet || 0, deviceTotal), 1) + '%)' }),
-							el(BarRow, { label: __( 'Mobile', 'reseller-intent' ), width: pct(devices.mobile, deviceTotal), value: fmt(devices.mobile) + ' (' + fmt(pct(devices.mobile, deviceTotal), 1) + '%)' })
-						)
-						: el('p', { className: 'ri-empty' }, __( 'No device data in this range yet.', 'reseller-intent' ))
-				)
-			)
-		);
-	}
-
-	function RecentLog(props) {
-		var _f = useState(''), filter = _f[0], setFilter = _f[1];
-		var _p = useState(1), page = _p[0], setPage = _p[1];
-		var perPage = 12;
-		var rows = props.recent || [];
-
-		var filtered = useMemo(function() {
-			var query = filter.trim().toLowerCase();
-			if (!query) {
-				return rows;
-			}
-			return rows.filter(function(row) {
-				return row.domain.indexOf(query) !== -1;
-			});
-		}, [rows, filter]);
-
-		var totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-		var safePage = Math.min(page, totalPages);
-		var pageRows = filtered.slice((safePage - 1) * perPage, safePage * perPage).map(function(row) {
-			var availCell = '-';
-			if (row.available === true) {
-				availCell = el('span', { className: 'ri-tag is-good' }, __( 'Available', 'reseller-intent' ));
-			} else if (row.available === false) {
-				availCell = el('span', { className: 'ri-tag is-bad' }, __( 'Registered', 'reseller-intent' ));
-			}
-			return [row.domain, availCell, row.device || '-', row.time];
+		return el(ListPanel, {
+			title: __( 'Search by Page', 'reseller-intent' ),
+			note: __( 'Where each search and cart click happened.', 'reseller-intent' ),
+			columns: [__( 'Page', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Carts', 'reseller-intent' )],
+			colWidths: ['', '90px', '70px'],
+			rows: rows,
+			empty: __( 'Once searches come in, you will see which page they happen on.', 'reseller-intent' ),
+			/* translators: %s: number of pages */
+			footLabel: sprintf( _n( '%s page', '%s pages', items.length, 'reseller-intent' ), fmt(items.length) )
 		});
-
-		var noteText = rows.length === 1
-			? 'Latest search in this range (' + TZ_LABEL + ').'
-			: 'Latest ' + fmt(rows.length) + ' searches in this range (' + TZ_LABEL + ').';
-
-		return el(Panel, { title: __( 'Recent Searches', 'reseller-intent' ), note: noteText, className: 'ri-panel--wide' },
-			el('div', { className: 'ri-log-tools' },
-				el('input', {
-					type: 'search',
-					className: 'ri-log-filter',
-					placeholder: __( 'Filter domains...', 'reseller-intent' ),
-					value: filter,
-					onChange: function(event) {
-						setFilter(event.target.value);
-						setPage(1);
-					}
-				}),
-				totalPages > 1
-					? el('span', { className: 'ri-pager' },
-						el('button', {
-							className: 'button',
-							disabled: safePage <= 1,
-							onClick: function() { setPage(safePage - 1); }
-						}, '‹'),
-						el('span', { className: 'ri-pager-state' }, safePage + ' / ' + totalPages),
-						el('button', {
-							className: 'button',
-							disabled: safePage >= totalPages,
-							onClick: function() { setPage(safePage + 1); }
-						}, '›')
-					)
-					: null
-			),
-			el(MiniTable, {
-				columns: [__( 'Domain', 'reseller-intent' ), __( 'Result', 'reseller-intent' ), __( 'Device', 'reseller-intent' ), __( 'Searched At', 'reseller-intent' )], colWidths: ['', '90px', '95px', '155px'],
-				rows: pageRows,
-				empty: filter ? __( 'Nothing matches that filter.', 'reseller-intent' ) : __( 'No searches in this range.', 'reseller-intent' )
-			})
-		);
 	}
 
 	function flagEmoji(code) {
@@ -626,20 +530,82 @@
 
 	function CountriesPanel(props) {
 		var items = (props.countries && props.countries.items) || [];
-		var total = (props.countries && props.countries.total) || 0;
+		function mapItem(item) {
+			return [flagEmoji(item.code) + ' ' + item.code, fmt(item.hits || item.count)];
+		}
+		return el(ListPanel, {
+			title: __( 'Top Countries', 'reseller-intent' ),
+			note: __( 'Searches by visitor country (edge geo header).', 'reseller-intent' ),
+			columns: [__( 'Country', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )],
+			colWidths: ['', '110px'],
+			rows: items.map(mapItem),
+			empty: __( 'No country data yet. Your host/CDN needs to send a geo header (e.g. Cloudflare’s CF-IPCountry).', 'reseller-intent' ),
+			initialFetched: 20,
+			footLabel: __( 'Searches by country', 'reseller-intent' ),
+			loadMore: props.loadRows ? function(offset) { return props.loadRows('countries', offset, mapItem); } : null
+		});
+	}
 
-		return el(Panel, { title: __( 'Top Countries', 'reseller-intent' ), note: items.length ? 'Searches by visitor country (edge geo header).' : null },
-			items.length
-				? items.map(function(item) {
-					return el(BarRow, {
-						key: item.code,
-						label: flagEmoji(item.code) + ' ' + item.code,
-						width: pct(item.hits, total),
-						value: fmt(item.hits)
-					});
-				})
-				: el('p', { className: 'ri-empty' }, __( 'No country data yet. Your host/CDN needs to send a geo header (e.g. Cloudflare’s CF-IPCountry).', 'reseller-intent' ))
+	function RecentLog(props) {
+		var _f = useState(''), filter = _f[0], setFilter = _f[1];
+		var rows = props.recent || [];
+		var totalSearches = props.totalSearches || 0;
+
+		var filtered = useMemo(function() {
+			var query = filter.trim().toLowerCase();
+			if (!query) {
+				return rows;
+			}
+			return rows.filter(function(row) {
+				return row.domain.indexOf(query) !== -1;
+			});
+		}, [rows, filter]);
+
+		var mapped = filtered.map(function(row) {
+			var availCell = '-';
+			if (row.available === true) {
+				availCell = el('span', { className: 'ri-tag is-good' }, __( 'Available', 'reseller-intent' ));
+			} else if (row.available === false) {
+				availCell = el('span', { className: 'ri-tag is-bad' }, __( 'Registered', 'reseller-intent' ));
+			}
+			return [row.domain, availCell, row.device || '-', row.time];
+		});
+
+		var noteText = sprintf(
+			/* translators: 1: number of listed searches, 2: timezone label */
+			_n( 'Latest %1$s search in this range (%2$s). Use Export for full data.', 'Latest %1$s searches in this range (%2$s). Use Export for full data.', rows.length, 'reseller-intent' ),
+			fmt(rows.length),
+			TZ_LABEL
 		);
+
+		var footLabel = totalSearches > rows.length
+			/* translators: 1: number of listed searches, 2: total number of searches */
+			? sprintf( __( '%1$s of %2$s. Export has everything.', 'reseller-intent' ), fmt(filtered.length), fmt(totalSearches) )
+			/* translators: %s: number of searches */
+			: sprintf( _n( '%s search', '%s searches', filtered.length, 'reseller-intent' ), fmt(filtered.length) );
+
+		return el(ListPanel, {
+			key: filter, // new filter, back to page 1
+			className: 'ri-panel--feed',
+			title: __( 'Recent Searches', 'reseller-intent' ),
+			note: noteText,
+			columns: [__( 'Domain', 'reseller-intent' ), __( 'Result', 'reseller-intent' ), __( 'Device', 'reseller-intent' ), __( 'Searched At', 'reseller-intent' )],
+			colWidths: ['', '110px', '95px', '155px'],
+			rows: mapped,
+			empty: filter ? __( 'Nothing matches that filter.', 'reseller-intent' ) : __( 'No searches in this range.', 'reseller-intent' ),
+			footLabel: footLabel,
+			tools: el('div', { className: 'ri-feed-tools' },
+				el('input', {
+					type: 'search',
+					className: 'ri-log-filter',
+					/* translators: %s: number of listed searches */
+					placeholder: sprintf( __( 'Filter these %s...', 'reseller-intent' ), fmt(rows.length) ),
+					'aria-label': __( 'Filter recent searches', 'reseller-intent' ),
+					value: filter,
+					onChange: function(event) { setFilter(event.target.value); }
+				})
+			)
+		});
 	}
 
 	/*
@@ -726,7 +692,7 @@
 				el('p', { className: 'ri-clear-preview' },
 					count === null
 						? 'Counting...'
-						: (count === 0 ? __( 'No events in this window.', 'reseller-intent' ) : sprintf( /* translators: %s: number of events */ wp.i18n._n( '%s event will be permanently deleted.', '%s events will be permanently deleted.', count, 'reseller-intent' ), fmt(count) ))
+						: (count === 0 ? __( 'No events in this window.', 'reseller-intent' ) : sprintf( /* translators: %s: number of events */ _n( '%s event will be permanently deleted.', '%s events will be permanently deleted.', count, 'reseller-intent' ), fmt(count) ))
 				),
 				el('div', { className: 'ri-modal-actions' },
 					el('button', { className: 'button', onClick: props.onCancel }, __( 'Cancel', 'reseller-intent' )),
@@ -742,6 +708,16 @@
 
 	/* ---------- App ---------- */
 
+	function BrandMark() {
+		return el('span', { className: 'ri-mark', 'aria-hidden': 'true' },
+			el('svg', { viewBox: '0 0 20 20', width: 18, height: 18 },
+				el('path', { fill: '#fff', fillRule: 'evenodd', d: 'M10 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16Zm0 1.7a6.3 6.3 0 1 0 0 12.6 6.3 6.3 0 0 0 0-12.6Z' }),
+				el('path', { fill: '#fff', d: 'M10 10 11.08 3.89a6.2 6.2 0 0 1 4.54 3.49Z' }),
+				el('circle', { fill: '#fff', cx: 6.4, cy: 12.2, r: 1.5 })
+			)
+		);
+	}
+
 	function App() {
 		var _r = useState('90'), range = _r[0], setRange = _r[1];
 		var _d = useState(null), data = _d[0], setData = _d[1];
@@ -749,86 +725,24 @@
 		var _e = useState(''), error = _e[0], setError = _e[1];
 		var _m = useState(false), showClear = _m[0], setShowClear = _m[1];
 		var _h = useState(loadHiddenPanels), hiddenPanels = _h[0], setHiddenPanels = _h[1];
-
-		/*
-		 * Masonry sizing: each cell spans its own content height in 8px
-		 * grid rows, so expanding one panel never stretches its row
-		 * neighbors and no white space opens up anywhere.
-		 */
-		useEffect(function() {
-			var grid = document.querySelector('.ri-liquid');
-
-			if (!grid) {
-				return undefined;
-			}
-
-			function spanCell(panel) {
-				var height = panel.getBoundingClientRect().height;
-				// +16 covers the panel's bottom margin (the visual row gap).
-				panel.parentElement.style.gridRowEnd = 'span ' + Math.max(2, Math.ceil((height + 16) / 8));
-			}
-
-			function measureAll() {
-				grid.querySelectorAll('.ri-cell > .ri-panel').forEach(spanCell);
-			}
-
-			/*
-			 * Measure synchronously on every render: ResizeObserver (and
-			 * anything rAF-timed) is suspended in background tabs, so a
-			 * dashboard opened behind another tab would keep zero spans.
-			 * The observer then covers out-of-band changes only (fonts,
-			 * window resizes), with a late timeout as a further net.
-			 */
-			measureAll();
-			var late = window.setTimeout(measureAll, 400);
-
-			var observer = null;
-			if (window.ResizeObserver) {
-				observer = new window.ResizeObserver(function(entries) {
-					entries.forEach(function(entry) {
-						spanCell(entry.target);
-					});
-				});
-				grid.querySelectorAll('.ri-cell > .ri-panel').forEach(function(panel) {
-					observer.observe(panel);
-				});
-			}
-
-			var resizeSettle = null;
-			function onResize() {
-				measureAll();
-				window.clearTimeout(resizeSettle);
-				resizeSettle = window.setTimeout(measureAll, 250);
-			}
-			window.addEventListener('resize', onResize);
-
-			return function() {
-				window.clearTimeout(late);
-				window.clearTimeout(resizeSettle);
-				window.removeEventListener('resize', onResize);
-				if (observer) {
-					observer.disconnect();
-				}
-			};
-		});
 		var _pp = useState(false), showPanelsMenu = _pp[0], setShowPanelsMenu = _pp[1];
 
 		function isShown(key) {
-			return !hiddenPanels[key];
+			if (Object.prototype.hasOwnProperty.call(hiddenPanels, key)) {
+				return !hiddenPanels[key];
+			}
+			return !DEFAULT_HIDDEN[key];
 		}
 
 		function togglePanel(key) {
 			var next = {};
 			Object.keys(hiddenPanels).forEach(function(k) { next[k] = hiddenPanels[k]; });
-			if (next[key]) {
-				delete next[key];
-			} else {
-				next[key] = true;
-			}
+			next[key] = isShown(key); // shown -> hidden, hidden -> shown (explicit, survives defaults)
 			setHiddenPanels(next);
 			saveHiddenPanels(next);
 		}
-		var _n = useState(resellerIntentAdmin.notice || ''), notice = _n[0], setNotice = _n[1];
+
+		var _n2 = useState(resellerIntentAdmin.notice || ''), notice = _n2[0], setNotice = _n2[1];
 		var today = new Date().toISOString().slice(0, 10);
 		var _cf = useState(today), customFrom = _cf[0], setCustomFrom = _cf[1];
 		var _ct = useState(today), customTo = _ct[0], setCustomTo = _ct[1];
@@ -900,8 +814,8 @@
 			if (!match) {
 				return '';
 			}
-			var n = Number(match[1]) || 0;
-			return n === 0 ? __( 'No events matched that window.', 'reseller-intent' ) : sprintf( /* translators: %s: number of events */ wp.i18n._n( '%s event deleted.', '%s events deleted.', n, 'reseller-intent' ), fmt(n) );
+			var count = Number(match[1]) || 0;
+			return count === 0 ? __( 'No events matched that window.', 'reseller-intent' ) : sprintf( /* translators: %s: number of events */ _n( '%s event deleted.', '%s events deleted.', count, 'reseller-intent' ), fmt(count) );
 		}
 
 		var rangeQuery = '&range=' + encodeURIComponent(range)
@@ -909,19 +823,57 @@
 		var exportHref = resellerIntentAdmin.exportUrl + rangeQuery;
 		var exportJsonHref = resellerIntentAdmin.exportUrl + rangeQuery + '&format=json';
 
-		return el('div', { className: 'ri-app' + (loading ? ' is-loading' : ''), 'aria-busy': loading ? 'true' : 'false', style: { '--ri-accent': ACCENT, '--ri-accent-text': ACCENT_TEXT } },
+		var grid = null;
+		if (data) {
+			var rangeKey = range + ('custom' === range ? '|' + customApplied.from + '|' + customApplied.to : '');
+			var loadRows = function(panel, offset, mapRow) {
+				return fetchPanelRows(panel, range, customApplied, offset, mapRow);
+			};
+			var totals = data.totals || {};
+			var cells = [];
+
+			if (isShown('trend')) {
+				cells.push(el('div', { key: 'trend', className: 'ri-s8' },
+					el(TrendPanel, { trend: data.trend, bounded: data.bounded, rangeLabel: data.rangeLabel, availability: data.availability, devices: data.devices })));
+			}
+			if (isShown('tlds')) {
+				cells.push(el('div', { key: 'tlds', className: 'ri-s4' },
+					el(TldPanel, { items: data.tlds.items, totalRows: totals.tlds, loadRows: loadRows })));
+			}
+			if (isShown('repeats')) {
+				cells.push(el('div', { key: 'repeats', className: 'ri-s4' },
+					el(DemandPanel, { repeats: data.repeats, totalRows: totals.repeats, loadRows: loadRows })));
+			}
+			if (isShown('carted')) {
+				cells.push(el('div', { key: 'carted', className: 'ri-s4' },
+					el(CartedPanel, { carted: data.carted, cartSizes: data.cartSizes, totalRows: totals.carted, loadRows: loadRows })));
+			}
+			if (isShown('pages')) {
+				cells.push(el('div', { key: 'pages', className: 'ri-s4' },
+					el(PagesPanel, { pages: data.pages })));
+			}
+			if (isShown('countries') && data.countries.items.length) {
+				cells.push(el('div', { key: 'countries', className: 'ri-s4' },
+					el(CountriesPanel, { countries: data.countries, loadRows: loadRows })));
+			}
+			if (isShown('recent')) {
+				cells.push(el('div', { key: 'recent', className: 'ri-s12' },
+					el(RecentLog, { recent: data.recent, totalSearches: (data.kpis.now || {}).searches })));
+			}
+
+			grid = el('div', { className: 'ri-grid12', key: rangeKey }, cells);
+		}
+
+		return el('div', { className: 'ri-app' + (loading ? ' is-loading' : ''), 'aria-busy': loading ? 'true' : 'false' },
 			loading ? el('div', { className: 'ri-progress', role: 'status', 'aria-label': __( 'Loading', 'reseller-intent' ) }) : null,
 			el('div', { className: 'ri-header' },
-				el('div', null,
+				el('div', { className: 'ri-brand' },
+					el(BrandMark),
 					el('h1', null, __( 'Reseller Intent', 'reseller-intent' )),
-					el('p', { className: 'ri-note' },
-						__( 'Domain search analytics', 'reseller-intent' ) + ' · v' + resellerIntentAdmin.version +
-						(data ? ' · ' + data.rangeLabel : ''),
-						data && data.lastEvent ? el('span', {
-							className: 'ri-health' + (data.lastEvent.stale ? ' is-stale' : ''),
-							title: data.lastEvent.stale ? __( 'No recent events. Check that the search widget is live and tracking is not blocked.', 'reseller-intent' ) : null
-						}, data.lastEvent.ago) : null
-					)
+					data && data.lastEvent ? el('span', {
+						className: 'ri-live' + (data.lastEvent.stale ? ' is-stale' : ''),
+						title: data.lastEvent.stale ? __( 'No recent events. Check that the search widget is live and tracking is not blocked.', 'reseller-intent' ) : null
+					}, data.lastEvent.ago) : null
 				),
 				el('div', { className: 'ri-header-actions' },
 					el('span', { className: 'ri-ranges' }, RANGES.concat([{ key: 'custom', label: __( 'Custom', 'reseller-intent' ) }]).map(function(option) {
@@ -933,13 +885,13 @@
 						}, option.label);
 					})),
 					el('span', { className: 'ri-export-group' },
-						el('a', { className: 'button ri-export', href: exportHref }, __( 'Export CSV', 'reseller-intent' )),
-						el('a', { className: 'button ri-export', href: exportJsonHref, title: __( 'Export JSON', 'reseller-intent' ) }, __( 'JSON', 'reseller-intent' ))
+						el('a', { className: 'ri-btn', href: exportHref, title: __( 'Export CSV', 'reseller-intent' ) }, __( 'CSV', 'reseller-intent' )),
+						el('a', { className: 'ri-btn', href: exportJsonHref, title: __( 'Export JSON', 'reseller-intent' ) }, __( 'JSON', 'reseller-intent' ))
 					),
-					el('button', { className: 'button ri-danger-ghost', onClick: function() { setShowClear(true); } }, __( 'Clear data', 'reseller-intent' )),
+					el('button', { className: 'ri-btn ri-danger-ghost', onClick: function() { setShowClear(true); } }, __( 'Clear data', 'reseller-intent' )),
 					el('span', { className: 'ri-panels-menu' },
 						el('button', {
-							className: 'button ri-panels-toggle',
+							className: 'ri-btn ri-btn--primary ri-panels-toggle',
 							'aria-expanded': showPanelsMenu,
 							'aria-haspopup': 'true',
 							title: __( 'Choose which panels to show', 'reseller-intent' ),
@@ -969,7 +921,7 @@
 					el('input', { type: 'date', value: customTo, max: today, onChange: function(e) { setCustomTo(e.target.value); } })
 				),
 				el('button', {
-					className: 'button',
+					className: 'ri-btn',
 					disabled: !customFrom || !customTo || customFrom > customTo,
 					onClick: function() { setCustomApplied({ from: customFrom, to: customTo }); }
 				}, __( 'Apply', 'reseller-intent' ))
@@ -982,51 +934,9 @@
 			error ? el('div', { className: 'notice notice-error ri-notice' }, el('p', null, error)) : null,
 
 			data
-				? el(Fragment, null,
+				? el(wp.element.Fragment, null,
 					el(KpiGrid, { now: data.kpis.now, prev: data.kpis.prev }),
-					(function() {
-						/*
-						 * Liquid layout: one 12-column dense grid. Every panel
-						 * declares its natural width; panels with data come
-						 * first, empty ones shrink and pack together at the
-						 * end, so no range ever leaves holes in the middle.
-						 */
-						var now = data.kpis.now;
-						/*
-						 * Remount the panels when the RANGE changes, not when the
-						 * rows array is a new object. Every parent render built a
-						 * fresh array, so the old reset effect fired on any render
-						 * at all and threw away pages the visitor had loaded.
-						 */
-						var rangeKey = range + ('custom' === range ? '|' + customApplied.from + '|' + customApplied.to : '');
-						var loadRows = function(panel, offset, mapRow) {
-							return fetchPanelRows(panel, range, customApplied, offset, mapRow);
-						};
-						var defs = [
-							{ key: 'quality', span: 12, short: true, isEmpty: !(data.availability.available + data.availability.taken), node: el(QualityPanel, { availability: data.availability, devices: data.devices }) },
-							{ key: 'trend', span: 8, isEmpty: !((data.trend.searches || []).some(function(v) { return v > 0; }) || (data.trend.carts || []).some(function(v) { return v > 0; })), node: el(Panel, { title: __( 'Search vs Cart Trend', 'reseller-intent' ), note: data.bounded ? __( 'Daily activity in this range.', 'reseller-intent' ) : __( 'Monthly activity, all time.', 'reseller-intent' ) },
-								el(TrendChart, data.trend),
-								el('div', { className: 'ri-legend' },
-									el('span', null, el('i', { className: 'ri-dot', style: { background: ACCENT } }), __( 'Searches', 'reseller-intent' )),
-									el('span', null, el('i', { className: 'ri-dot', style: { background: INK } }), __( 'Cart clicks', 'reseller-intent' ))
-								)
-							) },
-							{ key: 'tlds', span: 4, isEmpty: !data.tlds.items.length, node: el(TldPanel, { items: data.tlds.items, total: data.tlds.total, totalRows: (data.totals || {}).tlds, loadRows: loadRows }) },
-							{ key: 'carted', span: 4, isEmpty: !data.carted.domains.length, node: el(CartedPanel, { carted: data.carted, cartSizes: data.cartSizes, totalRows: (data.totals || {}).carted, loadRows: loadRows }) },
-							{ key: 'repeats', span: 4, isEmpty: !data.repeats.length, node: el(DemandPanel, { repeats: data.repeats, totalRows: (data.totals || {}).repeats, loadRows: loadRows }) },
-							{ key: 'pages', span: 4, short: true, isEmpty: !data.pages.length, node: el(PagesPanel, { pages: data.pages }) },
-							{ key: 'countries', span: 4, short: true, isEmpty: !data.countries.items.length, node: el(CountriesPanel, { countries: data.countries }) },
-							{ key: 'recent', span: 12, isEmpty: !data.recent.length, node: el(RecentLog, { recent: data.recent }) }
-						].filter(function(d) { return isShown(d.key); });
-
-						var filled = defs.filter(function(d) { return !d.isEmpty; });
-						var empties = defs.filter(function(d) { return d.isEmpty; });
-
-						return el('div', { className: 'ri-liquid', key: rangeKey }, filled.concat(empties).map(function(d) {
-							var span = d.isEmpty ? 4 : d.span;
-							return el('div', { key: d.key, className: 'ri-cell ri-span-' + span + (d.short ? ' ri-cell--short' : '') + (d.isEmpty ? ' ri-cell--empty' : '') }, d.node);
-						}));
-					})()
+					grid
 				)
 				: (loading ? el('div', { className: 'ri-loading' }, __( 'Loading...', 'reseller-intent' )) : null),
 

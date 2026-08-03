@@ -10,8 +10,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  * even if GoDaddy reprices a different plan lowest.
  *
  * Attributes:
- *   ids        Comma-separated reseller_product post IDs.        Required.
- *   mode       "min" (cheapest, default), "max" or "range".
+ *   family     Family slug from the Shortcodes page generator; every
+ *              published plan of the family is included automatically.
+ *   ids        Comma-separated reseller_product post IDs. Older embeds
+ *              use this; family wins when both are set.
+ *   mode       "min" (default), "max" or "range". The generator writes
+ *              mode explicitly and defaults to range; the attribute
+ *              default stays min so old embeds keep their output.
  *   before     Text printed before the price, e.g. "From ".      Default: ""
  *   after      Text printed after it, e.g. " per year".          Default: ""
  *   separator  Between the two range prices.                     Default: " to "
@@ -21,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Markup (style from your theme, every part has a class):
  *   .rintent-price > .rintent-price-before / -amount / -sep / -after
  *
- * Usage: [rintent_price ids="116,118" before="Starting at " after="/mo"]
+ * Usage: [rintent_price family="cpanel" mode="range" before="cPanel from" after="per year"]
  */
 final class Reseller_Intent_Price {
 
@@ -29,11 +34,163 @@ final class Reseller_Intent_Price {
 		add_shortcode( 'rintent_price', array( $this, 'render' ) );
 	}
 
+	/**
+	 * Product families derived from the imported GoDaddy catalog. GoDaddy
+	 * names plans as "Family + tier" (cPanel Starter/Economy/..., Web
+	 * Hosting Plus Launch/Grow/...), so the family is the longest shared
+	 * word prefix, cut before the first numeric token (VPS sizes, backup
+	 * GBs). Only groups of two or more plans count as a family.
+	 *
+	 * Shared by the Shortcodes page generator and the family="" attribute,
+	 * so both always agree on what a slug means. Cached per request.
+	 *
+	 * @return array[] Each: ['slug' => '', 'label' => '', 'ids' => [int, ...]], sorted by label.
+	 */
+	public static function families() {
+		static $families = null;
+
+		if ( null !== $families ) {
+			return $families;
+		}
+
+		$products = get_posts(
+			array(
+				'post_type'      => 'reseller_product',
+				'post_status'    => 'publish',
+				'posts_per_page' => 200, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- bounded catalog scan, GoDaddy's catalog is far smaller.
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+			)
+		);
+
+		$prefix_counts = array();
+		$product_meta  = array();
+		foreach ( $products as $product ) {
+			$words = preg_split( '/\s+/', trim( $product->post_title ) );
+			$stem  = array();
+			foreach ( $words as $word ) {
+				if ( preg_match( '/^\(?\d/', $word ) ) {
+					break;
+				}
+				$stem[] = $word;
+			}
+			if ( count( $stem ) === count( $words ) && count( $stem ) > 1 ) {
+				array_pop( $stem ); // full title is never its own family.
+			}
+			$prefixes = array();
+			for ( $k = count( $stem ); $k >= 1; $k-- ) {
+				$prefix = rtrim( implode( ' ', array_slice( $stem, 0, $k ) ), ' -' );
+				// Trailing connector words are naming glue, not family
+				// identity ("SSL Setup Service - up to 5 sites").
+				$prefix = preg_replace( '/(?:\s+(?:up|to|with|for|and))+$/i', '', $prefix );
+				$prefix = rtrim( $prefix, ' -' );
+				if ( '' === $prefix || in_array( $prefix, $prefixes, true ) ) {
+					continue;
+				}
+				$prefixes[]               = $prefix;
+				$prefix_counts[ $prefix ] = ( $prefix_counts[ $prefix ] ?? 0 ) + 1;
+			}
+			$product_meta[ $product->ID ] = $prefixes;
+		}
+
+		$grouped = array();
+		foreach ( $products as $product ) {
+			$family = $product->post_title;
+			foreach ( $product_meta[ $product->ID ] as $prefix ) {
+				if ( ( $prefix_counts[ $prefix ] ?? 0 ) >= 2 ) {
+					$family = $prefix;
+					break;
+				}
+			}
+			if ( ! isset( $grouped[ $family ] ) ) {
+				$grouped[ $family ] = array();
+			}
+			$grouped[ $family ][] = (int) $product->ID;
+		}
+		$grouped = array_filter(
+			$grouped,
+			static function ( $ids ) {
+				return count( $ids ) >= 2;
+			}
+		);
+
+		// Display labels: the longest word run shared by every member's
+		// full title, so "Microsoft 365 ..." plans label as Microsoft 365
+		// even though the numeric token was cut during grouping.
+		$titles_by_id = array();
+		foreach ( $products as $product ) {
+			$titles_by_id[ $product->ID ] = $product->post_title;
+		}
+		$families = array();
+		foreach ( $grouped as $family_key => $family_ids ) {
+			$word_lists = array_map(
+				static function ( $pid ) use ( $titles_by_id ) {
+					return preg_split( '/\s+/', trim( $titles_by_id[ $pid ] ) );
+				},
+				$family_ids
+			);
+			$common     = $word_lists[0];
+			foreach ( $word_lists as $word_list ) {
+				$keep = array();
+				foreach ( $word_list as $wi => $word ) {
+					if ( isset( $common[ $wi ] ) && $common[ $wi ] === $word ) {
+						$keep[] = $word;
+					} else {
+						break;
+					}
+				}
+				$common = $keep;
+			}
+			$label = rtrim( preg_replace( '/(?:\s+(?:up|to|with|for|and))+$/i', '', implode( ' ', $common ) ), ' -' );
+			$label = '' !== $label ? $label : $family_key;
+			$slug  = sanitize_title( $label );
+
+			if ( '' === $slug || isset( $families[ $slug ] ) ) {
+				continue; // slug collision: first family keeps the name.
+			}
+
+			$families[ $slug ] = array(
+				'slug'  => $slug,
+				'label' => $label,
+				'ids'   => $family_ids,
+			);
+		}
+
+		$families = array_values( $families );
+		usort(
+			$families,
+			static function ( $a, $b ) {
+				return strcasecmp( $a['label'], $b['label'] );
+			}
+		);
+
+		return $families;
+	}
+
+	/**
+	 * Resolve a family slug to its product IDs.
+	 *
+	 * @param string $slug Family slug from the family="" attribute.
+	 * @return int[] Product IDs, empty when the slug matches nothing.
+	 */
+	public static function family_ids( $slug ) {
+		$slug = sanitize_title( (string) $slug );
+
+		foreach ( self::families() as $family ) {
+			if ( $family['slug'] === $slug ) {
+				return $family['ids'];
+			}
+		}
+
+		return array();
+	}
+
 	public function render( $atts ) {
 		$atts = shortcode_atts(
 			array(
+				'family'    => '',
 				'ids'       => '',
-				'mode'      => 'min',
+				'mode'      => 'min', // attr default stays min so old ids="" embeds keep their output; the generator always writes mode= explicitly.
 				'before'    => '',
 				'after'     => '',
 				'separator' => ' to ',
@@ -62,7 +219,9 @@ final class Reseller_Intent_Price {
 		$lowest_label  = '';
 		$highest_label = '';
 
-		$ids = wp_parse_id_list( $atts['ids'] );
+		$ids = '' !== trim( (string) $atts['family'] )
+			? self::family_ids( $atts['family'] )
+			: wp_parse_id_list( $atts['ids'] );
 
 		// One cache prime instead of a post + meta query per plan.
 		if ( count( $ids ) > 1 && function_exists( '_prime_post_caches' ) ) {

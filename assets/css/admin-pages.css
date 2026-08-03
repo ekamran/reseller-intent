@@ -261,7 +261,7 @@
 	top: 0;
 	background: var(--ri-surface);
 	z-index: 1;
-	padding-top: 8px;
+	padding-block: 12px 8px;
 }
 
 .rintent-pages textarea {
@@ -373,22 +373,26 @@
 /* ---- Shortcode output row ---- */
 .rintent-output {
 	display: flex;
-	align-items: stretch;
+	align-items: center;
 	gap: 8px;
 	flex-wrap: wrap;
 }
 
+/* flex centering keeps a one-line shortcode vertically centered next to
+ * the taller Copy button; wrapped long ones still flow normally */
 .rintent-output code {
 	flex: 1 1 320px;
-	display: block;
-	padding: 8px 10px;
+	display: flex;
+	align-items: center;
+	min-height: 30px;
+	box-sizing: border-box;
+	padding: 5px 10px;
 	background: #f0f1f4;
 	border: 1px solid var(--ri-line);
 	border-radius: var(--ri-r-el);
 	font-family: ui-monospace, Menlo, monospace;
 	font-size: 12.5px;
 	line-height: 1.5;
-	min-height: 19px;
 	word-break: break-all;
 	user-select: all;
 }
@@ -437,12 +441,21 @@
 
 /* ---- Live shortcode previews: real frontend render in a framed box ---- */
 .rintent-preview {
+	display: flow-root; /* child margins stay inside, padding reads equal */
 	padding: 14px 16px;
 	border: 1px dashed var(--ri-line);
 	border-radius: var(--ri-r-el);
 	background: var(--ri-page);
 	min-height: 30px;
 	transition: background 0.2s ease;
+}
+
+.rintent-preview > :first-child {
+	margin-top: 0;
+}
+
+.rintent-preview > :last-child {
+	margin-bottom: 0;
 }
 
 .rintent-preview:empty::before {
@@ -532,6 +545,11 @@
 /* ---- Color picker rows (Settings) ---- */
 .rintent-pages .wp-picker-container {
 	display: block;
+}
+
+/* Breathing room between a toggle's helper text and its picker */
+.rintent-check-group .wp-picker-container {
+	margin-top: 10px;
 }
 
 /* ---- Save bar ---- */

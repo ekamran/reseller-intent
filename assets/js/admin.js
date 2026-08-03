@@ -875,6 +875,7 @@
 				el('div', { className: 'ri-brand' },
 					el(BrandMark),
 					el('h1', null, __( 'Reseller Intent', 'reseller-intent' )),
+					el('span', { className: 'ri-version' }, 'v' + resellerIntentAdmin.version),
 					data && data.lastEvent ? el('span', {
 						className: 'ri-live' + (data.lastEvent.stale ? ' is-stale' : ''),
 						title: data.lastEvent.stale ? __( 'No recent events. Check that the search widget is live and tracking is not blocked.', 'reseller-intent' ) : null

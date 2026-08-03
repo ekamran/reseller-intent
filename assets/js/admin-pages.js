@@ -153,12 +153,28 @@
 		});
 	}
 
+	/* Clear All options live under the style pack: no styling, no button */
+
+	function initStylePackChildren() {
+		var toggle = document.getElementById('rintent-style-widget');
+		var children = document.getElementById('rintent-style-children');
+
+		if (!toggle || !children) {
+			return;
+		}
+
+		toggle.addEventListener('change', function() {
+			children.style.display = toggle.checked ? '' : 'none';
+		});
+	}
+
 	function init() {
 		initChips();
 		initSupportRows();
 		initDarkAccent();
 		initColorPickers();
 		initClearLabelRow();
+		initStylePackChildren();
 	}
 
 	if (document.readyState === 'loading') {

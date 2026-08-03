@@ -62,9 +62,10 @@
 	}
 
 	/*
-	 * Pre-fill follows the family until the owner types their own text.
-	 * "Touched" means the value differs from what auto-fill last wrote,
-	 * so switching families keeps updating untouched fields.
+	 * Pre-fill follows the family AND the mode until the owner types
+	 * their own text: "cPanel from" for range/cheapest, "cPanel up to"
+	 * for highest. "Touched" means the value differs from what auto-fill
+	 * last wrote, so switching keeps updating untouched fields only.
 	 */
 	function prefill(force) {
 		var before = document.getElementById('rintent-gen-before');
@@ -72,8 +73,10 @@
 		if (!before) {
 			return;
 		}
-		var autoBefore = (cfg.beforeTpl || '%s from').replace('%s', familyLabel());
-		var autoAfter = cfg.afterTpl || 'per year';
+		var mode = document.getElementById('rintent-gen-mode').value;
+		var tpl = mode === 'max' ? (cfg.beforeMaxTpl || '%s up to') : (cfg.beforeTpl || '%s from');
+		var autoBefore = tpl.replace('%s', familyLabel());
+		var autoAfter = cfg.afterTpl || 'per month';
 		if (force || before.value === (before.getAttribute('data-auto') || '')) {
 			before.value = autoBefore;
 		}
@@ -186,7 +189,9 @@
 
 	if (familyEl()) {
 		familyEl().addEventListener('change', function() { prefill(); buildPrice(); previewPrice(); });
-		['rintent-gen-mode', 'rintent-gen-before', 'rintent-gen-after'].forEach(function(id) {
+		// mode change re-runs prefill too: "from" vs "up to" wording follows
+		document.getElementById('rintent-gen-mode').addEventListener('change', function() { prefill(); buildPrice(); previewPrice(); });
+		['rintent-gen-before', 'rintent-gen-after'].forEach(function(id) {
 			var node = document.getElementById(id);
 			node.addEventListener('input', function() { buildPrice(); previewPrice(); });
 			node.addEventListener('change', function() { buildPrice(); previewPrice(); });

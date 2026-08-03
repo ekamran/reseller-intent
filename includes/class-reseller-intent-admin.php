@@ -312,7 +312,10 @@ final class Reseller_Intent_Admin {
 									</tbody>
 								</table>
 								</div>
-								<p class="description"><?php esc_html_e( 'Countries: 2-letter codes like IN, US, AE. One row with empty countries is the default for everyone else. Your list is saved; plugin updates never touch it.', 'reseller-intent' ); ?></p>
+								<p class="description">
+									<?php esc_html_e( 'Countries: 2-letter codes like IN, US, AE. One row with empty countries is the default for everyone else. Your list is saved; plugin updates never touch it.', 'reseller-intent' ); ?>
+									<a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Full country code list', 'reseller-intent' ); ?></a>
+								</p>
 								<p class="rintent-inline-actions">
 									<button type="button" class="button" id="rintent-support-add"><?php esc_html_e( 'Add number', 'reseller-intent' ); ?></button>
 									<button type="submit" class="button button-primary"><?php esc_html_e( 'Save numbers', 'reseller-intent' ); ?></button>
@@ -396,7 +399,7 @@ final class Reseller_Intent_Admin {
 									<?php esc_html_e( 'Style the domain search widget', 'reseller-intent' ); ?>
 								</label>
 								<small><?php esc_html_e( 'Accent buttons, aligned rows, skeleton loading, mobile layout. Dark page sections are detected automatically; force either way with a .rintent-dark or .rintent-light wrapper class.', 'reseller-intent' ); ?></small>
-								<span class="rintent-children">
+								<span class="rintent-children" id="rintent-style-children" <?php echo Reseller_Intent_Settings::get( 'style_widget' ) ? '' : 'style="display:none;"'; ?>>
 									<label for="rintent-clear-all">
 										<input type="checkbox" id="rintent-clear-all" name="widget_clear_all" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'widget_clear_all' ) ); ?> />
 										<?php esc_html_e( 'Floating "Clear All" button under the search bar', 'reseller-intent' ); ?>
@@ -609,9 +612,11 @@ final class Reseller_Intent_Admin {
 						'copied'       => __( 'Copied!', 'reseller-intent' ),
 						'emptyText'    => __( 'Nothing to show yet.', 'reseller-intent' ),
 						'previewNonce' => wp_create_nonce( 'rintent_preview' ),
-						/* translators: %s: product family name; text placed before the price */
+						/* translators: %s: product family name; text placed before the price for range and cheapest modes */
 						'beforeTpl'    => __( '%s from', 'reseller-intent' ),
-						'afterTpl'     => __( 'per year', 'reseller-intent' ),
+						/* translators: %s: product family name; text placed before the price for highest mode */
+						'beforeMaxTpl' => __( '%s up to', 'reseller-intent' ),
+						'afterTpl'     => __( 'per month', 'reseller-intent' ),
 					)
 				);
 			}
@@ -962,7 +967,8 @@ final class Reseller_Intent_Admin {
 				"SELECT
 					COALESCE(SUM(CASE WHEN items_count <= 1 THEN 1 ELSE 0 END),0) AS b1,
 					COALESCE(SUM(CASE WHEN items_count = 2 THEN 1 ELSE 0 END),0) AS b2,
-					COALESCE(SUM(CASE WHEN items_count >= 3 THEN 1 ELSE 0 END),0) AS b3
+					COALESCE(SUM(CASE WHEN items_count = 3 THEN 1 ELSE 0 END),0) AS b3,
+					COALESCE(SUM(CASE WHEN items_count >= 4 THEN 1 ELSE 0 END),0) AS b4
 				FROM {$table_name}
 				WHERE event_type = 'continue_to_cart' AND created_at >= %s AND created_at < %s",
 				$range_start,
@@ -981,8 +987,12 @@ final class Reseller_Intent_Admin {
 				'count' => isset( $cart_row['b2'] ) ? $cart_row['b2'] : 0,
 			),
 			array(
-				'label' => '3+',
+				'label' => '3×',
 				'count' => isset( $cart_row['b3'] ) ? $cart_row['b3'] : 0,
+			),
+			array(
+				'label' => '4+',
+				'count' => isset( $cart_row['b4'] ) ? $cart_row['b4'] : 0,
 			),
 		);
 
@@ -1292,21 +1302,13 @@ final class Reseller_Intent_Admin {
 	}
 
 	/**
-	 * Human label for a path: the page/post title when the path resolves
-	 * to content, otherwise the path itself. Works for any page the
-	 * search widget gets dropped on.
+	 * Label for a path: the path itself, which is short and unambiguous.
+	 * Page titles can be long enough to wreck the column; only the home
+	 * page gets a word, its path says nothing.
 	 */
 	private function page_label_for_path( $path ) {
 		if ( '/' === $path ) {
 			return __( 'Home', 'reseller-intent' );
-		}
-
-		$post_id = url_to_postid( home_url( $path ) );
-		if ( $post_id > 0 ) {
-			$title = get_the_title( $post_id );
-			if ( is_string( $title ) && '' !== trim( $title ) ) {
-				return trim( wp_strip_all_tags( $title ) );
-			}
 		}
 
 		return $path;

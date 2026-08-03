@@ -341,10 +341,14 @@
 	vertical-align: middle;
 }
 
+/* display none at rest: an invisible 200px box would still widen the
+ * page's scrollable overflow on the rightmost KPI card */
 .ri-tip::after {
 	content: attr(data-tip);
+	display: none;
 	position: absolute;
-	left: 0;
+	left: 50%;
+	transform: translateX(-50%);
 	bottom: calc(100% + 7px);
 	width: 200px;
 	background: var(--ri-ink);
@@ -358,15 +362,13 @@
 	text-transform: none;
 	letter-spacing: 0;
 	white-space: normal;
-	opacity: 0;
 	pointer-events: none;
-	transition: opacity 0.12s;
 	z-index: 5;
 }
 
 .ri-tip:hover::after,
 .ri-tip:focus::after {
-	opacity: 1;
+	display: block;
 }
 
 .ri-kpi-value {

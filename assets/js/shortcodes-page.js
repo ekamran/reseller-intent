@@ -1,13 +1,16 @@
 /**
  * Reseller Intent, Shortcodes page generators and live previews.
  * Config arrives via the rintentGen object (wp_localize_script).
+ *
+ * Price is family-first: the select carries the family slug and label,
+ * the before/after fields arrive pre-filled from the family name and
+ * stay auto-filled until the owner types their own wording.
  */
 (function() {
 	'use strict';
 
 	var cfg = window.rintentGen || {};
 
-	cfg.placeholders = cfg.placeholders || { min: ['', ''], max: ['', ''], range: ['', ''] };
 	function esc(value) {
 		return String(value).replace(/"/g, '');
 	}
@@ -17,6 +20,16 @@
 		button.textContent = cfg.copied;
 		setTimeout(function() { button.textContent = original; }, 1200);
 	}
+
+	function copy(sourceId, button) {
+		var text = document.getElementById(sourceId).textContent;
+		if (text && navigator.clipboard) {
+			navigator.clipboard.writeText(text);
+			flashCopied(button);
+		}
+	}
+
+	/* ---------- TLD strip ---------- */
 
 	function buildTld() {
 		var tlds = esc(document.getElementById('rintent-gen-tlds').value || '.com,.in,.org,.net,.io');
@@ -36,86 +49,63 @@
 		document.getElementById('rintent-gen-tld-out').textContent = out + ']';
 	}
 
-	var PLACEHOLDERS = cfg.placeholders;
+	/* ---------- Live product price, family-first ---------- */
 
-	function priceIds(mode) {
-		if (mode === 'range') {
-			var fam = document.getElementById('rintent-gen-family');
-			return fam && fam.value ? fam.value.split(',') : [];
+	function familyEl() {
+		return document.getElementById('rintent-gen-family');
+	}
+
+	function familyLabel() {
+		var select = familyEl();
+		var option = select && select.options[select.selectedIndex];
+		return option ? (option.getAttribute('data-label') || '') : '';
+	}
+
+	/*
+	 * Pre-fill follows the family until the owner types their own text.
+	 * "Touched" means the value differs from what auto-fill last wrote,
+	 * so switching families keeps updating untouched fields.
+	 */
+	function prefill(force) {
+		var before = document.getElementById('rintent-gen-before');
+		var after = document.getElementById('rintent-gen-after');
+		if (!before) {
+			return;
 		}
-		return Array.prototype.slice.call(document.querySelectorAll('.rintent-gen-product:checked')).map(function(cb) { return cb.value; });
+		var autoBefore = (cfg.beforeTpl || '%s from').replace('%s', familyLabel());
+		var autoAfter = cfg.afterTpl || 'per year';
+		if (force || before.value === (before.getAttribute('data-auto') || '')) {
+			before.value = autoBefore;
+		}
+		if (force || after.value === (after.getAttribute('data-auto') || '')) {
+			after.value = autoAfter;
+		}
+		before.setAttribute('data-auto', autoBefore);
+		after.setAttribute('data-auto', autoAfter);
 	}
 
 	function buildPrice() {
 		var outEl = document.getElementById('rintent-gen-price-out');
-		if (!outEl) {
+		if (!outEl || !familyEl()) {
 			return;
 		}
 		var mode = document.getElementById('rintent-gen-mode').value;
-		var ids = priceIds(mode);
 		var before = esc(document.getElementById('rintent-gen-before').value);
 		var after = esc(document.getElementById('rintent-gen-after').value);
-		var separator = esc(document.getElementById('rintent-gen-separator').value);
-		var fallback = esc(document.getElementById('rintent-gen-fallback').value);
 
-		document.getElementById('rintent-gen-sep-row').style.display = mode === 'range' ? '' : 'none';
-		var famRow = document.getElementById('rintent-gen-family-row');
-		var prodRow = document.getElementById('rintent-gen-products-row');
-		if (famRow) { famRow.style.display = mode === 'range' ? '' : 'none'; }
-		if (prodRow) { prodRow.style.display = mode === 'range' ? 'none' : ''; }
-		document.getElementById('rintent-gen-before').placeholder = PLACEHOLDERS[mode][0];
-		document.getElementById('rintent-gen-after').placeholder = PLACEHOLDERS[mode][1];
-
-		var out = '[rintent_price ids="' + ids.join(',') + '"';
-		if (mode !== 'min') {
-			out += ' mode="' + mode + '"';
-		}
+		// mode is always written out: the attribute default stays "min"
+		// for old embeds, the generator default is range.
+		var out = '[rintent_price family="' + esc(familyEl().value) + '" mode="' + mode + '"';
 		if (before) {
 			out += ' before="' + before + '"';
 		}
 		if (after) {
 			out += ' after="' + after + '"';
 		}
-		if (mode === 'range' && separator) {
-			out += ' separator="' + separator + '"';
-		}
-		if (fallback) {
-			out += ' fallback="' + fallback + '"';
-		}
-		outEl.textContent = ids.length ? out + ']' : '';
+		outEl.textContent = out + ']';
 	}
 
-	function copy(sourceId, button) {
-		var text = document.getElementById(sourceId).textContent;
-		if (text && navigator.clipboard) {
-			navigator.clipboard.writeText(text);
-			flashCopied(button);
-		}
-	}
-
-	['rintent-gen-tlds', 'rintent-gen-theme', 'rintent-gen-more-label', 'rintent-gen-more-url'].forEach(function(id) {
-		document.getElementById(id).addEventListener('input', buildTld);
-		document.getElementById(id).addEventListener('change', buildTld);
-	});
-	document.getElementById('rintent-gen-tld-copy').addEventListener('click', function() { copy('rintent-gen-tld-out', this); });
-
-	var filter = document.getElementById('rintent-gen-filter');
-	if (filter) {
-		filter.addEventListener('input', function() {
-			var q = filter.value.toLowerCase();
-			document.querySelectorAll('.rintent-gen-product').forEach(function(cb) {
-				cb.closest('label').style.display = cb.getAttribute('data-title').indexOf(q) === -1 ? 'none' : 'block';
-			});
-		});
-		document.querySelectorAll('.rintent-gen-product').forEach(function(cb) {
-			cb.addEventListener('change', buildPrice);
-		});
-		['rintent-gen-mode', 'rintent-gen-before', 'rintent-gen-after', 'rintent-gen-separator', 'rintent-gen-fallback'].forEach(function(id) {
-			document.getElementById(id).addEventListener('input', buildPrice);
-			document.getElementById(id).addEventListener('change', buildPrice);
-		});
-		document.getElementById('rintent-gen-price-copy').addEventListener('click', function() { copy('rintent-gen-price-out', this); });
-	}
+	/* ---------- Live previews (server-rendered) ---------- */
 
 	var previewNonce = cfg.previewNonce;
 	var previewTimers = {};
@@ -174,51 +164,46 @@
 	}
 
 	function previewPrice() {
-		// The mode select only renders when the store has products.
-		var modeEl = document.getElementById('rintent-gen-mode');
-
-		if (!modeEl) {
-			return;
-		}
-
-		var mode = modeEl.value;
-		var ids = priceIds(mode).join(',');
-		var target = document.getElementById('rintent-preview-price');
-		if (!ids) {
-			if (target) { showEmpty(target, target.getAttribute('data-empty')); }
+		if (!familyEl()) {
 			return;
 		}
 		fetchPreview('price', {
-			ids: ids,
+			family: familyEl().value,
 			mode: document.getElementById('rintent-gen-mode').value,
 			before: document.getElementById('rintent-gen-before').value,
-			after: document.getElementById('rintent-gen-after').value,
-			separator: document.getElementById('rintent-gen-separator').value,
-			fallback: document.getElementById('rintent-gen-fallback').value
+			after: document.getElementById('rintent-gen-after').value
 		}, 'rintent-preview-price');
 	}
 
+	/* ---------- Wiring ---------- */
+
 	['rintent-gen-tlds', 'rintent-gen-theme', 'rintent-gen-more-label', 'rintent-gen-more-url'].forEach(function(id) {
 		var node = document.getElementById(id);
-		node.addEventListener('input', previewTld);
-		node.addEventListener('change', previewTld);
+		node.addEventListener('input', function() { buildTld(); previewTld(); });
+		node.addEventListener('change', function() { buildTld(); previewTld(); });
 	});
-	['rintent-gen-mode', 'rintent-gen-before', 'rintent-gen-after', 'rintent-gen-separator', 'rintent-gen-fallback'].forEach(function(id) {
-		var node = document.getElementById(id);
-		if (node) {
-			node.addEventListener('input', previewPrice);
-			node.addEventListener('change', previewPrice);
-		}
-	});
-	document.querySelectorAll('.rintent-gen-product').forEach(function(cb) {
-		cb.addEventListener('change', previewPrice);
-	});
-	var famSel = document.getElementById('rintent-gen-family');
-	if (famSel) {
-		famSel.addEventListener('change', function() { buildPrice(); previewPrice(); });
+	document.getElementById('rintent-gen-tld-copy').addEventListener('click', function() { copy('rintent-gen-tld-out', this); });
+
+	if (familyEl()) {
+		familyEl().addEventListener('change', function() { prefill(); buildPrice(); previewPrice(); });
+		['rintent-gen-mode', 'rintent-gen-before', 'rintent-gen-after'].forEach(function(id) {
+			var node = document.getElementById(id);
+			node.addEventListener('input', function() { buildPrice(); previewPrice(); });
+			node.addEventListener('change', function() { buildPrice(); previewPrice(); });
+		});
+		document.getElementById('rintent-gen-price-copy').addEventListener('click', function() { copy('rintent-gen-price-out', this); });
 	}
 
+	var phoneCopy = document.getElementById('rintent-gen-phone-copy');
+	if (phoneCopy) {
+		phoneCopy.addEventListener('click', function() { copy('rintent-gen-phone-out', this); });
+	}
+
+	buildTld();
 	previewTld();
-	previewPrice();
-	fetchPreview('phone', {}, 'rintent-preview-phone');
+	if (familyEl()) {
+		prefill(true);
+		buildPrice();
+		previewPrice();
+	}
 })();

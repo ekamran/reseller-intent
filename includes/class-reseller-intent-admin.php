@@ -100,117 +100,53 @@ final class Reseller_Intent_Admin {
 	}
 
 	/**
+	 * Cobalt brand mark, white on an accent field, shared by the page
+	 * headers. Same radar glyph as the menu icon.
+	 */
+	private static function brand_mark() {
+		return '<span class="rintent-mark" aria-hidden="true">'
+			. '<svg viewBox="0 0 20 20" width="18" height="18">'
+			. '<path fill="#fff" fill-rule="evenodd" d="M10 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16Zm0 1.7a6.3 6.3 0 1 0 0 12.6 6.3 6.3 0 0 0 0-12.6Z"/>'
+			. '<path fill="#fff" d="M10 10 11.08 3.89a6.2 6.2 0 0 1 4.54 3.49Z"/>'
+			. '<circle fill="#fff" cx="6.4" cy="12.2" r="1.5"/>'
+			. '</svg></span>';
+	}
+
+	/**
 	 * Shortcode generator: build [rintent_tld_strip] and [rintent_price]
-	 * visually, copy the result. No page reloads, no AJAX, plain JS.
+	 * visually, copy the result. Price is family-first: pick a family,
+	 * every plan is included automatically.
 	 */
 	public function render_shortcodes_page() {
 		if ( ! current_user_can( self::capability() ) ) {
 			return;
 		}
 
-		$products = get_posts(
-			array(
-				'post_type'      => 'reseller_product',
-				'post_status'    => 'publish',
-				'posts_per_page' => 200, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- bounded product picker list, admin only.
-				'orderby'        => 'title',
-				'order'          => 'ASC',
-			)
-		);
+		$families = Reseller_Intent_Price::families();
 
-		/*
-		 * Product families for range mode: GoDaddy's catalog names plans as
-		 * "Family + tier" (cPanel Starter/Economy/..., Web Hosting Plus
-		 * Launch/Grow/...). The family is the longest shared word prefix,
-		 * cut before the first numeric token (VPS sizes, backup GBs).
-		 */
-		$prefix_counts = array();
-		$product_meta  = array();
-		foreach ( $products as $product ) {
-			$words = preg_split( '/\s+/', trim( $product->post_title ) );
-			$stem  = array();
-			foreach ( $words as $word ) {
-				if ( preg_match( '/^\(?\d/', $word ) ) {
-					break;
-				}
-				$stem[] = $word;
-			}
-			if ( count( $stem ) === count( $words ) && count( $stem ) > 1 ) {
-				array_pop( $stem ); // full title is never its own family.
-			}
-			$prefixes = array();
-			for ( $k = count( $stem ); $k >= 1; $k-- ) {
-				$prefix = rtrim( implode( ' ', array_slice( $stem, 0, $k ) ), ' -' );
-				// Trailing connector words are naming glue, not family
-				// identity ("SSL Setup Service - up to 5 sites").
-				$prefix = preg_replace( '/(?:\s+(?:up|to|with|for|and))+$/i', '', $prefix );
-				$prefix = rtrim( $prefix, ' -' );
-				if ( '' === $prefix || in_array( $prefix, $prefixes, true ) ) {
-					continue;
-				}
-				$prefixes[]               = $prefix;
-				$prefix_counts[ $prefix ] = ( $prefix_counts[ $prefix ] ?? 0 ) + 1;
-			}
-			$product_meta[ $product->ID ] = $prefixes;
-		}
-		$families = array();
-		foreach ( $products as $product ) {
-			$family = $product->post_title;
-			foreach ( $product_meta[ $product->ID ] as $prefix ) {
-				if ( ( $prefix_counts[ $prefix ] ?? 0 ) >= 2 ) {
-					$family = $prefix;
-					break;
-				}
-			}
-			if ( ! isset( $families[ $family ] ) ) {
-				$families[ $family ] = array();
-			}
-			$families[ $family ][] = (int) $product->ID;
-		}
-		$families = array_filter(
-			$families,
-			function ( $ids ) {
-				return count( $ids ) >= 2;
-			}
-		);
-
-		// Display labels: the longest word run shared by every member's
-		// full title, so "Microsoft 365 ..." plans label as Microsoft 365
-		// even though the numeric token was cut during grouping.
-		$titles_by_id = array();
-		foreach ( $products as $product ) {
-			$titles_by_id[ $product->ID ] = $product->post_title;
-		}
-		$labeled = array();
-		foreach ( $families as $family_key => $family_ids ) {
-			$word_lists = array_map(
-				function ( $pid ) use ( $titles_by_id ) {
-					return preg_split( '/\s+/', trim( $titles_by_id[ $pid ] ) );
-				},
-				$family_ids
+		$tld_last = Reseller_Intent_TLD_Strip::last_refresh_ts();
+		$tld_next = Reseller_Intent_TLD_Strip::next_refresh_ts();
+		if ( ! $tld_last ) {
+			$tld_status = __( 'Prices are cached after the strip first renders.', 'reseller-intent' );
+		} elseif ( $tld_next > time() ) {
+			$tld_status = sprintf(
+				/* translators: 1: time since the last price refresh, 2: time until the next one */
+				__( 'Prices refreshed %1$s ago · next auto-refresh in %2$s', 'reseller-intent' ),
+				human_time_diff( $tld_last ),
+				human_time_diff( time(), $tld_next )
 			);
-			$common     = $word_lists[0];
-			foreach ( $word_lists as $word_list ) {
-				$keep = array();
-				foreach ( $word_list as $wi => $word ) {
-					if ( isset( $common[ $wi ] ) && $common[ $wi ] === $word ) {
-						$keep[] = $word;
-					} else {
-						break;
-					}
-				}
-				$common = $keep;
-			}
-			$label = rtrim( preg_replace( '/(?:\s+(?:up|to|with|for|and))+$/i', '', implode( ' ', $common ) ), ' -' );
-			$labeled[ '' !== $label ? $label : $family_key ] = $family_ids;
+		} else {
+			/* translators: %s: time since the last price refresh */
+			$tld_status = sprintf( __( 'Prices refreshed %s ago', 'reseller-intent' ), human_time_diff( $tld_last ) );
 		}
-		$families = $labeled;
-		ksort( $families );
 		?>
 		<?php $notice = isset( $_GET['rintent_notice'] ) ? sanitize_key( wp_unslash( $_GET['rintent_notice'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 		<div class="wrap rintent-pages rintent-shortcodes">
-			<h1><?php esc_html_e( 'Shortcodes', 'reseller-intent' ); ?></h1>
-			<p class="rintent-intro"><?php esc_html_e( 'Everything for each shortcode lives on its card: options, prices or numbers, and the code to copy.', 'reseller-intent' ); ?></p>
+			<div class="rintent-topbar">
+				<?php echo self::brand_mark(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG markup built above. ?>
+				<h1><?php esc_html_e( 'Shortcodes', 'reseller-intent' ); ?></h1>
+				<p><?php esc_html_e( 'Everything for each shortcode lives on its card: options, live preview, and the code to copy.', 'reseller-intent' ); ?></p>
+			</div>
 
 			<?php if ( 'numbers_saved' === $notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Support numbers saved.', 'reseller-intent' ); ?></p></div>
@@ -223,206 +159,191 @@ final class Reseller_Intent_Admin {
 			<?php endif; ?>
 
 			<div class="rintent-card">
-				<h2><?php esc_html_e( 'TLD price strip', 'reseller-intent' ); ?></h2>
-				<p class="rintent-card-desc"><?php esc_html_e( 'Live TLD price pills that always match checkout prices. Cached for 12 hours and refreshed in the background.', 'reseller-intent' ); ?></p>
-
-				<div class="rintent-field">
-					<span class="rintent-label"><label for="rintent-gen-tlds"><?php esc_html_e( 'TLDs', 'reseller-intent' ); ?></label></span>
-					<span>
-						<input type="text" id="rintent-gen-tlds" class="regular-text" value=".com,.in,.org,.net,.io" />
-						<p class="description"><?php esc_html_e( 'Comma-separated, with or without dots.', 'reseller-intent' ); ?></p>
-					</span>
+				<div class="rintent-card-head">
+					<h2><?php esc_html_e( 'TLD price strip', 'reseller-intent' ); ?></h2>
+					<p><?php esc_html_e( 'Live TLD price pills that always match checkout. Cached 12 hours, refreshed in the background.', 'reseller-intent' ); ?></p>
 				</div>
-				<div class="rintent-field">
-					<span class="rintent-label"><label for="rintent-gen-theme"><?php esc_html_e( 'Theme', 'reseller-intent' ); ?></label></span>
-					<span>
-						<select id="rintent-gen-theme"><option value="light"><?php esc_html_e( 'Light', 'reseller-intent' ); ?></option><option value="dark"><?php esc_html_e( 'Dark', 'reseller-intent' ); ?></option></select>
-						<p class="description"><?php esc_html_e( 'Dark is for dark page sections. Prices use the Dark accent color from Settings (auto-lightened from your accent unless you pick one). CSS can still override anything: --rintent-accent-dark and the --rintent-tld-* variables.', 'reseller-intent' ); ?></p>
-					</span>
-				</div>
-				<div class="rintent-field">
-					<span class="rintent-label"><label for="rintent-gen-more-label"><?php esc_html_e( '"More" pill', 'reseller-intent' ); ?></label></span>
-					<span>
-						<input type="text" id="rintent-gen-more-label" class="regular-text" aria-label="<?php esc_attr_e( 'Text on the more pill', 'reseller-intent' ); ?>" placeholder="<?php esc_attr_e( 'More TLDs', 'reseller-intent' ); ?>" />
-						<input type="url" id="rintent-gen-more-url" class="regular-text" aria-label="<?php esc_attr_e( 'Link for the more pill', 'reseller-intent' ); ?>" placeholder="https://example.com/domains/" />
-						<p class="description"><?php esc_html_e( 'Optional link pill at the end. Leave the URL empty to hide it.', 'reseller-intent' ); ?></p>
-					</span>
-				</div>
-				<div class="rintent-field">
-					<span class="rintent-label"><?php esc_html_e( 'Shortcode', 'reseller-intent' ); ?></span>
-					<span class="rintent-output">
-						<code id="rintent-gen-tld-out"></code>
-						<button type="button" class="button" id="rintent-gen-tld-copy"><?php esc_html_e( 'Copy', 'reseller-intent' ); ?></button>
-					</span>
-				</div>
-				<div class="rintent-field">
-					<span class="rintent-label"><?php esc_html_e( 'Live preview', 'reseller-intent' ); ?></span>
-					<span>
-						<div id="rintent-preview-tld" class="rintent-preview" data-empty="<?php esc_attr_e( 'Rendering...', 'reseller-intent' ); ?>"></div>
-						<p class="description"><?php esc_html_e( 'Exactly what visitors get, live prices included.', 'reseller-intent' ); ?></p>
-					</span>
-				</div>
-				<div class="rintent-field">
-					<span class="rintent-label"><?php esc_html_e( 'Price cache', 'reseller-intent' ); ?></span>
-					<span>
-						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="rintent-inline-form">
-							<input type="hidden" name="action" value="rintent_refresh_tld" />
-							<?php wp_nonce_field( 'rintent_refresh_tld' ); ?>
-							<?php submit_button( __( 'Refresh prices now', 'reseller-intent' ), 'secondary', 'submit', false ); ?>
-						</form>
-						<p class="description"><?php esc_html_e( 'Prices refresh in the background every 11 hours and after a Reseller Store product import. Use this after a price change you want live right away.', 'reseller-intent' ); ?></p>
-					</span>
-				</div>
-			</div>
-
-			<div class="rintent-card">
-				<h2><?php esc_html_e( 'Live product price', 'reseller-intent' ); ?></h2>
-				<p class="rintent-card-desc"><?php esc_html_e( 'Prints a live price from the selected products: cheapest, highest or a range. Add your own text around it. Select every plan of a family so the number stays correct when prices change.', 'reseller-intent' ); ?></p>
-
-				<?php if ( empty( $products ) ) : ?>
-					<p><em><?php esc_html_e( 'No published Reseller Store products found. Import products in Reseller Store first.', 'reseller-intent' ); ?></em></p>
-				<?php else : ?>
-					<div class="rintent-field" id="rintent-gen-products-row">
-						<span class="rintent-label"><label for="rintent-gen-filter"><?php esc_html_e( 'Products', 'reseller-intent' ); ?></label></span>
+				<div class="rintent-card-body">
+					<div class="rintent-field">
+						<span class="rintent-label"><label for="rintent-gen-tlds"><?php esc_html_e( 'TLDs', 'reseller-intent' ); ?></label></span>
 						<span>
-							<input type="search" id="rintent-gen-filter" class="regular-text" aria-label="<?php esc_attr_e( 'Filter products', 'reseller-intent' ); ?>" placeholder="<?php esc_attr_e( 'Filter products...', 'reseller-intent' ); ?>" style="margin-bottom:8px;" />
-							<div class="rintent-product-picker" id="rintent-gen-products">
-								<?php
-								foreach ( $products as $product ) :
-									$sale  = (string) get_post_meta( $product->ID, 'rstore_salePrice', true );
-									$list  = (string) get_post_meta( $product->ID, 'rstore_listPrice', true );
-									$price = '' !== trim( $sale ) ? $sale : $list;
-									?>
-									<label>
-										<input type="checkbox" class="rintent-gen-product" value="<?php echo esc_attr( $product->ID ); ?>" data-title="<?php echo esc_attr( strtolower( $product->post_title ) ); ?>" data-price="<?php echo esc_attr( trim( $price ) ); ?>" />
-										<?php echo esc_html( $product->post_title ); ?>
-										<span class="rintent-product-meta">- <?php echo esc_html( '' !== trim( $price ) ? $price : __( 'no price', 'reseller-intent' ) ); ?> &middot; ID <?php echo esc_html( $product->ID ); ?></span>
-									</label>
-								<?php endforeach; ?>
-							</div>
+							<input type="text" id="rintent-gen-tlds" class="rintent-wide" value=".com,.in,.org,.net,.io" />
+							<p class="description"><?php esc_html_e( 'Comma-separated, dots optional. Order here is display order.', 'reseller-intent' ); ?></p>
 						</span>
 					</div>
 					<div class="rintent-field">
-						<span class="rintent-label"><label for="rintent-gen-mode"><?php esc_html_e( 'Show', 'reseller-intent' ); ?></label></span>
+						<span class="rintent-label"><label for="rintent-gen-theme"><?php esc_html_e( 'Theme', 'reseller-intent' ); ?></label></span>
 						<span>
-							<select id="rintent-gen-mode">
-								<option value="min"><?php esc_html_e( 'Cheapest price', 'reseller-intent' ); ?></option>
-								<option value="max"><?php esc_html_e( 'Highest price', 'reseller-intent' ); ?></option>
-								<option value="range"><?php esc_html_e( 'Price range (cheapest to highest)', 'reseller-intent' ); ?></option>
-							</select>
-							<p class="description"><?php esc_html_e( 'Range always covers one product family, its cheapest to its highest plan.', 'reseller-intent' ); ?></p>
-						</span>
-					</div>
-					<div class="rintent-field" id="rintent-gen-family-row" style="display:none;">
-						<span class="rintent-label"><label for="rintent-gen-family"><?php esc_html_e( 'Product family', 'reseller-intent' ); ?></label></span>
-						<span>
-							<?php if ( empty( $families ) ) : ?>
-								<p class="description"><?php esc_html_e( 'No family with two or more plans found yet. Import your Reseller Store products first.', 'reseller-intent' ); ?></p>
-							<?php else : ?>
-								<select id="rintent-gen-family">
-									<?php foreach ( $families as $family_label => $family_ids ) : ?>
-										<option value="<?php echo esc_attr( implode( ',', $family_ids ) ); ?>"><?php echo esc_html( $family_label ); ?> (<?php echo esc_html( count( $family_ids ) ); ?>)</option>
-									<?php endforeach; ?>
-								</select>
-							<?php endif; ?>
-							<p class="description"><?php esc_html_e( 'All plans of the family are included automatically.', 'reseller-intent' ); ?></p>
+							<select id="rintent-gen-theme"><option value="light"><?php esc_html_e( 'Light', 'reseller-intent' ); ?></option><option value="dark"><?php esc_html_e( 'Dark', 'reseller-intent' ); ?></option></select>
+							<p class="description"><?php esc_html_e( 'Dark is for dark page sections on your site. Prices there use the Dark accent from Settings.', 'reseller-intent' ); ?></p>
 						</span>
 					</div>
 					<div class="rintent-field">
-						<span class="rintent-label"><label for="rintent-gen-before"><?php esc_html_e( 'Text around it', 'reseller-intent' ); ?></label></span>
+						<span class="rintent-label"><label for="rintent-gen-more-label"><?php esc_html_e( '"More" pill', 'reseller-intent' ); ?></label></span>
 						<span>
-							<input type="text" id="rintent-gen-before" class="regular-text" aria-label="<?php esc_attr_e( 'Text before the price', 'reseller-intent' ); ?>" placeholder="<?php esc_attr_e( 'Starting at ', 'reseller-intent' ); ?>" />
-							<input type="text" id="rintent-gen-after" class="regular-text" aria-label="<?php esc_attr_e( 'Text after the price', 'reseller-intent' ); ?>" placeholder="<?php esc_attr_e( ' per year', 'reseller-intent' ); ?>" />
-							<p class="description"><?php esc_html_e( 'Before and after text, both optional. Use any wording you like, spaces included.', 'reseller-intent' ); ?></p>
-						</span>
-					</div>
-					<div class="rintent-field" id="rintent-gen-sep-row" style="display:none;">
-						<span class="rintent-label"><label for="rintent-gen-separator"><?php esc_html_e( 'Range separator', 'reseller-intent' ); ?></label></span>
-						<span>
-							<input type="text" id="rintent-gen-separator" class="regular-text" aria-label="<?php esc_attr_e( 'Separator between the two range prices', 'reseller-intent' ); ?>" placeholder=" to " />
-							<p class="description"><?php esc_html_e( 'Printed between the two prices. Default: to', 'reseller-intent' ); ?></p>
-						</span>
-					</div>
-					<div class="rintent-field">
-						<span class="rintent-label"><label for="rintent-gen-fallback"><?php esc_html_e( 'Fallback text', 'reseller-intent' ); ?></label></span>
-						<span>
-							<input type="text" id="rintent-gen-fallback" class="regular-text" aria-label="<?php esc_attr_e( 'Fallback text when no price is available', 'reseller-intent' ); ?>" placeholder="$3.99" />
-							<p class="description"><?php esc_html_e( 'Shown if no selected product has a price.', 'reseller-intent' ); ?></p>
+							<span class="rintent-inline">
+								<input type="text" id="rintent-gen-more-label" class="rintent-narrow" aria-label="<?php esc_attr_e( 'Text on the more pill', 'reseller-intent' ); ?>" placeholder="<?php esc_attr_e( 'More TLDs', 'reseller-intent' ); ?>" />
+								<input type="url" id="rintent-gen-more-url" aria-label="<?php esc_attr_e( 'Link for the more pill', 'reseller-intent' ); ?>" placeholder="https://example.com/domains/" />
+							</span>
+							<p class="description"><?php esc_html_e( 'Optional link pill at the end. Leave the link empty to hide it.', 'reseller-intent' ); ?></p>
 						</span>
 					</div>
 					<div class="rintent-field">
 						<span class="rintent-label"><?php esc_html_e( 'Shortcode', 'reseller-intent' ); ?></span>
 						<span class="rintent-output">
-							<code id="rintent-gen-price-out" data-empty="<?php esc_attr_e( 'Select at least one product', 'reseller-intent' ); ?>"></code>
-							<button type="button" class="button" id="rintent-gen-price-copy"><?php esc_html_e( 'Copy', 'reseller-intent' ); ?></button>
+							<code id="rintent-gen-tld-out"></code>
+							<button type="button" class="button" id="rintent-gen-tld-copy"><?php esc_html_e( 'Copy', 'reseller-intent' ); ?></button>
 						</span>
 					</div>
-						<div class="rintent-field">
+					<div class="rintent-field">
 						<span class="rintent-label"><?php esc_html_e( 'Live preview', 'reseller-intent' ); ?></span>
 						<span>
-							<div id="rintent-preview-price" class="rintent-preview rintent-preview--inline" data-empty="<?php esc_attr_e( 'Select products to see it.', 'reseller-intent' ); ?>"></div>
+							<div id="rintent-preview-tld" class="rintent-preview" data-empty="<?php esc_attr_e( 'Rendering...', 'reseller-intent' ); ?>"></div>
+							<p class="description"><?php esc_html_e( 'Exactly what visitors get, live prices included.', 'reseller-intent' ); ?></p>
 						</span>
 					</div>
-				<div class="rintent-field">
-						<span class="rintent-label"><?php esc_html_e( 'Styling', 'reseller-intent' ); ?></span>
+				</div>
+				<div class="rintent-card-foot">
+					<span><?php echo esc_html( $tld_status ); ?></span>
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="rintent-inline-form">
+						<input type="hidden" name="action" value="rintent_refresh_tld" />
+						<?php wp_nonce_field( 'rintent_refresh_tld' ); ?>
+						<button type="submit" class="button"><?php esc_html_e( 'Refresh prices now', 'reseller-intent' ); ?></button>
+					</form>
+				</div>
+			</div>
+
+			<div class="rintent-card">
+				<div class="rintent-card-head">
+					<h2><?php esc_html_e( 'Live product price', 'reseller-intent' ); ?></h2>
+					<p><?php esc_html_e( 'Pick a product family, print its live price. Families come from your imported GoDaddy catalog. Every plan is included automatically, so the number stays correct when prices change.', 'reseller-intent' ); ?></p>
+				</div>
+				<div class="rintent-card-body">
+					<?php if ( empty( $families ) ) : ?>
+						<p class="rintent-empty"><em><?php esc_html_e( 'No product families yet. Import your Reseller Store products first, plans group into families automatically.', 'reseller-intent' ); ?></em></p>
+					<?php else : ?>
+						<div class="rintent-field">
+							<span class="rintent-label"><label for="rintent-gen-family"><?php esc_html_e( 'Product family', 'reseller-intent' ); ?></label></span>
+							<span>
+								<select id="rintent-gen-family">
+									<?php foreach ( $families as $family ) : ?>
+										<option value="<?php echo esc_attr( $family['slug'] ); ?>" data-label="<?php echo esc_attr( $family['label'] ); ?>">
+											<?php
+											/* translators: 1: family name, 2: number of plans */
+											echo esc_html( sprintf( _n( '%1$s (%2$s plan)', '%1$s (%2$s plans)', count( $family['ids'] ), 'reseller-intent' ), $family['label'], number_format_i18n( count( $family['ids'] ) ) ) );
+											?>
+										</option>
+									<?php endforeach; ?>
+								</select>
+								<p class="description"><?php esc_html_e( 'No individual product picking. A family is priced as a whole.', 'reseller-intent' ); ?></p>
+							</span>
+						</div>
+						<div class="rintent-field">
+							<span class="rintent-label"><label for="rintent-gen-mode"><?php esc_html_e( 'Show', 'reseller-intent' ); ?></label></span>
+							<span>
+								<select id="rintent-gen-mode">
+									<option value="range" selected><?php esc_html_e( 'Price range, cheapest to highest', 'reseller-intent' ); ?></option>
+									<option value="min"><?php esc_html_e( 'Cheapest price', 'reseller-intent' ); ?></option>
+									<option value="max"><?php esc_html_e( 'Highest price', 'reseller-intent' ); ?></option>
+								</select>
+							</span>
+						</div>
+						<div class="rintent-field">
+							<span class="rintent-label"><label for="rintent-gen-before"><?php esc_html_e( 'Text around it', 'reseller-intent' ); ?></label></span>
+							<span>
+								<span class="rintent-inline">
+									<input type="text" id="rintent-gen-before" aria-label="<?php esc_attr_e( 'Text before the price', 'reseller-intent' ); ?>" />
+									<input type="text" id="rintent-gen-after" class="rintent-narrow" aria-label="<?php esc_attr_e( 'Text after the price', 'reseller-intent' ); ?>" />
+								</span>
+								<p class="description"><?php esc_html_e( 'Pre-filled from the family. Click and type to change. Spacing is handled for you.', 'reseller-intent' ); ?></p>
+							</span>
+						</div>
+						<div class="rintent-field">
+							<span class="rintent-label"><?php esc_html_e( 'Shortcode', 'reseller-intent' ); ?></span>
+							<span class="rintent-output">
+								<code id="rintent-gen-price-out"></code>
+								<button type="button" class="button" id="rintent-gen-price-copy"><?php esc_html_e( 'Copy', 'reseller-intent' ); ?></button>
+							</span>
+						</div>
+						<div class="rintent-field">
+							<span class="rintent-label"><?php esc_html_e( 'Live preview', 'reseller-intent' ); ?></span>
+							<span>
+								<div id="rintent-preview-price" class="rintent-preview rintent-preview--inline" data-empty="<?php esc_attr_e( 'Rendering...', 'reseller-intent' ); ?>"></div>
+							</span>
+						</div>
+					<?php endif; ?>
+				</div>
+				<?php if ( ! empty( $families ) ) : ?>
+					<div class="rintent-card-foot">
 						<span>
-							<p class="description" style="margin:0;"><?php esc_html_e( 'Every part has its own class, style them from your theme:', 'reseller-intent' ); ?> <code>.rintent-price</code> <code>.rintent-price-before</code> <code>.rintent-price-amount</code> <code>.rintent-price-sep</code> <code>.rintent-price-after</code></p>
+							<?php esc_html_e( 'Style hooks:', 'reseller-intent' ); ?>
+							<code>.rintent-price</code> <code>.rintent-price-amount</code>
+							&middot; <?php esc_html_e( 'old ids="" embeds keep working', 'reseller-intent' ); ?>
 						</span>
 					</div>
 				<?php endif; ?>
 			</div>
 
 			<div class="rintent-card">
-				<h2><?php esc_html_e( 'Support phone number', 'reseller-intent' ); ?></h2>
-				<p class="rintent-card-desc"><?php esc_html_e( 'Shows the right regional support number to each visitor, based on their browser timezone. Page-cache safe. Numbers, shortcode, everything is right here.', 'reseller-intent' ); ?></p>
-
-				<?php if ( Reseller_Intent_Phone::is_customized() ) : ?>
-					<p class="rintent-numbers-status rintent-numbers-status--custom">
-						<span class="dashicons dashicons-edit" aria-hidden="true"></span>
-						<?php esc_html_e( 'Your own list is saved. Plugin updates will never change it.', 'reseller-intent' ); ?>
-						<a class="rintent-numbers-reset" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=rintent_reset_numbers' ), 'rintent_reset_numbers' ) ); ?>" onclick="return confirm('<?php echo esc_js( __( 'Replace your list with the GoDaddy default numbers? Your custom entries will be removed.', 'reseller-intent' ) ); ?>');"><?php esc_html_e( 'Reset to GoDaddy defaults', 'reseller-intent' ); ?></a>
-					</p>
-				<?php else : ?>
-					<p class="rintent-numbers-status rintent-numbers-status--default">
-						<span class="dashicons dashicons-yes-alt" aria-hidden="true"></span>
-						<?php esc_html_e( 'GoDaddy default numbers active. Edit and save to make the list yours.', 'reseller-intent' ); ?>
-					</p>
-				<?php endif; ?>
-
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-					<input type="hidden" name="action" value="rintent_save_numbers" />
-					<?php wp_nonce_field( 'rintent_save_numbers' ); ?>
-					<table id="rintent-support-rows" class="widefat striped">
-						<thead><tr><th><?php esc_html_e( 'Label', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'Phone number', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'Countries', 'reseller-intent' ); ?></th><th></th></tr></thead>
-						<tbody>
-							<?php foreach ( Reseller_Intent_Phone::numbers() as $support_entry ) : ?>
-								<tr>
-									<td><input type="text" name="support_label[]" aria-label="<?php esc_attr_e( 'Support entry label', 'reseller-intent' ); ?>" value="<?php echo esc_attr( $support_entry['label'] ); ?>" placeholder="<?php esc_attr_e( 'US Support', 'reseller-intent' ); ?>" /></td>
-									<td><input type="text" name="support_number[]" aria-label="<?php esc_attr_e( 'Support phone number', 'reseller-intent' ); ?>" value="<?php echo esc_attr( $support_entry['number'] ); ?>" placeholder="+1-480-000-0000" /></td>
-									<td><input type="text" name="support_countries[]" aria-label="<?php esc_attr_e( 'Country codes for this number', 'reseller-intent' ); ?>" value="<?php echo esc_attr( implode( ',', (array) $support_entry['countries'] ) ); ?>" placeholder="US,CA" /></td>
-									<td><button type="button" class="button-link-delete rintent-support-remove" aria-label="<?php esc_attr_e( 'Remove row', 'reseller-intent' ); ?>">&times;</button></td>
-								</tr>
-							<?php endforeach; ?>
-						</tbody>
-					</table>
-					<p class="description" style="margin:8px 0 12px;"><?php esc_html_e( 'Countries: comma-separated 2-letter codes like IN, US, AE. Leave empty on one row to make it the default for everyone else.', 'reseller-intent' ); ?></p>
-					<p class="rintent-inline-actions">
-						<button type="button" class="button" id="rintent-support-add"><?php esc_html_e( 'Add number', 'reseller-intent' ); ?></button>
-						<?php submit_button( __( 'Save numbers', 'reseller-intent' ), 'primary', 'submit', false ); ?>
-					</p>
-				</form>
-
-				<div class="rintent-field" style="border-top:1px solid #f0f3f8;margin-top:4px;">
-					<span class="rintent-label"><?php esc_html_e( 'Shortcode', 'reseller-intent' ); ?></span>
-					<span class="rintent-output">
-						<code>[rintent_phone]</code>
-					</span>
+				<div class="rintent-card-head">
+					<h2><?php esc_html_e( 'Support phone number', 'reseller-intent' ); ?></h2>
+					<p><?php esc_html_e( 'Shows each visitor the right regional number from their browser timezone. No lookup service, page-cache safe. Flag and number as a call link, nothing else.', 'reseller-intent' ); ?></p>
 				</div>
-				<div class="rintent-field">
-					<span class="rintent-label"><?php esc_html_e( 'Live preview', 'reseller-intent' ); ?></span>
+				<div class="rintent-card-body">
+					<div class="rintent-field">
+						<span class="rintent-label"><?php esc_html_e( 'Numbers', 'reseller-intent' ); ?></span>
+						<span>
+							<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+								<input type="hidden" name="action" value="rintent_save_numbers" />
+								<?php wp_nonce_field( 'rintent_save_numbers' ); ?>
+								<table id="rintent-support-rows">
+									<thead><tr><th><?php esc_html_e( 'Label', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'Phone number', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'Countries', 'reseller-intent' ); ?></th><th></th></tr></thead>
+									<tbody>
+										<?php foreach ( Reseller_Intent_Phone::numbers() as $support_entry ) : ?>
+											<tr>
+												<td><input type="text" name="support_label[]" aria-label="<?php esc_attr_e( 'Support entry label', 'reseller-intent' ); ?>" value="<?php echo esc_attr( $support_entry['label'] ); ?>" placeholder="<?php esc_attr_e( 'US Support', 'reseller-intent' ); ?>" /></td>
+												<td><input type="text" name="support_number[]" aria-label="<?php esc_attr_e( 'Support phone number', 'reseller-intent' ); ?>" value="<?php echo esc_attr( $support_entry['number'] ); ?>" placeholder="+1-480-000-0000" /></td>
+												<td><input type="text" name="support_countries[]" aria-label="<?php esc_attr_e( 'Country codes for this number', 'reseller-intent' ); ?>" value="<?php echo esc_attr( implode( ',', (array) $support_entry['countries'] ) ); ?>" placeholder="<?php esc_attr_e( 'empty = default', 'reseller-intent' ); ?>" /></td>
+												<td><button type="button" class="rintent-support-remove" aria-label="<?php esc_attr_e( 'Remove row', 'reseller-intent' ); ?>">&times;</button></td>
+											</tr>
+										<?php endforeach; ?>
+									</tbody>
+								</table>
+								<p class="description"><?php esc_html_e( 'Countries: 2-letter codes like IN, US, AE. One row with empty countries is the default for everyone else. Your list is saved; plugin updates never touch it.', 'reseller-intent' ); ?></p>
+								<p class="rintent-inline-actions">
+									<button type="button" class="button" id="rintent-support-add"><?php esc_html_e( 'Add number', 'reseller-intent' ); ?></button>
+									<button type="submit" class="button button-primary"><?php esc_html_e( 'Save numbers', 'reseller-intent' ); ?></button>
+									<?php if ( Reseller_Intent_Phone::is_customized() ) : ?>
+										<a class="button rintent-numbers-reset" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=rintent_reset_numbers' ), 'rintent_reset_numbers' ) ); ?>" onclick="return confirm('<?php echo esc_js( __( 'Replace your list with the GoDaddy default numbers? Your custom entries will be removed.', 'reseller-intent' ) ); ?>');"><?php esc_html_e( 'Reset to GoDaddy defaults', 'reseller-intent' ); ?></a>
+										<span class="rintent-badge"><?php esc_html_e( 'Your own list active', 'reseller-intent' ); ?></span>
+									<?php else : ?>
+										<span class="rintent-badge"><?php esc_html_e( 'GoDaddy defaults active', 'reseller-intent' ); ?></span>
+									<?php endif; ?>
+								</p>
+							</form>
+						</span>
+					</div>
+					<div class="rintent-field">
+						<span class="rintent-label"><?php esc_html_e( 'Shortcode', 'reseller-intent' ); ?></span>
+						<span class="rintent-output">
+							<code id="rintent-gen-phone-out">[rintent_phone]</code>
+							<button type="button" class="button" id="rintent-gen-phone-copy"><?php esc_html_e( 'Copy', 'reseller-intent' ); ?></button>
+						</span>
+					</div>
+					<div class="rintent-field">
+						<span class="rintent-label"><?php esc_html_e( 'Live preview', 'reseller-intent' ); ?></span>
+						<span>
+							<div class="rintent-preview rintent-preview--inline">
+								<?php echo do_shortcode( '[rintent_phone]' ); ?>
+							</div>
+							<p class="description"><?php esc_html_e( 'Localized with your browser timezone, using the same script visitors get. Each visitor sees their own regional number.', 'reseller-intent' ); ?></p>
+						</span>
+					</div>
+				</div>
+				<div class="rintent-card-foot">
 					<span>
-						<div id="rintent-preview-phone" class="rintent-preview rintent-preview--inline"></div>
-						<p class="description"><?php esc_html_e( 'Flag and number as a call link. Shows the default here; each visitor sees their regional one.', 'reseller-intent' ); ?></p>
+						<?php esc_html_e( 'Style hooks:', 'reseller-intent' ); ?>
+						<code>.rintent-phone</code> <code>.rintent-phone-flag</code> <code>.rintent-phone-number</code>
 					</span>
 				</div>
 			</div>
@@ -672,11 +593,9 @@ final class Reseller_Intent_Admin {
 						'copied'       => __( 'Copied!', 'reseller-intent' ),
 						'emptyText'    => __( 'Nothing to show yet.', 'reseller-intent' ),
 						'previewNonce' => wp_create_nonce( 'rintent_preview' ),
-						'placeholders' => array(
-							'min'   => array( __( 'Starting at ', 'reseller-intent' ), __( ' per year', 'reseller-intent' ) ),
-							'max'   => array( __( 'Up to ', 'reseller-intent' ), __( ' per year', 'reseller-intent' ) ),
-							'range' => array( __( 'Plans from ', 'reseller-intent' ), __( ' yearly', 'reseller-intent' ) ),
-						),
+						/* translators: %s: product family name; text placed before the price */
+						'beforeTpl'    => __( '%s from', 'reseller-intent' ),
+						'afterTpl'     => __( 'per year', 'reseller-intent' ),
 					)
 				);
 			}
@@ -802,28 +721,20 @@ final class Reseller_Intent_Admin {
 				break;
 
 			case 'price':
-				$ids    = isset( $_POST['ids'] ) ? implode( ',', wp_parse_id_list( wp_unslash( $_POST['ids'] ) ) ) : '';
-				$mode   = isset( $_POST['mode'] ) ? sanitize_key( wp_unslash( $_POST['mode'] ) ) : 'min';
-				$mode   = in_array( $mode, array( 'min', 'max', 'range' ), true ) ? $mode : 'min';
+				$family = isset( $_POST['family'] ) ? sanitize_title( wp_unslash( $_POST['family'] ) ) : '';
+				$mode   = isset( $_POST['mode'] ) ? sanitize_key( wp_unslash( $_POST['mode'] ) ) : 'range';
+				$mode   = in_array( $mode, array( 'min', 'max', 'range' ), true ) ? $mode : 'range';
 				$before = isset( $_POST['before'] ) ? sanitize_text_field( wp_unslash( $_POST['before'] ) ) : '';
 				$after  = isset( $_POST['after'] ) ? sanitize_text_field( wp_unslash( $_POST['after'] ) ) : '';
-				$sep    = isset( $_POST['separator'] ) ? sanitize_text_field( wp_unslash( $_POST['separator'] ) ) : '';
-				$fall   = isset( $_POST['fallback'] ) ? sanitize_text_field( wp_unslash( $_POST['fallback'] ) ) : '';
 				$html   = do_shortcode(
 					sprintf(
-						'[rintent_price ids="%s" mode="%s" before="%s" after="%s" separator="%s" fallback="%s"]',
-						esc_attr( $ids ),
+						'[rintent_price family="%s" mode="%s" before="%s" after="%s"]',
+						esc_attr( $family ),
 						esc_attr( $mode ),
 						esc_attr( $before ),
-						esc_attr( $after ),
-						esc_attr( '' !== $sep ? $sep : ' to ' ),
-						esc_attr( $fall )
+						esc_attr( $after )
 					)
 				);
-				break;
-
-			case 'phone':
-				$html = do_shortcode( '[rintent_phone]' );
 				break;
 
 			default:

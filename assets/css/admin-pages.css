@@ -1,87 +1,153 @@
-/* Reseller Intent, Settings and Shortcodes pages */
-
+/* Reseller Intent, Settings and Shortcodes pages.
+ *
+ * Cobalt D2, light only, same tokens as the dashboard: the accent owns
+ * every control, radius tokens 10 (card) / 6 (element) / 999 (pill),
+ * system font pinned on the page wrapper.
+ */
 .rintent-pages {
+	--ri-accent: #2456C4;
+	--ri-accent-soft: #E4EAF7;
+	--ri-accent-soft-line: #C3D2EF;
+	--ri-accent-ink: #1D4390;
+	--ri-ink: #1A222C;
+	--ri-ink-soft: #4a5160;
+	--ri-muted: #6d7585;
+	--ri-line: #e4e7ed;
+	--ri-surface: #ffffff;
+	--ri-page: #f5f7f8;
+	--ri-good: #1C7A3D;
+	--ri-good-bg: #E6F0EA;
+	--ri-bad: #a0442f;
+	--ri-bad-bg: #f8ece8;
+	--ri-r-card: 10px;
+	--ri-r-el: 6px;
+	--ri-raise: 0 1px 2px rgba(27, 31, 39, 0.05), 0 6px 20px -14px rgba(27, 31, 39, 0.18);
+
 	max-width: 880px;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	font-size: 14px;
+	line-height: 1.5;
+	color: var(--ri-ink);
+	-webkit-font-smoothing: antialiased;
+	accent-color: var(--ri-accent);
 }
 
-.rintent-pages h1 {
-	font-size: 22px;
-	font-weight: 700;
-	color: #0f172a;
-	margin: 14px 0 4px;
+/* ---- Page header ---- */
+.rintent-topbar {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 14px 0 18px;
+	flex-wrap: wrap;
 }
 
-.rintent-pages .rintent-intro {
-	margin: 0 0 18px;
-	color: #59677c;
+.rintent-mark {
+	width: 30px;
+	height: 30px;
+	border-radius: 8px;
+	background: var(--ri-accent);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+}
+
+.rintent-topbar h1 {
+	font-size: 17px;
+	font-weight: 650;
+	color: var(--ri-ink);
+	margin: 0;
+	padding: 0;
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+}
+
+.rintent-topbar p {
+	margin: 0 0 0 4px;
+	color: var(--ri-muted);
 	font-size: 13px;
 }
 
-/* Cards */
+/* ---- Cards ---- */
 .rintent-card {
-	background: #fff;
-	border: 1px solid #d9e2ec;
-	border-radius: 12px;
-	padding: 20px 24px;
+	background: var(--ri-surface);
+	border: 1px solid var(--ri-line);
+	border-radius: var(--ri-r-card);
+	box-shadow: var(--ri-raise);
 	margin: 0 0 16px;
 	box-sizing: border-box;
+	overflow: hidden;
 }
 
-.rintent-card > h2 {
-	margin: 0 0 4px;
+.rintent-card-head {
+	padding: 16px 20px 0;
+}
+
+.rintent-card-head h2 {
 	font-size: 15px;
-	line-height: 1.3;
-	color: #0f172a;
+	font-weight: 650;
+	margin: 0 0 3px;
+	color: var(--ri-ink);
 }
 
-.rintent-card > .rintent-card-desc {
-	margin: 0 0 14px;
-	color: #59677c;
+.rintent-card-head p {
 	font-size: 13px;
+	color: var(--ri-muted);
+	margin: 0 0 14px;
+	max-width: 64ch;
 }
 
-/* Field rows: label column + control column */
+.rintent-card-body {
+	padding: 0 20px 14px;
+}
+
+.rintent-card-foot {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	padding: 10px 20px;
+	border-top: 1px solid var(--ri-line);
+	font-size: 12px;
+	color: var(--ri-muted);
+	background: color-mix(in srgb, var(--ri-page) 55%, var(--ri-surface));
+}
+
+.rintent-empty {
+	padding: 8px 0 14px;
+	color: var(--ri-muted);
+}
+
+/* ---- Field rows: label column + control column ---- */
 .rintent-field {
 	display: grid;
-	grid-template-columns: 190px minmax(0, 1fr);
-	gap: 4px 20px;
-	padding: 14px 0;
+	grid-template-columns: 150px minmax(0, 1fr);
+	gap: 4px 14px;
+	padding: 10px 0;
 	align-items: start;
 }
 
-/* Stacked controls inside one field breathe evenly */
-.rintent-field input.regular-text + input,
-.rintent-field input + input.regular-text,
-.rintent-field input.regular-text + select,
-.rintent-field select + input.regular-text {
-	margin-top: 8px;
-}
-
-.rintent-field input.regular-text,
-.rintent-field input[type='url'].regular-text {
-	display: block;
-	max-width: 100%;
-}
-
 .rintent-field + .rintent-field {
-	border-top: 1px solid #f0f3f8;
+	border-top: 1px solid color-mix(in srgb, var(--ri-line) 55%, transparent);
 }
 
 .rintent-field > .rintent-label {
 	font-weight: 600;
-	font-size: 13px;
-	color: #1d2327;
-	padding-top: 5px;
+	font-size: 12.5px;
+	color: var(--ri-ink-soft);
+	padding-top: 7px;
 }
 
 .rintent-field .description {
-	margin: 8px 0 0;
-	font-size: 12.5px;
-	color: #59677c;
+	margin: 5px 0 0;
+	font-size: 12px;
+	color: var(--ri-muted);
+	max-width: 58ch;
 }
 
 .rintent-field label {
-	font-size: 13px;
+	font-size: 13.5px;
 }
 
 .rintent-check-group label {
@@ -89,87 +155,160 @@
 	padding: 3px 0;
 }
 
+.rintent-check-group small {
+	display: block;
+	color: var(--ri-muted);
+	font-size: 12px;
+	margin: 1px 0 0 24px;
+}
+
+/* Indented children under a parent toggle */
+.rintent-children {
+	margin: 6px 0 0 24px;
+	padding-left: 12px;
+	border-left: 2px solid var(--ri-line);
+}
+
 @media ( max-width: 782px ) {
 	.rintent-field {
 		grid-template-columns: 1fr;
 	}
 
-	.rintent-card {
-		padding: 16px;
+	.rintent-card-head,
+	.rintent-card-foot {
+		padding-left: 16px;
+		padding-right: 16px;
+	}
+
+	.rintent-card-body {
+		padding: 0 16px 12px;
 	}
 }
 
-/* Controls */
-.rintent-pages input[type='color'] {
-	width: 60px;
-	height: 34px;
-	padding: 2px;
-	border: 1px solid #d9e2ec;
-	border-radius: 8px;
-	cursor: pointer;
-}
-
+/* ---- Controls ---- */
 .rintent-pages input[type='text'],
 .rintent-pages input[type='email'],
 .rintent-pages input[type='url'],
 .rintent-pages input[type='search'],
+.rintent-pages input[type='number'],
 .rintent-pages select,
 .rintent-pages textarea {
-	border-radius: 6px;
+	font-size: 13px;
+	border: 1px solid var(--ri-line);
+	border-radius: var(--ri-r-el);
+	background: var(--ri-surface);
+	color: var(--ri-ink);
+	box-shadow: none;
 }
 
-/* Support numbers: defaults vs custom status line */
-.rintent-numbers-status {
+.rintent-pages input[type='text']:focus,
+.rintent-pages input[type='url']:focus,
+.rintent-pages input[type='search']:focus,
+.rintent-pages input[type='number']:focus,
+.rintent-pages select:focus,
+.rintent-pages textarea:focus {
+	border-color: var(--ri-accent);
+	box-shadow: 0 0 0 1px var(--ri-accent);
+	outline: none;
+}
+
+.rintent-pages ::placeholder {
+	color: #a8aeba;
+}
+
+.rintent-wide {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.rintent-inline {
 	display: flex;
-	align-items: center;
-	gap: 6px;
+	gap: 8px;
 	flex-wrap: wrap;
-	margin: 0 0 12px;
-	padding: 8px 12px;
-	border-radius: 8px;
+	align-items: center;
+}
+
+.rintent-inline input {
+	flex: 1;
+	min-width: 120px;
+}
+
+.rintent-inline input.rintent-narrow {
+	flex: 0 1 150px;
+	min-width: 100px;
+}
+
+.rintent-pages textarea {
+	width: 100%;
+	box-sizing: border-box;
+	font-family: ui-monospace, Menlo, monospace;
 	font-size: 12.5px;
 }
 
-.rintent-numbers-status .dashicons {
-	font-size: 16px;
-	width: 16px;
-	height: 16px;
+/* WP buttons on these pages follow the token shapes; the accent owns
+ * the primary. */
+.rintent-pages .button {
+	border-radius: var(--ri-r-el);
+	border-color: var(--ri-line);
+	color: var(--ri-ink);
+	background: var(--ri-surface);
+	box-shadow: none;
 }
 
-.rintent-numbers-status--default {
-	background: #f0fdf4;
-	border: 1px solid #bbf7d0;
-	color: #166534;
+.rintent-pages .button:hover {
+	border-color: var(--ri-accent-soft-line);
+	background: var(--ri-accent-soft);
+	color: var(--ri-accent-ink);
 }
 
-.rintent-numbers-status--custom {
-	background: #eff6ff;
-	border: 1px solid #bfdbfe;
-	color: #1e40af;
-}
-
-.rintent-numbers-reset {
-	margin-left: auto;
+.rintent-pages .button-primary,
+.rintent-pages .button-primary:focus {
+	background: var(--ri-accent);
+	border-color: var(--ri-accent);
+	color: #fff;
 	font-weight: 600;
 }
 
-/* Support numbers table */
+.rintent-pages .button-primary:hover {
+	background: var(--ri-accent-ink);
+	border-color: var(--ri-accent-ink);
+	color: #fff;
+}
+
+/* ---- Badges ---- */
+.rintent-badge {
+	font-size: 10.5px;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	font-weight: 700;
+	padding: 3px 9px;
+	border-radius: 999px;
+	background: var(--ri-good-bg);
+	color: var(--ri-good);
+}
+
+/* ---- Support numbers table ---- */
 .rintent-pages #rintent-support-rows {
-	border: 1px solid #e2e8f0;
-	border-radius: 8px;
-	overflow: hidden;
-	max-width: none;
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
 }
 
 .rintent-pages #rintent-support-rows th {
-	font-size: 11px;
+	text-align: left;
+	font-size: 10.5px;
+	letter-spacing: 0.05em;
 	text-transform: uppercase;
-	letter-spacing: 0.4px;
-	color: #59677c;
+	color: var(--ri-muted);
+	font-weight: 600;
+	padding: 0 10px 6px 0;
+	border-bottom: 1px solid var(--ri-line);
 }
 
 .rintent-pages #rintent-support-rows td {
-	padding: 8px 10px;
+	padding: 6px 10px 6px 0;
+	border-bottom: 1px solid color-mix(in srgb, var(--ri-line) 55%, transparent);
 }
 
 .rintent-pages #rintent-support-rows td input {
@@ -178,19 +317,33 @@
 }
 
 .rintent-pages #rintent-support-rows td:last-child {
-	width: 40px;
+	width: 34px;
 	text-align: center;
 }
 
 .rintent-support-remove {
-	color: #b91c1c;
+	color: var(--ri-muted);
 	font-size: 16px;
 	line-height: 1;
 	cursor: pointer;
-	text-decoration: none;
+	border: 0;
+	background: none;
+	padding: 2px 6px;
 }
 
-/* Shortcode output row */
+.rintent-support-remove:hover {
+	color: var(--ri-bad);
+}
+
+.rintent-inline-actions {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	flex-wrap: wrap;
+	margin: 12px 0 0;
+}
+
+/* ---- Shortcode output row ---- */
 .rintent-output {
 	display: flex;
 	align-items: stretch;
@@ -201,10 +354,11 @@
 .rintent-output code {
 	flex: 1 1 320px;
 	display: block;
-	padding: 10px 12px;
-	background: #f6f7f9;
-	border: 1px solid #e2e8f0;
-	border-radius: 8px;
+	padding: 8px 10px;
+	background: #f0f1f4;
+	border: 1px solid var(--ri-line);
+	border-radius: var(--ri-r-el);
+	font-family: ui-monospace, Menlo, monospace;
 	font-size: 12.5px;
 	line-height: 1.5;
 	min-height: 19px;
@@ -214,7 +368,7 @@
 
 .rintent-output code:empty::before {
 	content: attr(data-empty);
-	color: #59677c;
+	color: var(--ri-muted);
 	user-select: none;
 }
 
@@ -222,59 +376,116 @@
 	align-self: center;
 }
 
-/* Product picker */
-.rintent-product-picker {
-	max-height: 240px;
-	overflow: auto;
-	border: 1px solid #e2e8f0;
-	border-radius: 8px;
-	padding: 8px 12px;
-	background: #fff;
+/* ---- Click-to-copy chips (admin-pages.js wires the behavior) ---- */
+.rintent-pages code {
+	cursor: pointer;
+	position: relative;
+	transition: background 0.15s ease;
+	background: #f0f1f4;
+	border-radius: 4px;
+	padding: 1px 5px;
 }
 
-.rintent-product-picker label {
-	display: block;
-	padding: 4px 0;
-	font-size: 13px;
+.rintent-pages code:hover {
+	background: var(--ri-accent-soft);
 }
 
-.rintent-product-picker .rintent-product-meta {
-	color: #646970;
+.rintent-pages code.is-copied::after {
+	content: attr(data-copied);
+	position: absolute;
+	top: -26px;
+	left: 50%;
+	transform: translateX(-50%);
+	background: var(--ri-ink);
+	color: #fff;
+	font-size: 11px;
+	font-family: inherit;
+	line-height: 1;
+	padding: 4px 8px;
+	border-radius: 4px;
+	white-space: nowrap;
+	pointer-events: none;
+	z-index: 10;
 }
 
-/* Tools row (buttons outside the main form) */
-.rintent-tools {
-	display: flex;
-	gap: 10px;
-	flex-wrap: wrap;
-	align-items: center;
+/* ---- Live shortcode previews: real frontend render in a framed box ---- */
+.rintent-preview {
+	padding: 14px 16px;
+	border: 1px dashed var(--ri-line);
+	border-radius: var(--ri-r-el);
+	background: var(--ri-page);
+	min-height: 30px;
+	transition: background 0.2s ease;
 }
 
-.rintent-tools form {
+.rintent-preview:empty::before {
+	content: attr(data-empty);
+	color: var(--ri-muted);
+	font-size: 12.5px;
+}
+
+.rintent-preview--dark {
+	background: #0f1226;
+	border-color: #2a2f4a;
+}
+
+.rintent-preview--inline {
+	font-size: 15px;
+}
+
+.rintent-preview--inline em {
+	color: var(--ri-muted);
+	font-size: 12.5px;
+	font-style: normal;
+}
+
+/* ---- Inline mini-forms ---- */
+.rintent-inline-form {
+	display: inline-block;
 	margin: 0;
 }
 
-/* Theming reference table */
+/* ---- Theming reference table (Settings) ---- */
 .rintent-theming-ref {
-	margin-top: 12px;
+	margin-top: 10px;
+	border-top: 1px solid var(--ri-line);
+	padding-top: 10px;
 }
 
 .rintent-theming-ref summary {
 	cursor: pointer;
 	font-weight: 600;
-	font-size: 13px;
+	font-size: 12.5px;
+	color: var(--ri-accent-ink);
 }
 
 .rintent-theming-ref table {
+	width: 100%;
+	border-collapse: collapse;
 	margin-top: 10px;
 }
 
 .rintent-theming-ref td,
 .rintent-theming-ref th {
 	font-size: 12.5px;
-	padding: 10px 12px;
+	padding: 8px 10px 8px 0;
 	vertical-align: top;
 	line-height: 1.9;
+	text-align: left;
+}
+
+.rintent-theming-ref th {
+	font-size: 10.5px;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--ri-muted);
+	font-weight: 600;
+	padding: 0 10px 6px 0;
+	border-bottom: 1px solid var(--ri-line);
+}
+
+.rintent-theming-ref td {
+	border-bottom: 1px solid color-mix(in srgb, var(--ri-line) 55%, transparent);
 }
 
 .rintent-theming-ref td:first-child {
@@ -287,80 +498,20 @@
 	display: inline-block;
 	white-space: nowrap;
 	margin: 1px 2px 1px 0;
-	padding: 2px 6px;
-	border-radius: 4px;
 }
 
-/* Click-to-copy chips (admin-pages.js wires the behavior) */
-.rintent-pages code {
-	cursor: pointer;
-	position: relative;
-	transition: background 0.15s ease;
+/* ---- Color picker rows (Settings) ---- */
+.rintent-pages .wp-picker-container {
+	display: block;
 }
 
-.rintent-pages code:hover {
-	background: #e8ecf3;
-}
-
-.rintent-pages code.is-copied::after {
-	content: attr(data-copied);
-	position: absolute;
-	top: -26px;
-	left: 50%;
-	transform: translateX(-50%);
-	background: #1d2327;
-	color: #fff;
-	font-size: 11px;
-	font-family: inherit;
-	line-height: 1;
-	padding: 4px 8px;
-	border-radius: 4px;
-	white-space: nowrap;
-	pointer-events: none;
-	z-index: 10;
-}
-
-/* Live shortcode previews: real frontend render inside a framed box */
-.rintent-preview {
-	padding: 18px;
-	border: 1px dashed #cfd7e3;
-	border-radius: 10px;
-	background: #fafbfd;
-	min-height: 30px;
-	transition: background 0.2s ease;
-}
-
-.rintent-preview:empty::before {
-	content: attr(data-empty);
-	color: #59677c;
-	font-size: 12.5px;
-}
-
-.rintent-preview--dark {
-	background: #0f1226;
-	border-color: #2a2f4a;
-}
-
-.rintent-preview--inline {
-	padding: 12px 16px;
-	font-size: 15px;
-}
-
-.rintent-preview--inline em {
-	color: #59677c;
-	font-size: 12.5px;
-	font-style: normal;
-}
-
-/* Inline mini-forms and action rows inside cards */
-.rintent-inline-form {
-	display: inline-block;
-	margin: 0 0 4px;
-}
-
-.rintent-inline-actions {
+/* ---- Save bar ---- */
+.rintent-savebar {
 	display: flex;
-	gap: 10px;
-	align-items: center;
-	margin: 0;
+	justify-content: flex-start;
+	padding: 4px 0 0;
+}
+
+.rintent-danger-note {
+	color: var(--ri-bad);
 }

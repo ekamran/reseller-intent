@@ -28,7 +28,26 @@ final class Reseller_Intent_TLD_Strip {
 	const PROBE_NAME    = 'rintent-tld-pricecheck-77341';
 	const SETS_OPTION   = 'rintent_tld_strip_sets';
 	const LAST_GOOD     = 'rintent_tld_last_good';
+	const LAST_REFRESH  = 'rintent_tld_last_refresh';
 	const CRON_HOOK     = 'rintent_tld_prefetch';
+
+	/**
+	 * When prices were last fetched successfully, 0 = never.
+	 *
+	 * @return int Unix timestamp.
+	 */
+	public static function last_refresh_ts() {
+		return (int) get_option( self::LAST_REFRESH, 0 );
+	}
+
+	/**
+	 * When the recurring prefetch will run next, 0 = not scheduled.
+	 *
+	 * @return int Unix timestamp.
+	 */
+	public static function next_refresh_ts() {
+		return (int) wp_next_scheduled( self::CRON_HOOK );
+	}
 
 	public function register() {
 		add_shortcode( 'rintent_tld_strip', array( $this, 'render' ) );
@@ -261,6 +280,10 @@ final class Reseller_Intent_TLD_Strip {
 		$last_good[ md5( implode( ',', $tlds ) ) ] = $prices;
 
 		update_option( self::LAST_GOOD, $last_good, false );
+
+		// Every successful fetch lands here, so this is the one honest
+		// place to stamp "prices refreshed" for the Shortcodes page.
+		update_option( self::LAST_REFRESH, time(), false );
 	}
 
 	/**

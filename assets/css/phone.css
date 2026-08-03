@@ -6,7 +6,7 @@
  * delay as the no-JS / no-match fallback, so visitors never see the
  * default number flip to their regional one.
  *
- * Theming: .rintent-phone / -prefix / -flag / -number, inherits font.
+ * Theming: .rintent-phone / -flag / -number, inherits font.
  */
 .rintent-phone {
 	display: inline-flex;

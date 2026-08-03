@@ -94,7 +94,7 @@ A row of price pills using live prices from your own catalog. `theme` is light o
 
 A real price from the products you select. `mode` is `min`, `max` or `range`. `before`, `after` and `fallback` are your own wording.
 
-`[rintent_phone prefix="Call us"]`
+`[rintent_phone]`
 
 One phone number as a tap to call link, picked for the visitor's region from the browser timezone. GoDaddy's public numbers are the defaults; your own are never overwritten.
 

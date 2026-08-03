@@ -20,7 +20,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Attributes:
  *   class   Extra CSS class(es) for the element.
- *   prefix  Optional text before the flag.               Default: ""
  *
  * Theming: .rintent-phone / .rintent-phone-flag / .rintent-phone-number
  */
@@ -238,8 +237,7 @@ final class Reseller_Intent_Phone {
 	public function render( $atts ) {
 		$atts = shortcode_atts(
 			array(
-				'class'  => '',
-				'prefix' => '',
+				'class' => '',
 			),
 			$atts,
 			'rintent_phone'
@@ -257,10 +255,8 @@ final class Reseller_Intent_Phone {
 		$classes = trim( 'rintent-phone ' . preg_replace( '/[^A-Za-z0-9 _-]/', '', (string) $atts['class'] ) );
 		$number  = (string) $default['number'];
 		$flag    = self::flag_for( empty( $default['countries'] ) ? '' : $default['countries'][0] );
-		$prefix  = (string) $atts['prefix'];
 
 		return '<a class="' . esc_attr( $classes ) . '" data-rintent-phone href="' . esc_url( 'tel:' . preg_replace( '/[^0-9+]/', '', $number ) ) . '">'
-			. ( '' !== $prefix ? '<span class="rintent-phone-prefix">' . esc_html( $prefix ) . '</span>' : '' )
 			. '<span class="rintent-phone-flag" aria-hidden="true">' . esc_html( $flag ) . '</span>'
 			. '<span class="rintent-phone-number">' . esc_html( $number ) . '</span></a>';
 	}

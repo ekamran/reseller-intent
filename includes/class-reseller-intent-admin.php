@@ -147,6 +147,7 @@ final class Reseller_Intent_Admin {
 				<h1><?php esc_html_e( 'Shortcodes', 'reseller-intent' ); ?></h1>
 				<p><?php esc_html_e( 'Everything for each shortcode lives on its card: options, live preview, and the code to copy.', 'reseller-intent' ); ?></p>
 			</div>
+			<hr class="wp-header-end" />
 
 			<?php if ( 'numbers_saved' === $notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Support numbers saved.', 'reseller-intent' ); ?></p></div>
@@ -296,6 +297,7 @@ final class Reseller_Intent_Admin {
 							<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 								<input type="hidden" name="action" value="rintent_save_numbers" />
 								<?php wp_nonce_field( 'rintent_save_numbers' ); ?>
+								<div class="rintent-numbers-scroll">
 								<table id="rintent-support-rows">
 									<thead><tr><th><?php esc_html_e( 'Label', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'Phone number', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'Countries', 'reseller-intent' ); ?></th><th></th></tr></thead>
 									<tbody>
@@ -309,6 +311,7 @@ final class Reseller_Intent_Admin {
 										<?php endforeach; ?>
 									</tbody>
 								</table>
+								</div>
 								<p class="description"><?php esc_html_e( 'Countries: 2-letter codes like IN, US, AE. One row with empty countries is the default for everyone else. Your list is saved; plugin updates never touch it.', 'reseller-intent' ); ?></p>
 								<p class="rintent-inline-actions">
 									<button type="button" class="button" id="rintent-support-add"><?php esc_html_e( 'Add number', 'reseller-intent' ); ?></button>
@@ -369,6 +372,7 @@ final class Reseller_Intent_Admin {
 				<h1><?php esc_html_e( 'Settings', 'reseller-intent' ); ?></h1>
 				<p><?php esc_html_e( 'Everything is optional. Tracking works out of the box.', 'reseller-intent' ); ?></p>
 			</div>
+			<hr class="wp-header-end" />
 
 			<?php if ( 'settings_saved' === $notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Settings saved.', 'reseller-intent' ); ?></p></div>

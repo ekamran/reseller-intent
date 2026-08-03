@@ -164,6 +164,7 @@
 
 /* Indented children under a parent toggle */
 .rintent-children {
+	display: block;
 	margin: 6px 0 0 24px;
 	padding-left: 12px;
 	border-left: 2px solid var(--ri-line);
@@ -237,6 +238,29 @@
 .rintent-inline input.rintent-narrow {
 	flex: 0 1 150px;
 	min-width: 100px;
+}
+
+/* Number inputs keep their own width, no flex stretch */
+.rintent-inline input[type='number'] {
+	flex: 0 0 auto;
+	min-width: 0;
+}
+
+/* Long lists (the 30 default support numbers) scroll inside the card */
+.rintent-numbers-scroll {
+	max-height: 340px;
+	overflow: auto;
+	border: 1px solid var(--ri-line);
+	border-radius: var(--ri-r-el);
+	padding: 0 10px;
+}
+
+.rintent-numbers-scroll thead th {
+	position: sticky;
+	top: 0;
+	background: var(--ri-surface);
+	z-index: 1;
+	padding-top: 8px;
 }
 
 .rintent-pages textarea {

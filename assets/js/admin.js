@@ -864,13 +864,16 @@
 				cells.push(el('div', { key: 'pages', className: 'ri-s4' },
 					el(PagesPanel, { pages: data.pages })));
 			}
-			if (isShown('countries') && data.countries.items.length) {
+			// Countries shares the feed row instead of sitting alone on its
+			// own: a lone third-width panel leaves eight empty columns.
+			var showCountries = isShown('countries') && data.countries.items.length > 0;
+			if (isShown('recent')) {
+				cells.push(el('div', { key: 'recent', className: showCountries ? 'ri-s8' : 'ri-s12' },
+					el(RecentLog, { recent: data.recent, totalSearches: (data.kpis.now || {}).searches })));
+			}
+			if (showCountries) {
 				cells.push(el('div', { key: 'countries', className: 'ri-s4' },
 					el(CountriesPanel, { countries: data.countries, loadRows: loadRows })));
-			}
-			if (isShown('recent')) {
-				cells.push(el('div', { key: 'recent', className: 'ri-s12' },
-					el(RecentLog, { recent: data.recent, totalSearches: (data.kpis.now || {}).searches })));
 			}
 
 			grid = el('div', { className: 'ri-grid12', key: rangeKey }, cells);

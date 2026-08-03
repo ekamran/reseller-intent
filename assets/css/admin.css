@@ -401,23 +401,55 @@
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
+	white-space: nowrap;
 }
 
-.ri-kpi-row {
-	display: flex;
-	align-items: flex-end;
-	justify-content: space-between;
-	gap: 10px;
-	width: 100%;
+/* Hover/focus "?" chip on KPI labels; tooltip text lives in data-tip */
+.ri-tip {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 14px;
+	height: 14px;
+	margin-left: 4px;
+	border-radius: 999px;
+	border: 1px solid #6d7585;
+	color: #6d7585;
+	font-size: 9px;
+	font-weight: 650;
+	cursor: help;
+	position: relative;
+	text-transform: none;
+	letter-spacing: 0;
+	vertical-align: middle;
 }
 
-.ri-spark {
-	width: 64px;
-	height: 20px;
-	flex: 0 0 auto;
-	margin-bottom: 6px;
-	color: var(--ri-accent, #3858e9);
-	opacity: 0.75;
+.ri-tip::after {
+	content: attr(data-tip);
+	position: absolute;
+	left: 0;
+	bottom: calc(100% + 7px);
+	width: 200px;
+	background: #1A222C;
+	color: #fff;
+	font-size: 12px;
+	font-weight: 400;
+	line-height: 1.45;
+	padding: 8px 10px;
+	border-radius: 6px;
+	text-align: left;
+	text-transform: none;
+	letter-spacing: 0;
+	white-space: normal;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.12s;
+	z-index: 5;
+}
+
+.ri-tip:hover::after,
+.ri-tip:focus::after {
+	opacity: 1;
 }
 
 .ri-kpi-value {

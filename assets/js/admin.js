@@ -406,52 +406,29 @@
 
 	/* ---------- Panels ---------- */
 
-	function Spark(props) {
-		var data = props.data || [];
-
-		if (!data.length || !data.some(function(v) { return v > 0; })) {
-			return null;
-		}
-
-		var W = 64;
-		var H = 20;
-		var max = Math.max.apply(null, data.concat([1]));
-		var step = data.length > 1 ? W / (data.length - 1) : W;
-		var points = data.map(function(v, i) {
-			return (i * step).toFixed(1) + ',' + (H - 2 - (v / max) * (H - 4)).toFixed(1);
-		}).join(' ');
-
-		return el('svg', { className: 'ri-spark', viewBox: '0 0 ' + W + ' ' + H, 'aria-hidden': 'true' },
-			el('polyline', { points: points, fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinejoin: 'round', strokeLinecap: 'round' }),
-			el('circle', { cx: W, cy: (H - 2 - (data[data.length - 1] / max) * (H - 4)).toFixed(1), r: 2, fill: 'currentColor' })
-		);
-	}
-
 	function KpiGrid(props) {
 		var now = props.now || {};
 		var prev = props.prev;
-		var sparks = props.sparks || {};
 		var conversion = now.searches > 0 ? (now.cartClicks / now.searches) * 100 : 0;
 		var avgCart = now.cartClicks > 0 ? now.domainsAdded / now.cartClicks : 0;
 		var prevConversion = prev ? (prev.searches > 0 ? (prev.cartClicks / prev.searches) * 100 : 0) : null;
 		var prevAvgCart = prev ? (prev.cartClicks > 0 ? prev.domainsAdded / prev.cartClicks : 0) : null;
 
 		var cards = [
-			{ label: __( 'Domain Searches', 'reseller-intent' ), value: fmt(now.searches), current: now.searches, previous: prev ? prev.searches : null, spark: sparks.searches },
-			{ label: __( 'Unique Searches', 'reseller-intent' ), value: fmt(now.uniqueSearches), current: now.uniqueSearches, previous: prev ? prev.uniqueSearches : null, spark: sparks.uniques },
-			{ label: __( 'Cart Clicks', 'reseller-intent' ), value: fmt(now.cartClicks), current: now.cartClicks, previous: prev ? prev.cartClicks : null, spark: sparks.carts },
-			{ label: __( 'Domains Added', 'reseller-intent' ), value: fmt(now.domainsAdded), current: now.domainsAdded, previous: prev ? prev.domainsAdded : null, spark: sparks.added },
-			{ label: __( 'Avg Domains / Cart', 'reseller-intent' ), value: fmt(avgCart, 2), current: avgCart, previous: prevAvgCart },
-			{ label: __( 'Search → Cart Rate', 'reseller-intent' ), value: fmt(conversion, 1) + '%', current: conversion, previous: prevConversion }
+			{ label: __( 'Domain Searches', 'reseller-intent' ), tip: __( 'Every search run in the domain search box during the period.', 'reseller-intent' ), value: fmt(now.searches), current: now.searches, previous: prev ? prev.searches : null },
+			{ label: __( 'Repeat Searches', 'reseller-intent' ), tip: __( 'Searches for a name already searched before in this period.', 'reseller-intent' ), value: fmt(now.repeatSearches), current: now.repeatSearches, previous: prev ? prev.repeatSearches : null },
+			{ label: __( 'Cart Clicks', 'reseller-intent' ), tip: __( 'Presses of Continue to cart in the domain search widget.', 'reseller-intent' ), value: fmt(now.cartClicks), current: now.cartClicks, previous: prev ? prev.cartClicks : null },
+			{ label: __( 'Domains Sent to Cart', 'reseller-intent' ), tip: __( 'Names still selected when Continue was pressed. Unticked or abandoned names are not counted.', 'reseller-intent' ), value: fmt(now.domainsAdded), current: now.domainsAdded, previous: prev ? prev.domainsAdded : null },
+			{ label: __( 'Avg per Cart Click', 'reseller-intent' ), tip: __( 'Domains sent to cart divided by cart clicks.', 'reseller-intent' ), value: fmt(avgCart, 2), current: avgCart, previous: prevAvgCart },
+			{ label: __( 'Search → Cart Rate', 'reseller-intent' ), tip: __( 'Cart clicks as a share of all searches. Compare against your own past periods.', 'reseller-intent' ), value: fmt(conversion, 1) + '%', current: conversion, previous: prevConversion }
 		];
 
 		return el('div', { className: 'ri-kpis' }, cards.map(function(card, i) {
 			return el('div', { className: 'ri-kpi', key: i },
-				el('p', { className: 'ri-kpi-label' }, card.label),
-				el('div', { className: 'ri-kpi-row' },
-					el('p', { className: 'ri-kpi-value' }, card.value),
-					card.spark ? el(Spark, { data: card.spark }) : null
+				el('p', { className: 'ri-kpi-label' }, card.label,
+					el('span', { className: 'ri-tip', tabIndex: 0, 'data-tip': card.tip, 'aria-label': card.tip }, '?')
 				),
+				el('p', { className: 'ri-kpi-value' }, card.value),
 				el(DeltaBadge, { current: card.current, previous: card.previous })
 			);
 		}));
@@ -1006,7 +983,7 @@
 
 			data
 				? el(Fragment, null,
-					el(KpiGrid, { now: data.kpis.now, prev: data.kpis.prev, sparks: data.sparks }),
+					el(KpiGrid, { now: data.kpis.now, prev: data.kpis.prev }),
 					(function() {
 						/*
 						 * Liquid layout: one 12-column dense grid. Every panel

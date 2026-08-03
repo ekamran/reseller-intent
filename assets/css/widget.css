@@ -690,13 +690,15 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
  * long result list grows past the bottom of the screen. Fixed elements do
  * not move with the page, so those rows cannot be reached at all: the
  * wheel scrolls the page behind instead. Cap it and give it its own
- * scroll. Reseller Store puts it at top:15% on desktop, which leaves too
- * little room for the list, so anchor it near the top instead.
+ * scroll. Reseller Store puts it at top:15% on desktop, which wastes a
+ * seventh of the screen; 7vh keeps a visible breathing gap above the
+ * dialog (glued to the very top it reads as broken) while leaving room
+ * for the list, and the symmetric 86vh cap mirrors that gap below.
  */
 #rstore-popResults {
 	box-sizing: border-box;
-	top: 2vh;
-	max-height: 96vh;
+	top: 7vh;
+	max-height: 86vh;
 	overflow-y: auto;
 	overscroll-behavior: contain;
 	background: var(--rintent-modal-bg, #fff);
@@ -706,8 +708,8 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 
 @media (min-width: 860px) {
 	#rstore-popResults {
-		top: 2vh;
-		max-height: 96vh;
+		top: 7vh;
+		max-height: 86vh;
 	}
 }
 

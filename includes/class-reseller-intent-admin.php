@@ -870,7 +870,7 @@ final class Reseller_Intent_Admin {
 
 	/**
 	 * Deeper rows for one list panel: the dashboard ships the top slice,
-	 * Show more pages the rest 25 at a time so Lifetime views can reach
+	 * the pager fetches the rest 25 at a time so Lifetime views can reach
 	 * every row without a giant initial payload.
 	 */
 	public function ajax_panel_rows() {
@@ -885,7 +885,8 @@ final class Reseller_Intent_Admin {
 		$range_key = isset( $_POST['range'] ) ? sanitize_key( wp_unslash( $_POST['range'] ) ) : '90';
 		$from      = isset( $_POST['from'] ) ? sanitize_text_field( wp_unslash( $_POST['from'] ) ) : '';
 		$to        = isset( $_POST['to'] ) ? sanitize_text_field( wp_unslash( $_POST['to'] ) ) : '';
-		$offset    = isset( $_POST['offset'] ) ? min( 10000, absint( $_POST['offset'] ) ) : 0;
+		// Deep paging stops at 500 rows; past that the export is the tool.
+		$offset    = isset( $_POST['offset'] ) ? min( 500, absint( $_POST['offset'] ) ) : 0;
 		$limit     = 25;
 
 		if ( ! in_array( $range_key, array( '7', '30', '90', 'all', 'custom' ), true ) ) {
@@ -1044,15 +1045,13 @@ final class Reseller_Intent_Admin {
 		// Trend: daily for bounded ranges, monthly for lifetime.
 		$trend = $this->get_trend_series( $table_name, $bounded, $len, $anchor_ts );
 
-		// Cart size buckets.
+		// Cart size split: how many domains each cart click carried.
 		$cart_row   = $wpdb->get_row(
 			$wpdb->prepare(
 				"SELECT
 					COALESCE(SUM(CASE WHEN items_count <= 1 THEN 1 ELSE 0 END),0) AS b1,
 					COALESCE(SUM(CASE WHEN items_count = 2 THEN 1 ELSE 0 END),0) AS b2,
-					COALESCE(SUM(CASE WHEN items_count = 3 THEN 1 ELSE 0 END),0) AS b3,
-					COALESCE(SUM(CASE WHEN items_count >= 4 THEN 1 ELSE 0 END),0) AS b4,
-					COUNT(*) AS total
+					COALESCE(SUM(CASE WHEN items_count >= 3 THEN 1 ELSE 0 END),0) AS b3
 				FROM {$table_name}
 				WHERE event_type = 'continue_to_cart' AND created_at >= %s AND created_at < %s",
 				$range_start,
@@ -1063,20 +1062,16 @@ final class Reseller_Intent_Admin {
 		$cart_row   = is_array( $cart_row ) ? array_map( 'intval', $cart_row ) : array();
 		$cart_sizes = array(
 			array(
-				'label' => __( '1 domain', 'reseller-intent' ),
+				'label' => '1×',
 				'count' => isset( $cart_row['b1'] ) ? $cart_row['b1'] : 0,
 			),
 			array(
-				'label' => __( '2 domains', 'reseller-intent' ),
+				'label' => '2×',
 				'count' => isset( $cart_row['b2'] ) ? $cart_row['b2'] : 0,
 			),
 			array(
-				'label' => __( '3 domains', 'reseller-intent' ),
+				'label' => '3+',
 				'count' => isset( $cart_row['b3'] ) ? $cart_row['b3'] : 0,
-			),
-			array(
-				'label' => __( '4+ domains', 'reseller-intent' ),
-				'count' => isset( $cart_row['b4'] ) ? $cart_row['b4'] : 0,
 			),
 		);
 
@@ -1203,41 +1198,9 @@ final class Reseller_Intent_Admin {
 		$last_event_ts  = $last_event_at ? (int) strtotime( $last_event_at ) : 0;
 		$last_event_age = $last_event_ts ? max( 0, strtotime( current_time( 'mysql' ) ) - $last_event_ts ) : 0;
 
-		// KPI sparklines: fixed last-7-days daily counts, range-independent.
-		$spark_rows = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT DATE(created_at) AS day,
-				SUM(CASE WHEN event_type = 'domain_search' THEN event_count ELSE 0 END) AS searches,
-				COUNT(DISTINCT CASE WHEN event_type = 'domain_search' AND domain_query <> '' THEN domain_query END) AS uniques,
-				SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END) AS carts,
-				SUM(CASE WHEN event_type = 'continue_to_cart' THEN items_count ELSE 0 END) AS added
-			FROM {$table_name} WHERE created_at >= %s GROUP BY day ORDER BY day ASC",
-				wp_date( 'Y-m-d 00:00:00', $now_ts - ( 6 * DAY_IN_SECONDS ) )
-			),
-			ARRAY_A
-		); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$sparks     = array(
-			'searches' => array(),
-			'uniques'  => array(),
-			'carts'    => array(),
-			'added'    => array(),
-		);
-		$by_day     = array();
-		foreach ( (array) $spark_rows as $spark_row ) {
-			$by_day[ $spark_row['day'] ] = $spark_row;
-		}
-		for ( $d = 6; $d >= 0; $d-- ) {
-			$day                  = wp_date( 'Y-m-d', $now_ts - ( $d * DAY_IN_SECONDS ) );
-			$sparks['searches'][] = isset( $by_day[ $day ] ) ? (int) $by_day[ $day ]['searches'] : 0;
-			$sparks['uniques'][]  = isset( $by_day[ $day ] ) ? (int) $by_day[ $day ]['uniques'] : 0;
-			$sparks['carts'][]    = isset( $by_day[ $day ] ) ? (int) $by_day[ $day ]['carts'] : 0;
-			$sparks['added'][]    = isset( $by_day[ $day ] ) ? (int) $by_day[ $day ]['added'] : 0;
-		}
-
 		return array(
 			'range'         => $range_key,
 			'bounded'       => $bounded,
-			'sparks'        => $sparks,
 			'lastEvent'     => array(
 				'ago'   => $last_event_ts
 					/* translators: %s: human readable time difference */
@@ -1408,7 +1371,8 @@ final class Reseller_Intent_Admin {
 			}
 		);
 
-		$top = array_slice( array_values( $by_path ), 0, 8 );
+		// 50 paths = five pager pages; a real site has a handful.
+		$top = array_slice( array_values( $by_path ), 0, 50 );
 		foreach ( $top as &$page ) {
 			$page['label'] = $this->page_label_for_path( $page['path'] );
 		}
@@ -1531,11 +1495,15 @@ final class Reseller_Intent_Admin {
 			ARRAY_A
 		);
 
+		$searches = isset( $row['searches'] ) ? (int) $row['searches'] : 0;
+		$uniques  = isset( $row['unique_searches'] ) ? (int) $row['unique_searches'] : 0;
+
 		return array(
-			'searches'       => isset( $row['searches'] ) ? (int) $row['searches'] : 0,
+			'searches'       => $searches,
 			'cartClicks'     => isset( $row['cart_clicks'] ) ? (int) $row['cart_clicks'] : 0,
 			'domainsAdded'   => isset( $row['domains_added'] ) ? (int) $row['domains_added'] : 0,
-			'uniqueSearches' => isset( $row['unique_searches'] ) ? (int) $row['unique_searches'] : 0,
+			// Searches beyond the first for a name: total minus distinct names.
+			'repeatSearches' => max( 0, $searches - $uniques ),
 		);
 	}
 

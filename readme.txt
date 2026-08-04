@@ -152,6 +152,7 @@ The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value 
 * Added: the style pack now covers the simple search, the transfer box, Add to cart, the cart and the sign in link, matching the search widget's field height, accent buttons and corner rounding.
 * Added: product pods are drawn as cards, with the oversized product icon capped and the More info link styled. Reseller Store's own name and price emphasis is left intact, and the summary height you set on the widget is untouched. Both spellings are covered: Reseller Store renders `rstore-product` from the shortcode and `rstore-Product` from the widget.
 * Added: a product's own page and the archive listing carry the same price and Add to cart with no pod around them, so those are styled there too.
+* Fixed: on right-to-left sites the search bar reversed but its corners did not, leaving the field and button rounded where they meet and square on the outside. The corners are logical now, so they follow the text direction. This affected the domain search bar as well.
 * Fixed: the cart widget sat flush against the left edge of the page instead of in the content column, because Reseller Store renders it as an inline-block that auto margins cannot centre. The button placed inside a product pod is unaffected.
 * Changed: the styling card in Settings is now Store widgets, and its theming reference lists the new classes.
 * Changed: `wp rintent stats` reports transfer searches and product adds alongside the existing counts.

@@ -290,7 +290,10 @@ body {
 	font-family: inherit !important;
 	line-height: 1 !important;
 	border: none !important;
-	border-radius: 0 var(--rintent-radius, 8px) var(--rintent-radius, 8px) 0 !important;
+	border-start-start-radius: 0 !important;
+	border-end-start-radius: 0 !important;
+	border-start-end-radius: var(--rintent-radius, 8px) !important;
+	border-end-end-radius: var(--rintent-radius, 8px) !important;
 	background: var(--rintent-widget-accent) !important;
 	color: var(--rintent-widget-accent-text) !important;
 	font-weight: 700;
@@ -298,7 +301,13 @@ body {
 }
 
 .rstore-domain-search .search-form input[type="search"] {
-	border-radius: var(--rintent-radius, 8px) 0 0 var(--rintent-radius, 8px) !important;
+	/* Logical corners: a right-to-left page reverses the flex row, and
+	 * physical corners would leave the pair rounded in the middle and
+	 * square on the outside. */
+	border-start-start-radius: var(--rintent-radius, 8px) !important;
+	border-end-start-radius: var(--rintent-radius, 8px) !important;
+	border-start-end-radius: 0 !important;
+	border-end-end-radius: 0 !important;
 }
 
 /* Quiet focus: just the input border turns accent, no glow anywhere.
@@ -605,7 +614,13 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 	font-size: 1rem !important;
 	font-family: inherit !important;
 	border: 1px solid var(--rintent-w-field-border) !important;
-	border-radius: var(--rintent-radius, 8px) 0 0 var(--rintent-radius, 8px) !important;
+	/* Logical corners: a right-to-left page reverses the flex row, and
+	 * physical corners would leave the pair rounded in the middle and
+	 * square on the outside. */
+	border-start-start-radius: var(--rintent-radius, 8px) !important;
+	border-end-start-radius: var(--rintent-radius, 8px) !important;
+	border-start-end-radius: 0 !important;
+	border-end-end-radius: 0 !important;
 	background: var(--rintent-w-field-bg) !important;
 }
 
@@ -635,7 +650,10 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 	font-weight: 700;
 	line-height: 1 !important;
 	border: none !important;
-	border-radius: 0 var(--rintent-radius, 8px) var(--rintent-radius, 8px) 0 !important;
+	border-start-start-radius: 0 !important;
+	border-end-start-radius: 0 !important;
+	border-start-end-radius: var(--rintent-radius, 8px) !important;
+	border-end-end-radius: var(--rintent-radius, 8px) !important;
 	background: var(--rintent-widget-accent) !important;
 	color: var(--rintent-widget-accent-text) !important;
 	cursor: pointer;

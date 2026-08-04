@@ -40,8 +40,10 @@ jobs:
           php-version: '8.3'
           coverage: none
           tools: composer
-      # Pinned to the versions the project is developed against, so a green
-      # tick here means the same thing it means on a maintainer's machine.
+      # Pinned, so a green tick here means the same thing it means on a
+      # maintainer's machine. 3.4.1 is the floor: everything below it carries
+      # an arbitrary code execution advisory (PKSA-mh9b-91zm-m1gy) and newer
+      # Composer refuses to install it at all.
       # Installed into its own directory: composer global on the runner
       # already carries tools of its own and cannot resolve these alongside
       # them.
@@ -53,7 +55,7 @@ jobs:
           composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer require --no-interaction --no-progress \
             squizlabs/php_codesniffer:3.13.5 \
-            wp-coding-standards/wpcs:3.3.0
+            wp-coding-standards/wpcs:3.4.1
       - name: phpcs
         run: |
           "$RUNNER_TEMP/cs/vendor/bin/phpcs" --standard=phpcs.xml.dist

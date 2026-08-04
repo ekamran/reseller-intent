@@ -694,6 +694,17 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 	outline-offset: 2px !important;
 }
 
+/* Reseller Store ships `.rstore-cart { display: inline-block }`. In post
+ * content that shrinks the widget to its text and drops it flush against
+ * the left edge, because auto margins do not centre an inline-level box,
+ * so it misses the content column every one of its siblings sits in.
+ * Scoped to `.widget.rstore-cart`, the standalone widget and shortcode
+ * placement, which is the same handle Reseller Store's own JS uses; the
+ * bare `.rstore-cart` inside an add-to-cart form stays inline. */
+.widget.rstore-cart {
+	display: block;
+}
+
 /* Cart and sign-in are plain links the theme leaves grey. They are the two
  * places a visitor finishes, so they read as actions, not body text. The
  * color needs !important: themes reach these through `.widget a:link`,

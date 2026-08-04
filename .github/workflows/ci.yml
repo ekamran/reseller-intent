@@ -5,6 +5,12 @@ on:
     branches: [master]
   pull_request:
 
+# A branch that gets three pushes in a row does not need three full runs of
+# everything; only the newest one can still tell you anything useful.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   # Plugin Check posts its findings as a PR comment.

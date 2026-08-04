@@ -75,7 +75,7 @@ From your edge or host, when it says: Cloudflare and similar CDNs send an exact 
 
 = Can I see the numbers for one page only? =
 
-Yes. The page filter next to the date ranges follows every panel: KPIs, trend, TLDs, repeats, carted domains and the recent log. Search by Page keeps comparing all pages so you always see the whole field, and exports always carry everything.
+Yes. The page filter next to the date ranges follows every panel: KPIs, trend, TLDs, repeats, carted domains, added products, transfer searches and the recent log. It lists every page that carries any tracked event, so a page that only sees products added is in there too. Search by Page keeps comparing all pages so you always see the whole field, and exports always carry everything.
 
 = I updated to 2.0 and some panels are gone =
 
@@ -175,6 +175,7 @@ The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value 
 * Added: an option to open store links in a new tab. Searching, transferring and checking out all finish on GoDaddy, and this leaves your site standing behind them. Covers Continue to cart, the simple search and transfer boxes, Add to cart, the cart and the sign in link, including shortcode placements that Reseller Store gives no such option. Off by default.
 * Changed: the styling card in Settings is now Store widgets, and its theming reference lists the new classes, seven more elements, and why targeting a class needs !important while a variable does not.
 * Changed: `wp rintent stats` reports transfer searches and product adds alongside the existing counts.
+* Fixed: the page filter could not reach a page that only ever saw a product added or a domain transferred, because its list came from the Search by Page panel, which counts searches and cart clicks. The filter now lists every page with any tracked event; the panel still counts what it says it counts.
 * Fixed: on right-to-left sites the search bar reversed but its corners did not, leaving the field and button rounded where they meet and square on the outside. The corners are logical now, so they follow the text direction. This affected the domain search bar as well.
 * Fixed: the cart widget sat flush against the left edge of the page instead of in the content column, because Reseller Store renders it as an inline-block that auto margins cannot centre. The button placed inside a product pod is unaffected.
 * Fixed: the selectors covering the simple search and transfer boxes weighed more than the ones the theming reference tells you to use, so your own CSS could not override them even with !important. They now match, and the documented selector wins.

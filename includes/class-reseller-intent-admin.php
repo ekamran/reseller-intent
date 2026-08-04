@@ -1278,7 +1278,15 @@ final class Reseller_Intent_Admin {
 			'trend'        => $trend,
 			'cartSizes'    => $cart_sizes,
 			'repeats'      => $repeats,
-			'pages'        => $pages,
+			'pages'        => array_values(
+				array_filter(
+					$pages,
+					static function ( $page ) {
+						return $page['searches'] > 0 || $page['carts'] > 0;
+					}
+				)
+			),
+			'pageOptions'  => $this->page_filter_options( $pages ),
 			'carted'       => $carted,
 			'products'     => array(
 				'items' => $products,
@@ -1402,9 +1410,10 @@ final class Reseller_Intent_Admin {
 			$wpdb->prepare(
 				"SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(page_url, '#', 1), '?', 1) AS page_url,
 					COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN event_count ELSE 0 END),0) AS searches,
-					COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END),0) AS carts
+					COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END),0) AS carts,
+					COUNT(*) AS events
 				FROM {$table_name}
-				WHERE event_type IN ('domain_search','continue_to_cart') AND page_url IS NOT NULL AND page_url <> '' AND created_at >= %s AND created_at < %s
+				WHERE page_url IS NOT NULL AND page_url <> '' AND created_at >= %s AND created_at < %s
 				GROUP BY 1
 				ORDER BY searches DESC
 				LIMIT 200",
@@ -1424,10 +1433,12 @@ final class Reseller_Intent_Admin {
 					'path'     => $path,
 					'searches' => 0,
 					'carts'    => 0,
+					'events'   => 0,
 				);
 			}
 			$by_path[ $path ]['searches'] += (int) $page_row->searches;
 			$by_path[ $path ]['carts']    += (int) $page_row->carts;
+			$by_path[ $path ]['events']   += (int) $page_row->events;
 		}
 
 		usort(
@@ -1445,6 +1456,33 @@ final class Reseller_Intent_Admin {
 		unset( $page );
 
 		return $top;
+	}
+
+	/**
+	 * Every page carrying any tracked event, busiest first. The Search by
+	 * Page panel counts searches and cart clicks only, which is what it says
+	 * it does, but the filter beside it has to reach a page that only ever
+	 * saw a product added or a domain transfer, so it reads this instead.
+	 */
+	private function page_filter_options( $rows ) {
+		$rows = (array) $rows;
+
+		usort(
+			$rows,
+			static function ( $a, $b ) {
+				return $b['events'] <=> $a['events'];
+			}
+		);
+
+		$options = array();
+		foreach ( $rows as $row ) {
+			$options[] = array(
+				'path'  => $row['path'],
+				'label' => $row['label'],
+			);
+		}
+
+		return $options;
 	}
 
 	/**

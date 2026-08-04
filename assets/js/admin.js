@@ -990,14 +990,16 @@
 							onClick: function() { setRange(option.key); }
 						}, option.label);
 					})),
-					data && (data.pages || []).length > 1 ? el('select', {
+					data && (data.pageOptions || data.pages || []).length > 1 ? el('select', {
 						className: 'ri-page-filter' + (pageFilter ? ' is-active' : ''),
 						value: pageFilter,
 						'aria-label': __( 'Filter by page', 'reseller-intent' ),
 						title: __( 'Every panel follows this page filter. Search by Page keeps comparing all pages.', 'reseller-intent' ),
 						onChange: function(event) { setPageFilter(event.target.value); }
 					}, [el('option', { key: '', value: '' }, __( 'All pages', 'reseller-intent' ))].concat(
-						(data.pages || []).map(function(row) {
+						// Every page with any event, not just the ones the
+						// Search by Page panel counts.
+						(data.pageOptions || data.pages || []).map(function(row) {
 							return el('option', { key: row.path, value: row.path }, row.label || row.path);
 						})
 					)) : null,

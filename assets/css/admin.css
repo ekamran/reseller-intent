@@ -430,10 +430,12 @@
 }
 
 .ri-s4 { grid-column: span 4; }
+.ri-s6 { grid-column: span 6; }
 .ri-s8 { grid-column: span 8; }
 .ri-s12 { grid-column: span 12; }
 
 .ri-s4,
+.ri-s6,
 .ri-s8,
 .ri-s12 {
 	min-width: 0;
@@ -447,6 +449,7 @@
 
 @media (max-width: 960px) {
 	.ri-s4,
+	.ri-s6,
 	.ri-s8,
 	.ri-s12 { grid-column: span 12; }
 }
@@ -624,6 +627,9 @@
 
 .ri-tag.is-good { background: var(--ri-good-bg); color: var(--ri-good); }
 .ri-tag.is-bad { background: var(--ri-bad-bg); color: var(--ri-bad); }
+/* Transfer is an intent, not a verdict, so it borrows the accent instead
+   of the good/bad pair that answers "was the name free". */
+.ri-tag.is-info { background: var(--ri-accent-soft); color: var(--ri-accent-ink); }
 
 /* ---- Trend panel ---- */
 .ri-chart {

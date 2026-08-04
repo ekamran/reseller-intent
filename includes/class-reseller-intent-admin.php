@@ -934,6 +934,14 @@ final class Reseller_Intent_Admin {
 				}
 				break;
 
+			case 'products':
+				$items = $this->get_query_ranking( $table_name, 'product_add', $range_start, $range_end, $page_sql, $page_params, $fetch, $offset );
+				break;
+
+			case 'transfers':
+				$items = $this->get_query_ranking( $table_name, 'domain_transfer', $range_start, $range_end, $page_sql, $page_params, $fetch, $offset );
+				break;
+
 			default:
 				wp_send_json_error( array( 'message' => 'Unknown panel' ), 400 );
 		}
@@ -1149,12 +1157,16 @@ final class Reseller_Intent_Admin {
 			);
 		}
 
-		// Recent search log: latest 1000 in range; filtered/paged client-side.
+		/*
+		 * Recent search log: latest 1000 in range; filtered/paged client-side.
+		 * Transfer searches ride along, they are the same act with a different
+		 * destination, and the Result column tells the two apart.
+		 */
 		$recent_rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT domain_query, created_at, is_available, device
+				"SELECT domain_query, created_at, is_available, device, event_type
 				FROM {$table_name}
-				WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql}
+				WHERE event_type IN ('domain_search', 'domain_transfer') AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql}
 				ORDER BY id DESC
 				LIMIT 1000",
 				array_merge( array( $range_start, $range_end ), $page_params )
@@ -1167,8 +1179,17 @@ final class Reseller_Intent_Admin {
 				'time'      => $this->format_datetime_local( (string) $recent_row->created_at ),
 				'available' => ( null === $recent_row->is_available || '' === (string) $recent_row->is_available ) ? null : (bool) (int) $recent_row->is_available,
 				'device'    => (string) $recent_row->device,
+				'transfer'  => 'domain_transfer' === (string) $recent_row->event_type,
 			);
 		}
+
+		/*
+		 * Product adds and transfer searches. Both come from Reseller Store
+		 * surfaces a storefront may never place, so an empty list hides the
+		 * panel rather than parking a blank one on the grid forever.
+		 */
+		$products  = $this->get_query_ranking( $table_name, 'product_add', $range_start, $range_end, $page_sql, $page_params );
+		$transfers = $this->get_query_ranking( $table_name, 'domain_transfer', $range_start, $range_end, $page_sql, $page_params );
 
 		// Tracking health: time since the newest event, any range. Surfaces
 		// silent breakage (JS error, markup drift, blocked AJAX) at a glance.
@@ -1210,10 +1231,19 @@ final class Reseller_Intent_Admin {
 			'repeats'      => $repeats,
 			'pages'        => $pages,
 			'carted'       => $carted,
+			'products'     => array(
+				'items' => $products,
+			),
+			'transfers'    => array(
+				'items' => $transfers,
+			),
 			'totals'       => array(
-				'tlds'    => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT LOWER(SUBSTRING_INDEX(domain_query, '.', -1))) FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s{$page_sql}", array_merge( array( '%' . $wpdb->esc_like( '.' ) . '%', $range_start, $range_end ), $page_params ) ) ),
-				'repeats' => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM (SELECT 1 FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql} GROUP BY domain_query HAVING SUM(event_count) >= 2) grouped", array_merge( array( $range_start, $range_end ), $page_params ) ) ),
-				'carted'  => (int) $carted['total'],
+				'tlds'      => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT LOWER(SUBSTRING_INDEX(domain_query, '.', -1))) FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s{$page_sql}", array_merge( array( '%' . $wpdb->esc_like( '.' ) . '%', $range_start, $range_end ), $page_params ) ) ),
+				'repeats'   => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM (SELECT 1 FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql} GROUP BY domain_query HAVING SUM(event_count) >= 2) grouped", array_merge( array( $range_start, $range_end ), $page_params ) ) ),
+				'carted'    => (int) $carted['total'],
+				// Only worth a round trip when the panel is on screen at all.
+				'products'  => $products ? $this->count_query_ranking( $table_name, 'product_add', $range_start, $range_end, $page_sql, $page_params ) : 0,
+				'transfers' => $transfers ? $this->count_query_ranking( $table_name, 'domain_transfer', $range_start, $range_end, $page_sql, $page_params ) : 0,
 			),
 			'availability' => array(
 				'available' => $avail,
@@ -1448,6 +1478,8 @@ final class Reseller_Intent_Admin {
 					COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN event_count ELSE 0 END),0) AS searches,
 					COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END),0) AS cart_clicks,
 					COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN items_count ELSE 0 END),0) AS domains_added,
+					COALESCE(SUM(CASE WHEN event_type = 'domain_transfer' THEN event_count ELSE 0 END),0) AS transfers,
+					COALESCE(SUM(CASE WHEN event_type = 'product_add' THEN event_count ELSE 0 END),0) AS product_adds,
 					COUNT(DISTINCT CASE WHEN event_type = 'domain_search' AND domain_query <> '' THEN domain_query END) AS unique_searches
 				FROM {$table_name}
 				WHERE created_at >= %s AND created_at < %s{$page_sql}",
@@ -1466,7 +1498,61 @@ final class Reseller_Intent_Admin {
 			'domainsAdded'   => isset( $row['domains_added'] ) ? (int) $row['domains_added'] : 0,
 			// Searches beyond the first for a name: total minus distinct names.
 			'repeatSearches' => max( 0, $searches - $uniques ),
+			// Not KPI cards, the panels that own these events read them.
+			'transfers'      => isset( $row['transfers'] ) ? (int) $row['transfers'] : 0,
+			'productAdds'    => isset( $row['product_adds'] ) ? (int) $row['product_adds'] : 0,
 		);
+	}
+
+	/**
+	 * Top domain_query values for one event type, most hits first. Transfer
+	 * searches and product adds are both plain "which name, how often"
+	 * lists, so they share this instead of carrying a query each.
+	 */
+	private function get_query_ranking( $table_name, $event_type, $range_start, $range_end, $page_sql = '', $page_params = array(), $limit = 15, $offset = 0 ) {
+		global $wpdb;
+
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders -- $table_name is the fixed prefixed table; $page_sql is a class constant carrying its own placeholders.
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT domain_query, SUM(event_count) AS hits
+				FROM {$table_name}
+				WHERE event_type = %s AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql}
+				GROUP BY domain_query
+				ORDER BY hits DESC, domain_query ASC
+				LIMIT %d OFFSET %d",
+				array_merge( array( $event_type, $range_start, $range_end ), $page_params, array( $limit, $offset ) )
+			)
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders
+
+		$items = array();
+		foreach ( $rows as $row ) {
+			$items[] = array(
+				'label' => self::display_domain( (string) $row->domain_query ),
+				'count' => (int) $row->hits,
+			);
+		}
+
+		return $items;
+	}
+
+	/**
+	 * How many distinct names the ranking above has in total, for its pager.
+	 */
+	private function count_query_ranking( $table_name, $event_type, $range_start, $range_end, $page_sql = '', $page_params = array() ) {
+		global $wpdb;
+
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders -- $table_name is the fixed prefixed table; $page_sql is a class constant carrying its own placeholders.
+		return (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(DISTINCT domain_query)
+				FROM {$table_name}
+				WHERE event_type = %s AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql}",
+				array_merge( array( $event_type, $range_start, $range_end ), $page_params )
+			)
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders
 	}
 
 	/**

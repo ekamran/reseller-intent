@@ -663,8 +663,12 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
  * page as the product itself, but ships them as bare stacked markup, so
  * they read as loose text next to a styled search bar. Same card vocabulary
  * as the result rows above, and the same two tokens, so a dark section
- * needs nothing extra. */
-.rstore-product {
+ * needs nothing extra.
+ *
+ * Both spellings on purpose: the shortcode renders `.rstore-product`, the
+ * WP widget renders `.rstore-Product`. CSS class matching is case
+ * sensitive, so one selector would cover only half the placements. */
+:is(.rstore-product, .rstore-Product) {
 	box-sizing: border-box;
 	padding: 20px;
 	border: 1px solid var(--rintent-w-row-border);
@@ -672,13 +676,13 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 	background: var(--rintent-w-row-bg);
 }
 
-.rstore-product .rstore-product-icons {
+:is(.rstore-product, .rstore-Product) .rstore-product-icons {
 	margin-bottom: 14px;
 }
 
 /* Reseller Store centres the icon at 8rem, which towers over the name it
  * belongs to. Cap it and let it sit with the text. */
-.rstore-product .rstore-product-icons svg {
+:is(.rstore-product, .rstore-Product) .rstore-product-icons svg {
 	width: 100%;
 	max-width: 72px;
 	height: auto;
@@ -691,13 +695,22 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
  * --rintent-price-* knobs default to `inherit`, which on a heading is not
  * "leave it alone", it flattens the heading to body text.
  */
-.rstore-product .widget-title {
+:is(.rstore-product, .rstore-Product) .widget-title {
 	margin: 0 0 6px;
 }
 
-.rstore-product .rstore-pricing {
-	margin: 0 0 14px;
+/*
+ * A product's own page and the archive listing carry this same price and
+ * button with no pod wrapper around them, so the term reads as supporting
+ * text everywhere. Only the pod's own spacing stays scoped, since on a
+ * product page the theme owns the rhythm.
+ */
+.rstore-pricing {
 	color: var(--rintent-widget-muted);
+}
+
+:is(.rstore-product, .rstore-Product) .rstore-pricing {
+	margin: 0 0 14px;
 }
 
 /*
@@ -705,31 +718,31 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
  * widget, and Reseller Store clips it with overflow:hidden. That setting is
  * theirs, so only the type inside it is touched here.
  */
-.rstore-product .rstore-product-summary > *:first-child {
+:is(.rstore-product, .rstore-Product) .rstore-product-summary > *:first-child {
 	margin-top: 0;
 }
 
-.rstore-product .rstore-product-summary ul {
+:is(.rstore-product, .rstore-Product) .rstore-product-summary ul {
 	margin: 0;
 	padding-inline-start: 1.15em;
 }
 
-.rstore-product .rstore-product-summary li + li {
+:is(.rstore-product, .rstore-Product) .rstore-product-summary li + li {
 	margin-top: 4px;
 }
 
-.rstore-product .rstore-product-permalink {
+:is(.rstore-product, .rstore-Product) .rstore-product-permalink {
 	margin-top: 14px;
 }
 
-.rstore-product .rstore-product-permalink .link {
+:is(.rstore-product, .rstore-Product) .rstore-product-permalink .link {
 	font-size: 0.9em;
 	font-weight: 600;
 	color: var(--rintent-widget-accent-hover) !important;
 	text-decoration: none;
 }
 
-.rstore-product .rstore-product-permalink .link:hover {
+:is(.rstore-product, .rstore-Product) .rstore-product-permalink .link:hover {
 	text-decoration: underline;
 }
 

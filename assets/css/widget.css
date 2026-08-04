@@ -51,6 +51,24 @@ body {
 	 * to whatever your site already uses, 0 for square, 50px for pills.
 	 */
 	--rintent-radius: 8px;
+
+	/*
+	 * Surface tokens. Everything the widget paints reads from these, so a
+	 * dark section is one block that reassigns them (see "Dark context"
+	 * near the end of this file) rather than a copy of every rule. Any new
+	 * store widget styled here inherits dark support by using these names.
+	 *
+	 * The light values are the plugin's own; where the widget is meant to
+	 * inherit the theme instead, no token exists and no rule is written.
+	 */
+	--rintent-w-field-bg: #ffffff;
+	--rintent-w-field-border: #cfd7e3;
+	--rintent-w-row-bg: transparent;
+	--rintent-w-row-border: #8f8f8f33;
+	--rintent-w-skeleton-bg: #f7f9fc;
+	--rintent-w-skeleton-border: #8f8f8f33;
+	--rintent-w-skeleton-shimmer: linear-gradient(90deg, #e7edf5 25%, #f4f7fb 37%, #e7edf5 63%);
+	--rintent-w-focus-outline: var(--rintent-widget-accent-hover);
 }
 
 /* ---------- Layout: one shared axis per result row (GD core floats them) ---------- */
@@ -89,8 +107,8 @@ body {
 	padding: 0 16px !important;
 	/* Own the border: themes ship thick dark input borders that melt into
 	 * dark sections, making the white area look shorter than the button. */
-	border: 1px solid #cfd7e3 !important;
-	background: #ffffff !important;
+	border: 1px solid var(--rintent-w-field-border) !important;
+	background: var(--rintent-w-field-bg) !important;
 }
 
 .rstore-domain-search .domain-result {
@@ -105,7 +123,8 @@ body {
 	 * the search bar on themes without a global border-box. */
 	box-sizing: border-box;
 	min-width: 0;
-	border: 1px solid #8f8f8f33;
+	border: 1px solid var(--rintent-w-row-border);
+	background: var(--rintent-w-row-bg);
 	border-radius: var(--rintent-radius, 8px);
 	margin-bottom: 10px;
 }
@@ -302,7 +321,7 @@ body {
 /* Keyboard focus stays clearly visible (declared after the reset above
  * so it wins for focus-visible). */
 .rstore-domain-search .search-form input[type="submit"]:focus-visible {
-	outline: 2px solid var(--rintent-widget-accent-hover) !important;
+	outline: 2px solid var(--rintent-w-focus-outline) !important;
 	outline-offset: -3px;
 }
 
@@ -483,9 +502,9 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 	column-gap: 22px;
 	min-height: 88px;
 	padding: 0 20px;
-	border: 1px solid #8f8f8f33;
+	border: 1px solid var(--rintent-w-skeleton-border);
 	border-radius: var(--rintent-radius, 8px);
-	background: #f7f9fc;
+	background: var(--rintent-w-skeleton-bg);
 }
 
 .rstore-domain-search .rintent-skeleton-row .sk-name,
@@ -493,7 +512,7 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 .rstore-domain-search .rintent-skeleton-row .sk-btn {
 	display: block;
 	border-radius: var(--rintent-radius, 8px);
-	background: linear-gradient(90deg, #e7edf5 25%, #f4f7fb 37%, #e7edf5 63%);
+	background: var(--rintent-w-skeleton-shimmer);
 	background-size: 300% 100%;
 	animation: rintentSkeletonShimmer 1.2s ease-in-out infinite;
 }
@@ -541,52 +560,51 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
  *    light and wins over auto)
  * 3. legacy wrapper: .rstore-dark, kept for Add-On migrations */
 
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) {
+	/*
+	 * The flip: a dark section reassigns the surface tokens once and every
+	 * rule above follows. Only text the widget does not paint in light
+	 * needs its own rule, grouped by token below.
+	 */
+	--rintent-w-row-bg: rgba(255, 255, 255, 0.04);
+	--rintent-w-row-border: rgba(255, 255, 255, 0.12);
+	--rintent-w-skeleton-bg: rgba(255, 255, 255, 0.04);
+	--rintent-w-skeleton-border: rgba(255, 255, 255, 0.1);
+	--rintent-w-skeleton-shimmer: linear-gradient(90deg, rgba(255, 255, 255, 0.08) 25%, rgba(255, 255, 255, 0.16) 37%, rgba(255, 255, 255, 0.08) 63%);
+	--rintent-w-focus-outline: var(--rintent-widget-accent-dark-text);
+
+	--rintent-w-on-dark-strong: #ffffff;
+	--rintent-w-on-dark-soft: rgba(255, 255, 255, 0.66);
+	--rintent-w-on-dark-quiet: rgba(255, 255, 255, 0.85);
+}
+
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .domain-result {
+	/* Beats the accent border the exact-match row carries in light: on a
+	 * dark section every row reads the same. */
+	border-color: var(--rintent-w-row-border) !important;
+	background: var(--rintent-w-row-bg) !important;
+}
+
 :is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rstore-message,
 :is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rstore-message h1,
 :is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rstore-message h2,
 :is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rstore-message h3,
-:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rstore-message h4 {
-	color: #ffffff !important;
-}
-
-:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .domain-result {
-	border-color: rgba(255, 255, 255, 0.12) !important;
-	background: rgba(255, 255, 255, 0.04) !important;
-}
-
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rstore-message h4,
 :is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .domain-name,
-:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .result-content {
-	color: #ffffff !important;
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .result-content,
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) button.rstore-domain-buy-button.selected.btn.btn-default {
+	color: var(--rintent-w-on-dark-strong) !important;
 }
 
-:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .purchase-info {
-	color: rgba(255, 255, 255, 0.66) !important;
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .purchase-info,
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rstore-disclaimer,
+:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rstore-disclaimer p {
+	color: var(--rintent-w-on-dark-soft) !important;
 }
 
 :is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) button.rstore-domain-buy-button.select.btn.btn-secondary,
 :is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rintent-clear-btn {
-	color: rgba(255, 255, 255, 0.85) !important;
-}
-
-:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) button.rstore-domain-buy-button.selected.btn.btn-default {
-	color: #ffffff !important;
-}
-
-:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rstore-disclaimer,
-:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rstore-disclaimer p {
-	color: rgba(255, 255, 255, 0.66) !important;
-}
-
-:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rintent-skeleton-row {
-	border-color: rgba(255, 255, 255, 0.1);
-	background: rgba(255, 255, 255, 0.04);
-}
-
-:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rintent-skeleton-row .sk-name,
-:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rintent-skeleton-row .sk-price,
-:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rintent-skeleton-row .sk-btn {
-	background: linear-gradient(90deg, rgba(255, 255, 255, 0.08) 25%, rgba(255, 255, 255, 0.16) 37%, rgba(255, 255, 255, 0.08) 63%);
-	background-size: 300% 100%;
+	color: var(--rintent-w-on-dark-quiet) !important;
 }
 
 /* ---------- Mobile ---------- */

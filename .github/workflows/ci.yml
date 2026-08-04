@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    name: PHP ${{ matrix.php }} syntax
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The declared floor and the highest version the plugin is tested on.
+        php: ['7.4', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - name: Lint every PHP file
+        run: |
+          find . -name '*.php' -not -path './vendor/*' -print0 \
+            | xargs -0 -n1 -P4 php -l
+
+  standards:
+    name: WordPress coding standards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer
+      # Pinned to the versions the project is developed against, so a green
+      # tick here means the same thing it means on a maintainer's machine.
+      - name: Install PHPCS and WPCS
+        run: |
+          composer global config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer global require --no-interaction --no-progress \
+            squizlabs/php_codesniffer:3.13.5 \
+            wp-coding-standards/wpcs:3.3.0
+      - name: phpcs
+        run: $(composer global config bin-dir --absolute)/phpcs --standard=phpcs.xml.dist
+
+  javascript:
+    name: JavaScript syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Parse every script
+        run: |
+          for file in assets/js/*.js; do
+            echo "checking $file"
+            node --check "$file"
+          done
+
+  blueprint:
+    name: Playground blueprint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      # The blueprint carries the demo seeder as one runPHP step. Broken JSON
+      # or a syntax error in there only shows up as a dead Live Preview on
+      # wordpress.org, which is a bad place to find out.
+      - name: Extract the seeder from the blueprint
+        run: python3 -c "import json; d=json.load(open('blueprints/blueprint.json')); open('seed.php','w').write([s for s in d['steps'] if s.get('step')=='runPHP'][0]['code'])"
+      - name: Lint the seeder
+        run: php -l seed.php
+
+  plugin-check:
+    name: WordPress Plugin Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: wordpress/plugin-check-action@v1
+        with:
+          build-dir: './'

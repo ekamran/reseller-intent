@@ -1,43 +1,43 @@
 {
-	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
-	"meta": {
-		"title": "Reseller Intent demo",
-		"description": "Reseller Intent with the GoDaddy Reseller Store plugin, several widget pages and a month of sample analytics.",
-		"author": "ekamran"
-	},
-	"landingPage": "/wp-admin/admin.php?page=reseller-intent",
-	"preferredVersions": {
-		"php": "8.2",
-		"wp": "latest"
-	},
-	"features": {
-		"networking": true
-	},
-	"login": true,
-	"steps": [
-		{
-			"step": "installPlugin",
-			"pluginData": {
-				"resource": "wordpress.org/plugins",
-				"slug": "reseller-store"
-			},
-			"options": {
-				"activate": true
-			}
-		},
-		{
-			"step": "installPlugin",
-			"pluginData": {
-				"resource": "wordpress.org/plugins",
-				"slug": "reseller-intent"
-			},
-			"options": {
-				"activate": true
-			}
-		},
-		{
-			"step": "runPHP",
-			"code": "<?php require_once '/wordpress/wp-load.php'; update_option( 'rstore_pl_id', 487116 ); update_option( 'blogname', 'Reseller Intent Demo' ); $plans = array( array( 'cPanel Starter', '$3.99', '$5.99' ), array( 'cPanel Economy', '$7.99', '$9.99' ), array( 'cPanel Deluxe', '$12.99', '$14.99' ), array( 'Websites + Marketing Standard', '$6.99', '$9.99' ), array( 'Websites + Marketing Premium', '$13.99', '$19.99' ), ); foreach ( $plans as $plan ) { $pid = wp_insert_post( array( 'post_type' => 'reseller_product', 'post_status' => 'publish', 'post_title' => $plan[0] ) ); update_post_meta( $pid, 'rstore_salePrice', $plan[1] ); update_post_meta( $pid, 'rstore_listPrice', $plan[2] ); } $widget = '<!-- wp:shortcode -->[rstore_domain_search]<!-- /wp:shortcode -->'; foreach ( array( 'Find a Domain', 'Hosting', 'Deals' ) as $title ) { wp_insert_post( array( 'post_type' => 'page', 'post_status' => 'publish', 'post_title' => $title, 'post_content' => $widget ) ); } global $wpdb; $table = $wpdb->prefix . 'rintent_events'; $now = strtotime( current_time( 'mysql' ) ); mt_srand( 11 ); $tlds = array( 'com', 'com', 'com', 'in', 'io', 'app', 'net', 'co', 'org', 'dev', 'store', 'ai', 'shop', 'online' ); $words = array( 'desibites', 'cloudkart', 'zaikaa', 'homelab', 'getfit', 'chaiwala', 'urbanest', 'pixelpit', 'swiftcart', 'bluepeak', 'greenmart', 'quickbite', 'crafthub', 'petcorner', 'gearbox' ); $codes = array( 'IN', 'IN', 'IN', 'US', 'US', 'GB', 'AE', 'DE', 'CA', 'PK', 'AU', 'SG' ); $devices = array( 'mobile', 'mobile', 'mobile', 'desktop', 'desktop', 'tablet' ); $paths = array( '/find-a-domain/', '/find-a-domain/', '/find-a-domain/', '/find-a-domain/', '/', '/', '/hosting/', '/hosting/', '/deals/' ); $repeat_pool = array(); for ( $i = 0; $i < 25; $i++ ) { $repeat_pool[] = $words[ $i % 15 ] . $i . '.' . $tlds[ $i % 14 ]; } $search_rows = array(); $cart_rows = array(); for ( $day = 0; $day < 190; $day++ ) { $per_day = $day < 30 ? mt_rand( 13, 19 ) : ( $day < 90 ? mt_rand( 8, 13 ) : mt_rand( 3, 7 ) ); for ( $k = 0; $k < $per_day; $k++ ) { $domain = ( 0 === $k % 3 ) ? $repeat_pool[ mt_rand( 0, 24 ) ] : $words[ mt_rand( 0, 14 ) ] . mt_rand( 10, 9999 ) . '.' . $tlds[ mt_rand( 0, 13 ) ]; $search_rows[] = $wpdb->prepare( '(%s,%s,1,%d,%s,%s,%s,%s)', 'domain_search', $domain, mt_rand( 0, 9 ) < 4 ? 1 : 0, $devices[ mt_rand( 0, 5 ) ], $codes[ mt_rand( 0, 11 ) ], home_url( $paths[ mt_rand( 0, 8 ) ] ), gmdate( 'Y-m-d H:i:s', $now - ( $day * 86400 ) - mt_rand( 0, 82800 ) ) ); } $carts = $day < 30 ? mt_rand( 0, 2 ) : ( $day < 90 ? mt_rand( 1, 3 ) : mt_rand( 0, 1 ) ); for ( $c = 0; $c < $carts; $c++ ) { $n = 1; $roll = mt_rand( 0, 9 ); if ( 7 === $roll || 8 === $roll ) { $n = 2; } elseif ( 9 === $roll ) { $n = mt_rand( 3, 5 ); } $items = array(); for ( $j = 0; $j < $n; $j++ ) { $items[] = $repeat_pool[ mt_rand( 0, 24 ) ]; } $cart_rows[] = $wpdb->prepare( '(%s,%s,1,%d,%s,%s,%s,%s,%s)', 'continue_to_cart', $items[0], $n, wp_json_encode( $items ), $devices[ mt_rand( 0, 5 ) ], $codes[ mt_rand( 0, 11 ) ], home_url( $paths[ mt_rand( 0, 8 ) ] ), gmdate( 'Y-m-d H:i:s', $now - ( $day * 86400 ) - mt_rand( 0, 82800 ) ) ); } } foreach ( array_chunk( $search_rows, 100 ) as $chunk ) { $wpdb->query( \"INSERT INTO {$table} (event_type,domain_query,event_count,is_available,device,country,page_url,created_at) VALUES \" . implode( ',', $chunk ) ); } foreach ( array_chunk( $cart_rows, 100 ) as $chunk ) { $wpdb->query( \"INSERT INTO {$table} (event_type,domain_query,event_count,items_count,items_json,device,country,page_url,created_at) VALUES \" . implode( ',', $chunk ) ); }"
-		}
-	]
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "meta": {
+    "title": "Reseller Intent demo",
+    "description": "Reseller Intent with the GoDaddy Reseller Store plugin, several widget pages and a month of sample analytics.",
+    "author": "ekamran"
+  },
+  "landingPage": "/wp-admin/admin.php?page=reseller-intent",
+  "preferredVersions": {
+    "php": "8.2",
+    "wp": "latest"
+  },
+  "features": {
+    "networking": true
+  },
+  "login": true,
+  "steps": [
+    {
+      "step": "installPlugin",
+      "pluginData": {
+        "resource": "wordpress.org/plugins",
+        "slug": "reseller-store"
+      },
+      "options": {
+        "activate": true
+      }
+    },
+    {
+      "step": "installPlugin",
+      "pluginData": {
+        "resource": "wordpress.org/plugins",
+        "slug": "reseller-intent"
+      },
+      "options": {
+        "activate": true
+      }
+    },
+    {
+      "step": "runPHP",
+      "code": "<?php\nrequire_once '/wordpress/wp-load.php';\nupdate_option( 'rstore_pl_id', 487116 );\nupdate_option( 'blogname', 'Reseller Intent Demo' );\n$plans = array(\n array( 'cPanel Starter', '$3.99', '$5.99' ),\n array( 'cPanel Economy', '$7.99', '$9.99' ),\n array( 'cPanel Deluxe', '$12.99', '$14.99' ),\n array( 'Websites + Marketing Standard', '$6.99', '$9.99' ),\n array( 'Websites + Marketing Premium', '$13.99', '$19.99' ),\n array( 'SSL Standard DV', '$5.99', '$7.99' ),\n array( 'SSL Managed DV', '$8.99', '$11.99' ),\n array( 'SSL Managed OV', '$15.99', '$19.99' ),\n);\n$product_ids = array();\nforeach ( $plans as $plan ) {\n $pid = wp_insert_post( array( 'post_type' => 'reseller_product', 'post_status' => 'publish', 'post_title' => $plan[0] ) );\n update_post_meta( $pid, 'rstore_salePrice', $plan[1] );\n update_post_meta( $pid, 'rstore_listPrice', $plan[2] );\n $product_ids[ sanitize_title( $plan[0] ) ] = $pid;\n}\n$widget = '<!-- wp:shortcode -->[rstore_domain_search]<!-- /wp:shortcode -->';\nforeach ( array( 'Find a Domain', 'Hosting', 'Deals' ) as $title ) {\n wp_insert_post( array( 'post_type' => 'page', 'post_status' => 'publish', 'post_title' => $title, 'post_content' => $widget ) );\n}\n$pods = '';\nforeach ( array_slice( array_values( $product_ids ), 0, 3 ) as $pod_id ) {\n $pods .= sprintf( '<!-- wp:shortcode -->[rstore_product post_id=\"%d\"]<!-- /wp:shortcode -->', $pod_id );\n}\nwp_insert_post(\n array(\n 'post_type' => 'page',\n 'post_status' => 'publish',\n 'post_title' => 'Transfer and Products',\n 'post_content' => '<!-- wp:heading --><h2>Move a domain to us</h2><!-- /wp:heading -->'\n . '<!-- wp:shortcode -->[rstore_domain_transfer]<!-- /wp:shortcode -->'\n . '<!-- wp:heading --><h2>Quick search</h2><!-- /wp:heading -->'\n . '<!-- wp:shortcode -->[rstore_domain]<!-- /wp:shortcode -->'\n . '<!-- wp:heading --><h2>Hosting and SSL</h2><!-- /wp:heading -->' . $pods,\n )\n);\nglobal $wpdb;\n$table = $wpdb->prefix . 'rintent_events';\n$now = strtotime( current_time( 'mysql' ) );\nmt_srand( 11 );\n$tlds = array( 'com', 'com', 'com', 'in', 'io', 'app', 'net', 'co', 'org', 'dev', 'store', 'ai', 'shop', 'online' );\n$words = array( 'desibites', 'cloudkart', 'zaikaa', 'homelab', 'getfit', 'chaiwala', 'urbanest', 'pixelpit', 'swiftcart', 'bluepeak', 'greenmart', 'quickbite', 'crafthub', 'petcorner', 'gearbox' );\n$codes = array( 'IN', 'IN', 'IN', 'US', 'US', 'GB', 'AE', 'DE', 'CA', 'PK', 'AU', 'SG' );\n$devices = array( 'mobile', 'mobile', 'mobile', 'desktop', 'desktop', 'tablet' );\n$paths = array( '/find-a-domain/', '/find-a-domain/', '/find-a-domain/', '/find-a-domain/', '/', '/', '/hosting/', '/hosting/', '/deals/' );\n$repeat_pool = array();\nfor ( $i = 0; $i < 25; $i++ ) {\n $repeat_pool[] = $words[ $i % 15 ] . $i . '.' . $tlds[ $i % 14 ];\n}\n$search_rows = array();\n$cart_rows = array();\nfor ( $day = 0; $day < 190; $day++ ) {\n $per_day = $day < 30 ? mt_rand( 13, 19 ) : ( $day < 90 ? mt_rand( 8, 13 ) : mt_rand( 3, 7 ) );\n for ( $k = 0; $k < $per_day; $k++ ) {\n $domain = ( 0 === $k % 3 )\n ? $repeat_pool[ mt_rand( 0, 24 ) ]\n : $words[ mt_rand( 0, 14 ) ] . mt_rand( 10, 9999 ) . '.' . $tlds[ mt_rand( 0, 13 ) ];\n $search_rows[] = $wpdb->prepare(\n '(%s,%s,1,%d,%s,%s,%s,%s)',\n 'domain_search',\n $domain,\n mt_rand( 0, 9 ) < 4 ? 1 : 0,\n $devices[ mt_rand( 0, 5 ) ],\n $codes[ mt_rand( 0, 11 ) ],\n home_url( $paths[ mt_rand( 0, 8 ) ] ),\n gmdate( 'Y-m-d H:i:s', $now - ( $day * 86400 ) - mt_rand( 0, 82800 ) )\n );\n }\n $carts = $day < 30 ? mt_rand( 0, 2 ) : ( $day < 90 ? mt_rand( 1, 3 ) : mt_rand( 0, 1 ) );\n for ( $c = 0; $c < $carts; $c++ ) {\n $n = 1;\n $roll = mt_rand( 0, 9 );\n if ( 7 === $roll || 8 === $roll ) {\n $n = 2;\n } elseif ( 9 === $roll ) {\n $n = mt_rand( 3, 5 );\n }\n $items = array();\n for ( $j = 0; $j < $n; $j++ ) {\n $items[] = $repeat_pool[ mt_rand( 0, 24 ) ];\n }\n $cart_rows[] = $wpdb->prepare(\n '(%s,%s,1,%d,%s,%s,%s,%s,%s)',\n 'continue_to_cart',\n $items[0],\n $n,\n wp_json_encode( $items ),\n $devices[ mt_rand( 0, 5 ) ],\n $codes[ mt_rand( 0, 11 ) ],\n home_url( $paths[ mt_rand( 0, 8 ) ] ),\n gmdate( 'Y-m-d H:i:s', $now - ( $day * 86400 ) - mt_rand( 0, 82800 ) )\n );\n }\n}\n$product_slugs = array_keys( $product_ids );\n$transfers = array(\n 'oldstudio.com', 'legacyshop.net', 'firstclient.co.uk', 'movingsoon.org',\n 'previoushost.com', 'bakerystreet.in', 'clinicnorth.com', 'thirdparty.io',\n 'greenfields.co', 'quietharbour.com', 'papermill.dev', 'saltandsage.shop',\n);\n$extra_rows = array();\nfor ( $day = 0; $day < 190; $day++ ) {\n $adds = $day < 30 ? mt_rand( 1, 4 ) : ( $day < 90 ? mt_rand( 0, 3 ) : mt_rand( 0, 1 ) );\n for ( $a = 0; $a < $adds; $a++ ) {\n $pick = $product_slugs[ min( 7, (int) floor( abs( mt_rand( 0, 100 ) - mt_rand( 0, 100 ) ) / 13 ) ) ];\n $extra_rows[] = $wpdb->prepare(\n '(%s,%s,1,%d,%s,%s,%s,%s)',\n 'product_add',\n $pick,\n 1,\n $devices[ mt_rand( 0, 5 ) ],\n $codes[ mt_rand( 0, 11 ) ],\n home_url( '/transfer-and-products/' ),\n gmdate( 'Y-m-d H:i:s', $now - ( $day * 86400 ) - mt_rand( 0, 82800 ) )\n );\n }\n $moves = $day < 30 ? mt_rand( 0, 2 ) : ( $day < 90 ? mt_rand( 0, 2 ) : mt_rand( 0, 1 ) );\n for ( $m = 0; $m < $moves; $m++ ) {\n $extra_rows[] = $wpdb->prepare(\n '(%s,%s,1,%d,%s,%s,%s,%s)',\n 'domain_transfer',\n $transfers[ min( 11, (int) floor( abs( mt_rand( 0, 100 ) - mt_rand( 0, 100 ) ) / 9 ) ) ],\n 0,\n $devices[ mt_rand( 0, 5 ) ],\n $codes[ mt_rand( 0, 11 ) ],\n home_url( '/transfer-and-products/' ),\n gmdate( 'Y-m-d H:i:s', $now - ( $day * 86400 ) - mt_rand( 0, 82800 ) )\n );\n }\n}\nforeach ( array_chunk( $extra_rows, 100 ) as $chunk ) {\n $wpdb->query( \"INSERT INTO {$table} (event_type,domain_query,event_count,items_count,device,country,page_url,created_at) VALUES \" . implode( ',', $chunk ) );\n}\nforeach ( array_chunk( $search_rows, 100 ) as $chunk ) {\n $wpdb->query( \"INSERT INTO {$table} (event_type,domain_query,event_count,is_available,device,country,page_url,created_at) VALUES \" . implode( ',', $chunk ) );\n}\nforeach ( array_chunk( $cart_rows, 100 ) as $chunk ) {\n $wpdb->query( \"INSERT INTO {$table} (event_type,domain_query,event_count,items_count,items_json,device,country,page_url,created_at) VALUES \" . implode( ',', $chunk ) );\n}"
+    }
+  ]
 }

@@ -22,6 +22,7 @@ Your analytics tell you about pages and traffic. They tell you nothing about the
 * Filter the whole dashboard by the page a search happened on, or watch all pages together
 * Every list pages through the full dataset; any range exports as CSV or JSON
 * An optional style pack for the Reseller Store widgets, with corner style, domain name size and price color as plain settings, plus three shortcodes: TLD price strip, live product price, regional support number
+* An option to send every store link to a new tab, so your site stays open while the visitor finishes on GoDaddy
 * Today and this week at a glance on your WordPress dashboard
 
 = Privacy =
@@ -30,7 +31,7 @@ Events are written to one table in your own database and never leave your site. 
 
 = For developers =
 
-Filter `rintent_should_track` to pause tracking, `rintent_event_data` to change or drop an event, `rintent_page_needs_store` when a page builder hides the widget from detection, and `rintent_track_bots` for the rare debugging session that needs bot traffic recorded. Everything lives in one indexed custom table.
+Filter `rintent_should_track` to pause tracking, `rintent_event_data` to change or drop an event, `rintent_page_needs_store` when a page builder hides the widget from detection, and `rintent_track_bots` for the rare debugging session that needs bot traffic recorded. Everything lives in one indexed custom table, and the event types are `domain_search`, `search_result`, `domain_select`, `continue_to_cart`, `domain_transfer` and `product_add`.
 
 == Installation ==
 
@@ -98,6 +99,10 @@ The easy way round it is not to fight it. Set the variables instead:
 
 Variables win without `!important` and one line changes every button, field and card at once. Corner style, domain name size and price color also have plain settings on the Settings screen, no CSS needed. Full list of variables and classes lives under Settings, Store widgets, Theming reference. If you do target a class directly, add `!important` to it.
 
+= Should I open store links in a new tab? =
+
+It is worth trying. Every purchase finishes on GoDaddy, not on your site, so a visitor who lands there in the same tab has to press back to search again. With the option on, your storefront stays open behind them. It is off by default, because a forced new tab is a preference and not everyone shares it, and it covers the places Reseller Store gives you no switch for: Continue to cart, the cart and sign in links, and every shortcode placement.
+
 = What happens when I uninstall? =
 
 Nothing is deleted unless you asked for it. Tick the uninstall option in Settings first if you want the table and settings removed.
@@ -152,7 +157,7 @@ The default support numbers for the phone shortcode are GoDaddy's published numb
 == Upgrade Notice ==
 
 = 2.1.0 =
-Adds transfer and product tracking with two new dashboard panels, and extends the style pack to the rest of the Reseller Store widgets. Also fixes white button labels turning dark when a Dark accent color is set.
+Transfer searches and product add to cart are tracked now, with two new dashboard panels. The style pack reaches the rest of the Reseller Store widgets, corner style and type are plain settings, and store links can open in a new tab. Also fixes white button labels turning dark when a Dark accent color is set.
 
 = 2.0.0 =
 The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value panels are gone. The price shortcode is now family-first; every old embed keeps working. Your data is untouched.
@@ -166,13 +171,13 @@ The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value 
 * Added: the style pack now covers the simple search, the transfer box, Add to cart, the cart and the sign in link, matching the search widget's field height, accent buttons and corner rounding.
 * Added: product pods are drawn as cards, with the oversized product icon capped and the More info link styled. Reseller Store's own name and price emphasis is left intact, and the summary height you set on the widget is untouched. Both spellings are covered: Reseller Store renders `rstore-product` from the shortcode and `rstore-Product` from the widget.
 * Added: a product's own page and the archive listing carry the same price and Add to cart with no pod around them, so those are styled there too.
-* Fixed: on right-to-left sites the search bar reversed but its corners did not, leaving the field and button rounded where they meet and square on the outside. The corners are logical now, so they follow the text direction. This affected the domain search bar as well.
-* Fixed: the cart widget sat flush against the left edge of the page instead of in the content column, because Reseller Store renders it as an inline-block that auto margins cannot centre. The button placed inside a product pod is unaffected.
 * Added: corner style (rounded, square or pill), domain name size and price color are settings now, so the most asked for changes need no CSS at all.
 * Added: an option to open store links in a new tab. Searching, transferring and checking out all finish on GoDaddy, and this leaves your site standing behind them. Covers Continue to cart, the simple search and transfer boxes, Add to cart, the cart and the sign in link, including shortcode placements that Reseller Store gives no such option. Off by default.
 * Changed: the styling card in Settings is now Store widgets, and its theming reference lists the new classes, seven more elements, and why targeting a class needs !important while a variable does not.
-* Fixed: the selectors covering the simple search and transfer boxes weighed more than the ones the theming reference tells you to use, so your own CSS could not override them even with !important. They now match, and the documented selector wins.
 * Changed: `wp rintent stats` reports transfer searches and product adds alongside the existing counts.
+* Fixed: on right-to-left sites the search bar reversed but its corners did not, leaving the field and button rounded where they meet and square on the outside. The corners are logical now, so they follow the text direction. This affected the domain search bar as well.
+* Fixed: the cart widget sat flush against the left edge of the page instead of in the content column, because Reseller Store renders it as an inline-block that auto margins cannot centre. The button placed inside a product pod is unaffected.
+* Fixed: the selectors covering the simple search and transfer boxes weighed more than the ones the theming reference tells you to use, so your own CSS could not override them even with !important. They now match, and the documented selector wins.
 * Fixed: on sites with a Dark accent color set, the Search and Continue to cart buttons in a dark section drew their labels in dark ink instead of white. The Dark accent is a text color for dark surfaces and never colors buttons, so it no longer takes part in the button label color.
 * Fixed: a product family whose plans differ in the middle of their names was labelled by that one shared word alone, so two SSL services read as plain "Managed". The shared tail of the names joins the label, giving "Managed SSL Service".
 * Removed: the `--rintent-accent-dark-text` variable, which nothing consumed. Button labels follow `--rintent-accent-text`, and `--rintent-dark-button-text` still overrides them on dark sections.

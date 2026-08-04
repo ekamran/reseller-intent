@@ -117,7 +117,7 @@ One phone number as a tap to call link, picked for the visitor's region from the
 
 == WP-CLI ==
 
-`wp rintent stats --days=30` prints searches, unique searches, cart clicks, domains added and the search to cart rate.
+`wp rintent stats --days=30` prints searches, unique searches, cart clicks, domains added, transfer searches, product adds and the search to cart rate.
 
 `wp rintent export --days=90 --format=csv > events.csv` streams every event as CSV or JSON, in batches.
 
@@ -151,6 +151,7 @@ The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value 
 * Added: the Recent Searches log carries transfer searches too, marked Transfer in the Result column beside Available and Registered.
 * Added: the style pack now covers the simple search, the transfer box, Add to cart, the cart and the sign in link, matching the search widget's field height, accent buttons and corner rounding.
 * Changed: the styling card in Settings is now Store widgets, and its theming reference lists the new classes.
+* Changed: `wp rintent stats` reports transfer searches and product adds alongside the existing counts.
 * Fixed: on sites with a Dark accent color set, the Search and Continue to cart buttons in a dark section drew their labels in dark ink instead of white. The Dark accent is a text color for dark surfaces and never colors buttons, so it no longer takes part in the button label color.
 * Fixed: a product family whose plans differ in the middle of their names was labelled by that one shared word alone, so two SSL services read as plain "Managed". The shared tail of the names joins the label, giving "Managed SSL Service".
 * Removed: the `--rintent-accent-dark-text` variable, which nothing consumed. Button labels follow `--rintent-accent-text`, and `--rintent-dark-button-text` still overrides them on dark sections.

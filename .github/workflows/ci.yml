@@ -55,7 +55,8 @@ jobs:
             squizlabs/php_codesniffer:3.13.5 \
             wp-coding-standards/wpcs:3.3.0
       - name: phpcs
-        run: "$RUNNER_TEMP/cs/vendor/bin/phpcs" --standard=phpcs.xml.dist
+        run: |
+          "$RUNNER_TEMP/cs/vendor/bin/phpcs" --standard=phpcs.xml.dist
 
   javascript:
     name: JavaScript syntax

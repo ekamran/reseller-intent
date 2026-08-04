@@ -1,9 +1,10 @@
 /**
  * Reseller Intent, frontend tracker.
  *
- * Listens to the GoDaddy Reseller Store domain-search widget (React 18) and
- * records four anonymous events: domain_search, search_result (availability
- * attached to the matching search), domain_select, continue_to_cart.
+ * Listens to the GoDaddy Reseller Store widgets and records six anonymous
+ * events: domain_search (the advanced widget and the simple box alike),
+ * search_result (availability attached to the matching search),
+ * domain_select, continue_to_cart, domain_transfer and product_add.
  *
  * Privacy: no cookies, no fingerprinting, no IP storage, no user accounts.
  */

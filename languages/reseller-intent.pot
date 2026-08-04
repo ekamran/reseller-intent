@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Reseller Intent for GoDaddy Reseller Store 2.0.0\n"
+"Project-Id-Version: Reseller Intent for GoDaddy Reseller Store 2.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/reseller-intent\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-03T19:42:17+00:00\n"
+"POT-Creation-Date: 2026-08-04T14:50:35+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: reseller-intent\n"
@@ -34,640 +34,652 @@ msgstr ""
 msgid "https://shifteq.com"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:107
-#: includes/class-reseller-intent-admin.php:108
-#: includes/class-reseller-intent-admin.php:1735
+#: includes/class-reseller-intent-admin.php:110
+#: includes/class-reseller-intent-admin.php:111
+#: includes/class-reseller-intent-admin.php:1835
 #: includes/class-reseller-intent-health.php:39
 #: includes/class-reseller-intent.php:226
-#: assets/js/admin.js:884
+#: assets/js/admin.js:977
 msgid "Reseller Intent"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:118
-#: includes/class-reseller-intent-admin.php:119
+#: includes/class-reseller-intent-admin.php:121
+#: includes/class-reseller-intent-admin.php:122
 msgid "Dashboard"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:127
-#: includes/class-reseller-intent-admin.php:128
-#: includes/class-reseller-intent-admin.php:189
+#: includes/class-reseller-intent-admin.php:130
+#: includes/class-reseller-intent-admin.php:131
+#: includes/class-reseller-intent-admin.php:190
 msgid "Shortcodes"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:136
-#: includes/class-reseller-intent-admin.php:137
-#: includes/class-reseller-intent-admin.php:417
+#: includes/class-reseller-intent-admin.php:139
+#: includes/class-reseller-intent-admin.php:140
+#: includes/class-reseller-intent-admin.php:418
 msgid "Settings"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:172
+#: includes/class-reseller-intent-admin.php:173
 msgid "Prices are cached after the strip first renders."
 msgstr ""
 
 #. translators: 1: time since the last price refresh, 2: time until the next one
-#: includes/class-reseller-intent-admin.php:176
+#: includes/class-reseller-intent-admin.php:177
 #, php-format
 msgid "Prices refreshed %1$s ago · next auto-refresh in %2$s"
 msgstr ""
 
 #. translators: %s: time since the last price refresh
-#: includes/class-reseller-intent-admin.php:182
+#: includes/class-reseller-intent-admin.php:183
 #, php-format
 msgid "Prices refreshed %s ago"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:190
+#: includes/class-reseller-intent-admin.php:191
 msgid "Everything for each shortcode lives on its card: options, live preview, and the code to copy."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:195
+#: includes/class-reseller-intent-admin.php:196
 msgid "Support numbers saved."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:197
+#: includes/class-reseller-intent-admin.php:198
 msgid "Support numbers reset to the GoDaddy defaults."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:199
+#: includes/class-reseller-intent-admin.php:200
 msgid "TLD prices refreshed from the storefront API."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:201
+#: includes/class-reseller-intent-admin.php:202
 msgid "Nothing to refresh yet. Prices are cached after the TLD strip renders for the first time."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:206
+#: includes/class-reseller-intent-admin.php:207
 msgid "TLD price strip"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:207
+#: includes/class-reseller-intent-admin.php:208
 msgid "Live TLD price pills that always match checkout. Cached 12 hours, refreshed in the background."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:211
+#: includes/class-reseller-intent-admin.php:212
 msgid "TLDs"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:214
+#: includes/class-reseller-intent-admin.php:215
 msgid "Comma-separated, dots optional. Order here is display order."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:218
+#: includes/class-reseller-intent-admin.php:219
 msgid "Theme"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:220
+#: includes/class-reseller-intent-admin.php:221
 msgid "Light"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:220
+#: includes/class-reseller-intent-admin.php:221
 msgid "Dark"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:221
+#: includes/class-reseller-intent-admin.php:222
 msgid "Dark is for dark page sections on your site. Prices there use the Dark accent from Settings."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:225
+#: includes/class-reseller-intent-admin.php:226
 msgid "\"More\" pill"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:228
+#: includes/class-reseller-intent-admin.php:229
 msgid "Text on the more pill"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:228
+#: includes/class-reseller-intent-admin.php:229
 #: includes/class-reseller-intent-tld-strip.php:163
 msgid "More TLDs"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:229
+#: includes/class-reseller-intent-admin.php:230
 msgid "Link for the more pill"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:231
+#: includes/class-reseller-intent-admin.php:232
 msgid "Optional link pill at the end. Leave the link empty to hide it."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:235
-#: includes/class-reseller-intent-admin.php:305
-#: includes/class-reseller-intent-admin.php:375
+#: includes/class-reseller-intent-admin.php:236
+#: includes/class-reseller-intent-admin.php:306
+#: includes/class-reseller-intent-admin.php:376
 msgid "Shortcode"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:238
-#: includes/class-reseller-intent-admin.php:308
-#: includes/class-reseller-intent-admin.php:378
+#: includes/class-reseller-intent-admin.php:239
+#: includes/class-reseller-intent-admin.php:309
+#: includes/class-reseller-intent-admin.php:379
 msgid "Copy"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:242
-#: includes/class-reseller-intent-admin.php:312
-#: includes/class-reseller-intent-admin.php:382
+#: includes/class-reseller-intent-admin.php:243
+#: includes/class-reseller-intent-admin.php:313
+#: includes/class-reseller-intent-admin.php:383
 msgid "Live preview"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:244
-#: includes/class-reseller-intent-admin.php:314
+#: includes/class-reseller-intent-admin.php:245
+#: includes/class-reseller-intent-admin.php:315
 msgid "Rendering..."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:245
+#: includes/class-reseller-intent-admin.php:246
 msgid "Exactly what visitors get, live prices included."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:254
+#: includes/class-reseller-intent-admin.php:255
 msgid "Refresh prices now"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:261
+#: includes/class-reseller-intent-admin.php:262
 msgid "Live product price"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:262
+#: includes/class-reseller-intent-admin.php:263
 msgid "Pick a product family, print its live price. Families come from your imported GoDaddy catalog. Every plan is included automatically, so the number stays correct when prices change."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:266
+#: includes/class-reseller-intent-admin.php:267
 msgid "No product families yet. Import your Reseller Store products first, plans group into families automatically."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:269
+#: includes/class-reseller-intent-admin.php:270
 msgid "Product family"
 msgstr ""
 
 #. translators: 1: family name, 2: number of plans
-#: includes/class-reseller-intent-admin.php:276
+#: includes/class-reseller-intent-admin.php:277
 #, php-format
 msgid "%1$s (%2$s plan)"
 msgid_plural "%1$s (%2$s plans)"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-reseller-intent-admin.php:281
+#: includes/class-reseller-intent-admin.php:282
 msgid "No individual product picking. A family is priced as a whole."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:285
+#: includes/class-reseller-intent-admin.php:286
 msgid "Show"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:288
+#: includes/class-reseller-intent-admin.php:289
 msgid "Price range, cheapest to highest"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:289
+#: includes/class-reseller-intent-admin.php:290
 msgid "Cheapest price"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:290
+#: includes/class-reseller-intent-admin.php:291
 msgid "Highest price"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:295
+#: includes/class-reseller-intent-admin.php:296
 msgid "Text around it"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:298
+#: includes/class-reseller-intent-admin.php:299
 msgid "Text before the price"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:299
+#: includes/class-reseller-intent-admin.php:300
 msgid "Text after the price"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:301
+#: includes/class-reseller-intent-admin.php:302
 msgid "Pre-filled from the family. Click and type to change. Spacing is handled for you."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:322
-#: includes/class-reseller-intent-admin.php:393
+#: includes/class-reseller-intent-admin.php:323
+#: includes/class-reseller-intent-admin.php:394
 msgid "Style hooks:"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:324
+#: includes/class-reseller-intent-admin.php:325
 msgid "old ids=\"\" embeds keep working"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:332
-#: includes/class-reseller-intent-admin.php:349
-#: includes/class-reseller-intent-admin.php:635
+#: includes/class-reseller-intent-admin.php:333
+#: includes/class-reseller-intent-admin.php:350
+#: includes/class-reseller-intent-admin.php:639
 msgid "Support phone number"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:333
+#: includes/class-reseller-intent-admin.php:334
 msgid "Shows each visitor the right regional number from their browser timezone. No lookup service, page-cache safe. Flag and number as a call link, nothing else."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:337
+#: includes/class-reseller-intent-admin.php:338
 msgid "Numbers"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:344
+#: includes/class-reseller-intent-admin.php:345
 msgid "Label"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:344
+#: includes/class-reseller-intent-admin.php:345
 msgid "Phone number"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:344
+#: includes/class-reseller-intent-admin.php:345
 msgid "Countries"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:348
-#: includes/class-reseller-intent-admin.php:634
+#: includes/class-reseller-intent-admin.php:349
+#: includes/class-reseller-intent-admin.php:638
 msgid "Support entry label"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:348
+#: includes/class-reseller-intent-admin.php:349
 msgid "US Support"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:350
-#: includes/class-reseller-intent-admin.php:636
+#: includes/class-reseller-intent-admin.php:351
+#: includes/class-reseller-intent-admin.php:640
 msgid "Country codes for this number"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:350
+#: includes/class-reseller-intent-admin.php:351
 msgid "empty = default"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:351
-#: includes/class-reseller-intent-admin.php:637
+#: includes/class-reseller-intent-admin.php:352
+#: includes/class-reseller-intent-admin.php:641
 msgid "Remove row"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:358
+#: includes/class-reseller-intent-admin.php:359
 msgid "Countries: 2-letter codes like IN, US, AE. One row with empty countries is the default for everyone else. Your list is saved; plugin updates never touch it."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:359
+#: includes/class-reseller-intent-admin.php:360
 msgid "Full country code list"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:362
+#: includes/class-reseller-intent-admin.php:363
 msgid "Add number"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:363
+#: includes/class-reseller-intent-admin.php:364
 msgid "Save numbers"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:365
+#: includes/class-reseller-intent-admin.php:366
 msgid "Replace your list with the GoDaddy default numbers? Your custom entries will be removed."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:365
+#: includes/class-reseller-intent-admin.php:366
 msgid "Reset to GoDaddy defaults"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:366
+#: includes/class-reseller-intent-admin.php:367
 msgid "Your own list active"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:368
+#: includes/class-reseller-intent-admin.php:369
 msgid "GoDaddy defaults active"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:387
+#: includes/class-reseller-intent-admin.php:388
 msgid "Localized with your browser timezone, using the same script visitors get. Each visitor sees their own regional number."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:418
+#: includes/class-reseller-intent-admin.php:419
 msgid "Everything is optional. Tracking works out of the box."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:423
-#: assets/js/admin.js:956
+#: includes/class-reseller-intent-admin.php:424
+#: assets/js/admin.js:1049
 msgid "Settings saved."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:432
-msgid "Search widget"
-msgstr ""
-
 #: includes/class-reseller-intent-admin.php:433
-msgid "Styling for the Reseller Store domain search widget on your site. Turn the style pack off if it fights with your theme. Tracking is never affected."
+msgid "Store widgets"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:437
+#: includes/class-reseller-intent-admin.php:434
+msgid "Styling for the Reseller Store elements on your site. Turn the style pack off if it fights with your theme. Tracking is never affected."
+msgstr ""
+
+#: includes/class-reseller-intent-admin.php:438
 msgid "Style pack"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:441
-msgid "Style the domain search widget"
+#: includes/class-reseller-intent-admin.php:442
+msgid "Style the Reseller Store widgets"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:443
-msgid "Accent buttons, aligned rows, skeleton loading, mobile layout. Dark page sections are detected automatically; force either way with a .rintent-dark or .rintent-light wrapper class."
+#: includes/class-reseller-intent-admin.php:444
+msgid "Accent buttons, aligned rows, skeleton loading, mobile layout. Covers the domain search, simple search, transfer, Add to cart, cart and sign in, whether you place them as shortcodes, widgets or blocks. Dark page sections are detected automatically; force either way with a .rintent-dark or .rintent-light wrapper class."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:447
+#: includes/class-reseller-intent-admin.php:448
 msgid "Floating \"Clear All\" button under the search bar"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:451
+#: includes/class-reseller-intent-admin.php:452
 msgid "Clear All button text"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:451
-#: includes/class-reseller-intent-assets.php:77
+#: includes/class-reseller-intent-admin.php:452
+#: includes/class-reseller-intent-assets.php:76
 msgid "Clear All"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:453
+#: includes/class-reseller-intent-admin.php:454
 msgid "Its button text, any wording or language. Leave empty for the default."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:459
+#: includes/class-reseller-intent-admin.php:460
 msgid "Accent color"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:462
-msgid "Used by the styled widget and the TLD price strip."
+#: includes/class-reseller-intent-admin.php:463
+msgid "Used by the styled store widgets and the TLD price strip."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:466
+#: includes/class-reseller-intent-admin.php:467
 msgid "Dark accent"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:471
+#: includes/class-reseller-intent-admin.php:472
 msgid "Pick my own color for dark sections"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:473
+#: includes/class-reseller-intent-admin.php:474
 msgid "Otherwise your accent is auto-lightened just enough to stay readable on dark surfaces. Buttons keep the accent everywhere."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:477
+#: includes/class-reseller-intent-admin.php:478
 msgid "Theming reference: CSS classes and variables"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:478
+#: includes/class-reseller-intent-admin.php:479
 msgid "Target these from your theme or Additional CSS to restyle any part of the widget."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:480
+#: includes/class-reseller-intent-admin.php:481
 msgid "Element"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:480
+#: includes/class-reseller-intent-admin.php:481
 msgid "CSS class / variable"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:482
+#: includes/class-reseller-intent-admin.php:483
 msgid "Domain name in results"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:483
+#: includes/class-reseller-intent-admin.php:484
 msgid "Price"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:484
+#: includes/class-reseller-intent-admin.php:485
 msgid "Clear All button"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:485
+#: includes/class-reseller-intent-admin.php:486
 msgid "Result row card"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:486
+#: includes/class-reseller-intent-admin.php:487
 msgid "Search button / Continue to cart"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:487
+#: includes/class-reseller-intent-admin.php:488
+msgid "Simple search / transfer bar"
+msgstr ""
+
+#: includes/class-reseller-intent-admin.php:489
+msgid "Add to cart button"
+msgstr ""
+
+#: includes/class-reseller-intent-admin.php:490
+msgid "Cart and sign in links"
+msgstr ""
+
+#: includes/class-reseller-intent-admin.php:491
 msgid "Select / Selected links"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:488
+#: includes/class-reseller-intent-admin.php:492
 msgid "Accent (buttons, focus ring)"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:488
+#: includes/class-reseller-intent-admin.php:492
 msgid "(set by the color picker above)"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:489
+#: includes/class-reseller-intent-admin.php:493
 msgid "Accent as text on light surfaces"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:489
+#: includes/class-reseller-intent-admin.php:493
 msgid "(the accent darkened only as far as it needs to stay readable, used for prices in the light TLD strip)"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:490
+#: includes/class-reseller-intent-admin.php:494
 msgid "Accent on dark surfaces"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:490
+#: includes/class-reseller-intent-admin.php:494
 msgid "(set by the Dark accent picker above; this variable overrides it)"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:491
-msgid "Text on accent surfaces"
+#: includes/class-reseller-intent-admin.php:495
+msgid "Text on accent buttons"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:491
+#: includes/class-reseller-intent-admin.php:495
 msgid "(auto-computed for contrast; set to force your own)"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:492
+#: includes/class-reseller-intent-admin.php:496
 msgid "Buttons on dark sections"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:492
+#: includes/class-reseller-intent-admin.php:496
 msgid "(default: the accent; the Dark accent picker never recolors buttons)"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:493
+#: includes/class-reseller-intent-admin.php:497
 msgid "Corner rounding"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:493
+#: includes/class-reseller-intent-admin.php:497
 msgid "(search bar, result rows and buttons; default 8px, use 0 for square or 50px for pills)"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:494
+#: includes/class-reseller-intent-admin.php:498
 msgid "Dark section context"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:494
+#: includes/class-reseller-intent-admin.php:498
 msgid "(wrapper classes; auto-detected when absent)"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:497
+#: includes/class-reseller-intent-admin.php:501
 msgid "Example:"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:506
+#: includes/class-reseller-intent-admin.php:510
 msgid "Performance"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:507
+#: includes/class-reseller-intent-admin.php:511
 msgid "Reseller Store loads React, jQuery add-ons and styles on every page of the site, even pages with no store element. Trim that to the pages that need it."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:511
+#: includes/class-reseller-intent-admin.php:515
 msgid "Asset trim"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:515
+#: includes/class-reseller-intent-admin.php:519
 msgid "Load Reseller Store assets only where they are used"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:517
+#: includes/class-reseller-intent-admin.php:521
 msgid "Kept automatically: pages with any Reseller Store shortcode, product pages, and everywhere when a store widget sits in a sidebar. This plugin's own assets follow the same rule."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:521
+#: includes/class-reseller-intent-admin.php:525
 msgid "Always keep on"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:523
+#: includes/class-reseller-intent-admin.php:527
 msgid "Page or post IDs, comma-separated"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:524
+#: includes/class-reseller-intent-admin.php:528
 msgid "For builders or popups that render the widget outside the content, where detection cannot see it. Developers: rintent_page_needs_store filter."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:532
+#: includes/class-reseller-intent-admin.php:536
 msgid "Tracking"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:533
+#: includes/class-reseller-intent-admin.php:537
 msgid "Anonymous by design. No cookies, no fingerprints, no IP stored. Bots are never recorded."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:537
+#: includes/class-reseller-intent-admin.php:541
 msgid "Ignore searches"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:540
+#: includes/class-reseller-intent-admin.php:544
 msgid "One pattern per line, matched against searched domains. * is a wildcard. Handy for your own test searches."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:548
+#: includes/class-reseller-intent-admin.php:552
 msgid "Data"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:549
+#: includes/class-reseller-intent-admin.php:553
 msgid "Everything lives in one table in your own database. Nothing leaves the site."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:553
+#: includes/class-reseller-intent-admin.php:557
 msgid "Retention"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:557
+#: includes/class-reseller-intent-admin.php:561
 msgid "days"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:559
+#: includes/class-reseller-intent-admin.php:563
 msgid "Events older than this are deleted once a day. 0 keeps everything forever. Specific windows can be cleared from the dashboard any time."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:563
+#: includes/class-reseller-intent-admin.php:567
 msgid "Uninstall"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:567
+#: includes/class-reseller-intent-admin.php:571
 msgid "Delete all tracked data and settings when the plugin is uninstalled"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:569
+#: includes/class-reseller-intent-admin.php:573
 msgid "Irreversible at uninstall time. Off by default so your history survives a reinstall."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:576
+#: includes/class-reseller-intent-admin.php:580
 msgid "Save settings"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:632
+#: includes/class-reseller-intent-admin.php:636
 msgid "Copied"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:633
+#: includes/class-reseller-intent-admin.php:637
 msgid "Click to copy"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:654
+#: includes/class-reseller-intent-admin.php:658
 msgid "Copied!"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:655
+#: includes/class-reseller-intent-admin.php:659
 msgid "Nothing to show yet."
 msgstr ""
 
 #. translators: %s: product family name; text placed before the price for range and cheapest modes
-#: includes/class-reseller-intent-admin.php:658
+#: includes/class-reseller-intent-admin.php:662
 #, php-format
 msgid "%s from"
 msgstr ""
 
 #. translators: %s: product family name; text placed before the price for highest mode
-#: includes/class-reseller-intent-admin.php:660
+#: includes/class-reseller-intent-admin.php:664
 #, php-format
 msgid "%s up to"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:661
+#: includes/class-reseller-intent-admin.php:665
 msgid "per month"
 msgstr ""
 
 #. translators: %s: human readable time difference
-#: includes/class-reseller-intent-admin.php:1182
+#: includes/class-reseller-intent-admin.php:1210
 #, php-format
 msgid "Last event %s ago"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1183
+#: includes/class-reseller-intent-admin.php:1211
 msgid "No events yet"
 msgstr ""
 
 #. translators: 1: range start date, 2: range end date
-#: includes/class-reseller-intent-admin.php:1189
+#: includes/class-reseller-intent-admin.php:1217
 #, php-format
 msgid "%1$s to %2$s"
 msgstr ""
 
 #. translators: %d: number of days
-#: includes/class-reseller-intent-admin.php:1195
+#: includes/class-reseller-intent-admin.php:1223
 #, php-format
 msgid "Last %d days"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1196
+#: includes/class-reseller-intent-admin.php:1224
 #: assets/js/admin.js:38
 msgid "Lifetime"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1371
+#: includes/class-reseller-intent-admin.php:1411
 msgid "Home"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1499
+#: includes/class-reseller-intent-admin.php:1599
 msgid "You are not allowed to export data."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1563
+#: includes/class-reseller-intent-admin.php:1663
 msgid "You are not allowed to clear data."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1769
+#: includes/class-reseller-intent-admin.php:1869
 msgid "searches today"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1770
+#: includes/class-reseller-intent-admin.php:1870
 msgid "searches, 7 days"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1771
+#: includes/class-reseller-intent-admin.php:1871
 msgid "search → cart, 7 days"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1776
+#: includes/class-reseller-intent-admin.php:1876
 msgid "Open the full dashboard →"
 msgstr ""
 
@@ -747,9 +759,9 @@ msgstr ""
 msgid "Reseller Intent tracks the Reseller Store domain search widget, connect the Reseller Store plugin to your reseller account first."
 msgstr ""
 
-#: includes/class-reseller-intent-settings.php:187
-#: includes/class-reseller-intent-settings.php:223
-#: includes/class-reseller-intent-settings.php:246
+#: includes/class-reseller-intent-settings.php:179
+#: includes/class-reseller-intent-settings.php:215
+#: includes/class-reseller-intent-settings.php:238
 #: includes/class-reseller-intent-tld-strip.php:85
 #: includes/class-reseller-intent.php:174
 msgid "Sorry, you are not allowed to do that."
@@ -808,459 +820,508 @@ msgid "90d"
 msgstr ""
 
 #: assets/js/admin.js:73
-#: assets/js/admin.js:413
+#: assets/js/admin.js:415
 msgid "Search vs Cart Trend"
 msgstr ""
 
 #: assets/js/admin.js:74
-#: assets/js/admin.js:436
+#: assets/js/admin.js:438
 msgid "Searched TLDs"
 msgstr ""
 
 #: assets/js/admin.js:75
-#: assets/js/admin.js:455
+#: assets/js/admin.js:457
 msgid "Repeat Demand"
 msgstr ""
 
 #: assets/js/admin.js:76
-#: assets/js/admin.js:492
+#: assets/js/admin.js:494
 msgid "Carted Domains"
 msgstr ""
 
 #: assets/js/admin.js:77
-#: assets/js/admin.js:518
+#: assets/js/admin.js:520
 msgid "Search by Page"
 msgstr ""
 
 #: assets/js/admin.js:78
-#: assets/js/admin.js:542
-msgid "Top Countries"
+#: assets/js/admin.js:558
+msgid "Added Products"
 msgstr ""
 
 #: assets/js/admin.js:79
-#: assets/js/admin.js:598
+#: assets/js/admin.js:575
+msgid "Transfer Searches"
+msgstr ""
+
+#: assets/js/admin.js:80
+#: assets/js/admin.js:601
+msgid "Top Countries"
+msgstr ""
+
+#: assets/js/admin.js:81
+#: assets/js/admin.js:666
 msgid "Recent Searches"
 msgstr ""
 
-#: assets/js/admin.js:106
+#: assets/js/admin.js:108
 msgid "Last hour"
 msgstr ""
 
-#: assets/js/admin.js:107
+#: assets/js/admin.js:109
 msgid "Last 24 hours"
 msgstr ""
 
-#: assets/js/admin.js:108
+#: assets/js/admin.js:110
 msgid "Last 7 days"
 msgstr ""
 
-#: assets/js/admin.js:109
+#: assets/js/admin.js:111
 msgid "Last 30 days"
 msgstr ""
 
-#: assets/js/admin.js:110
+#: assets/js/admin.js:112
 msgid "Last 6 months"
 msgstr ""
 
-#: assets/js/admin.js:111
+#: assets/js/admin.js:113
 msgid "Last year"
 msgstr ""
 
-#: assets/js/admin.js:112
-#: assets/js/admin.js:139
+#: assets/js/admin.js:114
+#: assets/js/admin.js:141
 msgid "All time"
 msgstr ""
 
-#: assets/js/admin.js:144
+#: assets/js/admin.js:146
 msgid "New"
 msgstr ""
 
-#: assets/js/admin.js:158
+#: assets/js/admin.js:160
 msgid "vs previous period"
 msgstr ""
 
 #. translators: 1: number of listed rows, 2: total number of rows
-#: assets/js/admin.js:218
-#: assets/js/admin.js:589
+#: assets/js/admin.js:220
+#: assets/js/admin.js:657
 #, js-format
 msgid "%1$s of %2$s. Export has everything."
 msgstr ""
 
-#: assets/js/admin.js:258
+#: assets/js/admin.js:260
 msgid "Previous page"
 msgstr ""
 
-#: assets/js/admin.js:260
+#: assets/js/admin.js:262
 msgid "Next page"
 msgstr ""
 
-#: assets/js/admin.js:347
+#: assets/js/admin.js:349
 msgid "No activity yet."
 msgstr ""
 
-#: assets/js/admin.js:350
+#: assets/js/admin.js:352
 msgid "Search vs cart trend chart"
 msgstr ""
 
-#: assets/js/admin.js:373
+#: assets/js/admin.js:375
 msgid "Domain Searches"
 msgstr ""
 
-#: assets/js/admin.js:373
+#: assets/js/admin.js:375
 msgid "Every search run in the domain search box during the period."
 msgstr ""
 
-#: assets/js/admin.js:374
+#: assets/js/admin.js:376
 msgid "Repeat Searches"
 msgstr ""
 
-#: assets/js/admin.js:374
+#: assets/js/admin.js:376
 msgid "Searches for a name already searched before in this period."
 msgstr ""
 
-#: assets/js/admin.js:375
+#: assets/js/admin.js:377
 msgid "Cart Clicks"
 msgstr ""
 
-#: assets/js/admin.js:375
+#: assets/js/admin.js:377
 msgid "Presses of Continue to cart in the domain search widget."
 msgstr ""
 
-#: assets/js/admin.js:376
+#: assets/js/admin.js:378
 msgid "Domains Sent to Cart"
 msgstr ""
 
-#: assets/js/admin.js:376
+#: assets/js/admin.js:378
 msgid "Names still selected when Continue was pressed. Unticked or abandoned names are not counted."
 msgstr ""
 
-#: assets/js/admin.js:377
+#: assets/js/admin.js:379
 msgid "Avg per Cart Click"
 msgstr ""
 
-#: assets/js/admin.js:377
+#: assets/js/admin.js:379
 msgid "Domains sent to cart divided by cart clicks."
 msgstr ""
 
-#: assets/js/admin.js:378
+#: assets/js/admin.js:380
 msgid "Search → Cart Rate"
 msgstr ""
 
-#: assets/js/admin.js:378
+#: assets/js/admin.js:380
 msgid "Cart clicks as a share of all searches. Compare against your own past periods."
 msgstr ""
 
-#: assets/js/admin.js:401
+#: assets/js/admin.js:403
 msgid "How often the searched name was free to register."
 msgstr ""
 
-#: assets/js/admin.js:402
-#: assets/js/admin.js:572
+#: assets/js/admin.js:404
+#: assets/js/admin.js:640
 msgid "Available"
 msgstr ""
 
-#: assets/js/admin.js:406
+#: assets/js/admin.js:408
 msgid "Share of searches made on a phone."
 msgstr ""
 
-#: assets/js/admin.js:407
+#: assets/js/admin.js:409
 msgid "Mobile"
 msgstr ""
 
-#: assets/js/admin.js:414
+#: assets/js/admin.js:416
 msgid "Daily activity in this range."
 msgstr ""
 
-#: assets/js/admin.js:414
+#: assets/js/admin.js:416
 msgid "Monthly activity, all time."
 msgstr ""
 
-#: assets/js/admin.js:420
-#: assets/js/admin.js:438
-#: assets/js/admin.js:457
-#: assets/js/admin.js:520
-#: assets/js/admin.js:544
+#: assets/js/admin.js:422
+#: assets/js/admin.js:440
+#: assets/js/admin.js:459
+#: assets/js/admin.js:522
+#: assets/js/admin.js:578
+#: assets/js/admin.js:603
 msgid "Searches"
 msgstr ""
 
-#: assets/js/admin.js:421
+#: assets/js/admin.js:423
 msgid "Cart clicks"
 msgstr ""
 
-#: assets/js/admin.js:437
+#: assets/js/admin.js:439
 msgid "Which extensions people look for."
 msgstr ""
 
-#: assets/js/admin.js:438
+#: assets/js/admin.js:440
 msgid "TLD"
 msgstr ""
 
-#: assets/js/admin.js:441
+#: assets/js/admin.js:443
 msgid "No searches yet. Every search adds its TLD here."
 msgstr ""
 
 #. translators: %s: number of TLDs
-#: assets/js/admin.js:445
+#: assets/js/admin.js:447
 #, js-format
 msgid "%s TLD"
 msgid_plural "%s TLDs"
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/js/admin.js:456
+#: assets/js/admin.js:458
 msgid "Domains searched 2+ times, buyers circling."
 msgstr ""
 
-#: assets/js/admin.js:457
-#: assets/js/admin.js:494
-#: assets/js/admin.js:600
+#: assets/js/admin.js:459
+#: assets/js/admin.js:496
+#: assets/js/admin.js:577
+#: assets/js/admin.js:668
 msgid "Domain"
 msgstr ""
 
-#: assets/js/admin.js:460
+#: assets/js/admin.js:462
 msgid "Quiet so far. When a visitor searches the same name twice, it lands here, a buyer circling."
 msgstr ""
 
 #. translators: %s: number of repeated domains
-#: assets/js/admin.js:464
+#: assets/js/admin.js:466
 #, js-format
 msgid "%s repeat"
 msgid_plural "%s repeats"
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/js/admin.js:493
+#: assets/js/admin.js:495
 msgid "What shoppers sent to cart."
 msgstr ""
 
-#: assets/js/admin.js:494
+#: assets/js/admin.js:496
 msgid "Sent"
 msgstr ""
 
-#: assets/js/admin.js:497
+#: assets/js/admin.js:499
 msgid "Cart clicks will land here. Tracking is live, watch the Last event chip up top."
 msgstr ""
 
-#. translators: %s: number of carted domains
-#: assets/js/admin.js:502
+#. translators: %s: number of domains
+#: assets/js/admin.js:504
+#: assets/js/admin.js:583
 #, js-format
 msgid "%s domain"
 msgid_plural "%s domains"
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/js/admin.js:519
+#: assets/js/admin.js:521
 msgid "Where each search and cart click happened."
 msgstr ""
 
-#: assets/js/admin.js:520
+#: assets/js/admin.js:522
 msgid "Page"
 msgstr ""
 
-#: assets/js/admin.js:520
+#: assets/js/admin.js:522
 msgid "Carts"
 msgstr ""
 
-#: assets/js/admin.js:523
+#: assets/js/admin.js:525
 msgid "Once searches come in, you will see which page they happen on."
 msgstr ""
 
 #. translators: %s: number of pages
-#: assets/js/admin.js:525
+#: assets/js/admin.js:527
 #, js-format
 msgid "%s page"
 msgid_plural "%s pages"
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/js/admin.js:543
+#: assets/js/admin.js:559
+msgid "Hosting, email and SSL sent to cart, by product ID."
+msgstr ""
+
+#: assets/js/admin.js:560
+msgid "Product"
+msgstr ""
+
+#: assets/js/admin.js:561
+msgid "Adds"
+msgstr ""
+
+#: assets/js/admin.js:564
+msgid "No product added to cart yet."
+msgstr ""
+
+#. translators: %s: number of products
+#: assets/js/admin.js:566
+#, js-format
+msgid "%s product"
+msgid_plural "%s products"
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/js/admin.js:576
+msgid "Domains people already own and want to move to you."
+msgstr ""
+
+#: assets/js/admin.js:581
+msgid "No transfer search yet."
+msgstr ""
+
+#: assets/js/admin.js:602
 msgid "Searches by visitor country (edge geo header)."
 msgstr ""
 
-#: assets/js/admin.js:544
+#: assets/js/admin.js:603
 msgid "Country"
 msgstr ""
 
-#: assets/js/admin.js:547
+#: assets/js/admin.js:606
 msgid "No country data yet. Your host/CDN needs to send a geo header (e.g. Cloudflare’s CF-IPCountry)."
 msgstr ""
 
-#: assets/js/admin.js:549
+#: assets/js/admin.js:608
 msgid "Searches by country"
 msgstr ""
 
-#: assets/js/admin.js:574
+#: assets/js/admin.js:638
+msgid "Transfer"
+msgstr ""
+
+#: assets/js/admin.js:642
 msgid "Registered"
 msgstr ""
 
 #. translators: 1: number of listed searches, 2: timezone label
-#: assets/js/admin.js:581
+#: assets/js/admin.js:649
 #, js-format
-msgid "Latest %1$s search in this range (%2$s). Use Export for full data."
-msgid_plural "Latest %1$s searches in this range (%2$s). Use Export for full data."
+msgid "Latest %1$s search in this range (%2$s), transfers included. Use Export for full data."
+msgid_plural "Latest %1$s searches in this range (%2$s), transfers included. Use Export for full data."
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: number of searches
-#: assets/js/admin.js:592
+#: assets/js/admin.js:660
 #, js-format
 msgid "%s search"
 msgid_plural "%s searches"
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/js/admin.js:600
+#: assets/js/admin.js:668
 msgid "Result"
 msgstr ""
 
-#: assets/js/admin.js:600
+#: assets/js/admin.js:668
 msgid "Device"
 msgstr ""
 
-#: assets/js/admin.js:600
+#: assets/js/admin.js:668
 msgid "Searched At"
 msgstr ""
 
-#: assets/js/admin.js:603
+#: assets/js/admin.js:671
 msgid "Nothing matches that filter."
 msgstr ""
 
-#: assets/js/admin.js:603
+#: assets/js/admin.js:671
 msgid "No searches in this range."
 msgstr ""
 
 #. translators: %s: number of listed searches
-#: assets/js/admin.js:610
+#: assets/js/admin.js:678
 #, js-format
 msgid "Filter these %s..."
 msgstr ""
 
-#: assets/js/admin.js:611
+#: assets/js/admin.js:679
 msgid "Filter recent searches"
 msgstr ""
 
-#: assets/js/admin.js:686
-#: assets/js/admin.js:689
-#: assets/js/admin.js:711
-#: assets/js/admin.js:915
+#: assets/js/admin.js:754
+#: assets/js/admin.js:757
+#: assets/js/admin.js:779
+#: assets/js/admin.js:1008
 msgid "Clear data"
 msgstr ""
 
-#: assets/js/admin.js:690
+#: assets/js/admin.js:758
 msgid "Delete tracked events from the selected time window. There is no undo."
 msgstr ""
 
-#: assets/js/admin.js:691
+#: assets/js/admin.js:759
 msgid "Time window"
 msgstr ""
 
-#: assets/js/admin.js:703
+#: assets/js/admin.js:771
 msgid "No events in this window."
 msgstr ""
 
 #. translators: %s: number of events
-#: assets/js/admin.js:703
+#: assets/js/admin.js:771
 #, js-format
 msgid "%s event will be permanently deleted."
 msgid_plural "%s events will be permanently deleted."
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/js/admin.js:706
+#: assets/js/admin.js:774
 msgid "Cancel"
 msgstr ""
 
-#: assets/js/admin.js:786
-#: assets/js/admin.js:791
+#: assets/js/admin.js:858
+#: assets/js/admin.js:863
 msgid "Could not load dashboard data."
 msgstr ""
 
-#: assets/js/admin.js:830
+#: assets/js/admin.js:902
 msgid "No events matched that window."
 msgstr ""
 
 #. translators: %s: number of events
-#: assets/js/admin.js:830
+#: assets/js/admin.js:902
 #, js-format
 msgid "%s event deleted."
 msgid_plural "%s events deleted."
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/js/admin.js:880
+#: assets/js/admin.js:973
 msgid "Loading"
 msgstr ""
 
-#: assets/js/admin.js:888
+#: assets/js/admin.js:981
 msgid "No recent events. Check that the search widget is live and tracking is not blocked."
 msgstr ""
 
-#: assets/js/admin.js:892
+#: assets/js/admin.js:985
 msgid "Custom"
 msgstr ""
 
-#: assets/js/admin.js:903
+#: assets/js/admin.js:996
 msgid "Filter by page"
 msgstr ""
 
-#: assets/js/admin.js:904
+#: assets/js/admin.js:997
 msgid "Every panel follows this page filter. Search by Page keeps comparing all pages."
 msgstr ""
 
-#: assets/js/admin.js:906
+#: assets/js/admin.js:999
 msgid "All pages"
 msgstr ""
 
-#: assets/js/admin.js:912
+#: assets/js/admin.js:1005
 msgid "Export CSV"
 msgstr ""
 
-#: assets/js/admin.js:912
+#: assets/js/admin.js:1005
 msgid "CSV"
 msgstr ""
 
-#: assets/js/admin.js:913
+#: assets/js/admin.js:1006
 msgid "Export JSON"
 msgstr ""
 
-#: assets/js/admin.js:913
+#: assets/js/admin.js:1006
 msgid "JSON"
 msgstr ""
 
-#: assets/js/admin.js:921
+#: assets/js/admin.js:1014
 msgid "Choose which panels to show"
 msgstr ""
 
-#: assets/js/admin.js:923
+#: assets/js/admin.js:1016
 msgid "Panels"
 msgstr ""
 
-#: assets/js/admin.js:924
+#: assets/js/admin.js:1017
 msgid "Visible panels"
 msgstr ""
 
-#: assets/js/admin.js:941
+#: assets/js/admin.js:1034
 msgid "From"
 msgstr ""
 
-#: assets/js/admin.js:944
+#: assets/js/admin.js:1037
 msgid "To"
 msgstr ""
 
-#: assets/js/admin.js:951
+#: assets/js/admin.js:1044
 msgid "Apply"
 msgstr ""
 
-#: assets/js/admin.js:955
+#: assets/js/admin.js:1048
 msgid "Clearing data failed."
 msgstr ""
 
 #. translators: %s: number of events
-#: assets/js/admin.js:957
+#: assets/js/admin.js:1050
 #, js-format
 msgid "%s legacy events imported."
 msgstr ""
 
-#: assets/js/admin.js:965
+#: assets/js/admin.js:1058
 msgid "Loading..."
 msgstr ""

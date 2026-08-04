@@ -500,7 +500,7 @@
 			pageSize: split ? 7 : PAGE_SIZE,
 			initialFetched: 15,
 			totalRows: props.totalRows,
-			/* translators: %s: number of carted domains */
+			/* translators: %s: number of domains */
 			footLabel: sprintf( _n( '%s domain', '%s domains', props.totalRows || 0, 'reseller-intent' ), fmt(props.totalRows || 0) ),
 			loadMore: props.loadRows ? function(offset) { return props.loadRows('carted', offset, mapItem); } : null,
 			children: split

@@ -1,10 +1,15 @@
 /**
- * Reseller Intent, optional styling for the Reseller Store domain-search
- * widget. Works on Reseller Store 2.x and 3.x: both ship the same widget
+ * Reseller Intent, optional styling for the Reseller Store widgets: the
+ * domain search, the simple search and transfer boxes, product pods and
+ * their Add to cart, the cart and the sign in link. Reseller Store renders
+ * every one of them through the same classes whether they are placed as a
+ * shortcode, a widget or a block, so all three placements are covered here
+ * at once. Works on Reseller Store 2.x and 3.x: both ship the same widget
  * markup, but 2.x omits some of its own type rules, so this file sets them.
  *
- * Loaded only when "Style the domain search widget" is enabled in Settings.
- * Colors flow from one accent token so the widget matches your brand.
+ * Loaded only when "Style the Reseller Store widgets" is enabled in
+ * Settings. Colors flow from one accent token so everything matches your
+ * brand.
  */
 
 body {
@@ -32,7 +37,7 @@ body {
 
 	/*
 	 * Theming knobs, override these (or target the classes listed in
-	 * Settings → Widget styling) from your theme/customizer CSS.
+	 * Settings → Store widgets) from your theme/customizer CSS.
 	 * Defaults inherit from your theme, so nothing changes until you set them.
 	 */
 	--rintent-domain-font: inherit;
@@ -563,8 +568,12 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
  * here reads the same tokens, so a dark section still flips once.
  */
 
-/* Simple search and transfer: one form class, two destinations. */
-.rstore-domain-form {
+/* Simple search and transfer, on either Reseller Store generation.
+ * 3.x tags both forms .rstore-domain-form; 2.x ships them as a bare
+ * .search-form, so there the widget wrapper is the only handle. The child
+ * combinator is what keeps that off the advanced widget, which sits under
+ * the same .rstore-domain wrapper but renders its form further down. */
+:is(.rstore-domain-form, .rstore-domain > .search-form, .rstore-domain-transfer > .search-form) {
 	display: flex !important;
 	/* Themes style the shared `.search-form` class and hand it a wrapping
 	 * row, which drops the button to a line of its own. */
@@ -577,14 +586,14 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
  * as display:contents, which makes the field the flex item, or as a block,
  * which makes the label the item. Stretch both so the field fills the row
  * either way. */
-.rstore-domain-form label {
+:is(.rstore-domain-form, .rstore-domain > .search-form, .rstore-domain-transfer > .search-form) label {
 	display: flex;
 	flex: 1 1 auto;
 	min-width: 0;
 	margin: 0;
 }
 
-.rstore-domain-form .search-field {
+:is(.rstore-domain-form, .rstore-domain > .search-form, .rstore-domain-transfer > .search-form) .search-field {
 	appearance: none;
 	-webkit-appearance: none;
 	flex: 1 1 auto;
@@ -601,14 +610,14 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 }
 
 /* Same quiet focus as the search widget: the border turns accent, no glow. */
-.rstore-domain-form .search-field:focus,
-.rstore-domain-form .search-field:focus-visible {
+:is(.rstore-domain-form, .rstore-domain > .search-form, .rstore-domain-transfer > .search-form) .search-field:focus,
+:is(.rstore-domain-form, .rstore-domain > .search-form, .rstore-domain-transfer > .search-form) .search-field:focus-visible {
 	outline: none !important;
 	box-shadow: none !important;
 	border-color: var(--rintent-widget-accent) !important;
 }
 
-.rstore-domain-form .search-submit {
+:is(.rstore-domain-form, .rstore-domain > .search-form, .rstore-domain-transfer > .search-form) .search-submit {
 	appearance: none !important;
 	-webkit-appearance: none !important;
 	display: inline-flex !important;
@@ -634,9 +643,9 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 
 /* No color shift on press, matching the search widget's own submit; the
  * pair must not move or glow on click. */
-.rstore-domain-form .search-submit:hover,
-.rstore-domain-form .search-submit:focus,
-.rstore-domain-form .search-submit:active {
+:is(.rstore-domain-form, .rstore-domain > .search-form, .rstore-domain-transfer > .search-form) .search-submit:hover,
+:is(.rstore-domain-form, .rstore-domain > .search-form, .rstore-domain-transfer > .search-form) .search-submit:focus,
+:is(.rstore-domain-form, .rstore-domain > .search-form, .rstore-domain-transfer > .search-form) .search-submit:active {
 	outline: none !important;
 	box-shadow: none !important;
 	transform: none !important;
@@ -645,7 +654,7 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 	margin: 0 !important;
 }
 
-.rstore-domain-form .search-submit:focus-visible {
+:is(.rstore-domain-form, .rstore-domain > .search-form, .rstore-domain-transfer > .search-form) .search-submit:focus-visible {
 	outline: 2px solid var(--rintent-w-focus-outline) !important;
 	outline-offset: 2px !important;
 }
@@ -705,20 +714,20 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 
 @media (max-width: 480px) {
 	/* Below this the field has no room left for a side-by-side button. */
-	.rstore-domain-form {
+	:is(.rstore-domain-form, .rstore-domain > .search-form, .rstore-domain-transfer > .search-form) {
 		flex-wrap: wrap !important;
 		row-gap: 8px;
 	}
 
-	.rstore-domain-form label {
+	:is(.rstore-domain-form, .rstore-domain > .search-form, .rstore-domain-transfer > .search-form) label {
 		flex: 1 1 100%;
 	}
 
-	.rstore-domain-form .search-field {
+	:is(.rstore-domain-form, .rstore-domain > .search-form, .rstore-domain-transfer > .search-form) .search-field {
 		border-radius: var(--rintent-radius, 8px) !important;
 	}
 
-	.rstore-domain-form .search-submit {
+	:is(.rstore-domain-form, .rstore-domain > .search-form, .rstore-domain-transfer > .search-form) .search-submit {
 		flex: 1 1 100% !important;
 		border-radius: var(--rintent-radius, 8px) !important;
 	}

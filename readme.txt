@@ -14,14 +14,14 @@ See which domains visitors search on your reseller storefront, which ones they p
 
 **An add-on for the free [Reseller Store](https://wordpress.org/plugins/reseller-store/) plugin by GoDaddy Reseller Programs. Set that up first.**
 
-Your analytics tell you about pages and traffic. They tell you nothing about the search box that actually sells. Reseller Intent records what happens in it: what people search, whether the name was free, what they pick instead, and what reaches the cart.
+Your analytics tell you about pages and traffic. They tell you nothing about the search box that actually sells. Reseller Intent records what happens in it: what people search, whether the name was free, what they pick instead, and what reaches the cart. It watches the transfer box and the product buttons too, so hosting, email and SSL demand shows up next to the domains.
 
 = What you get =
 
-* A dashboard of search intent: searches, cart clicks, trends, top TLDs, repeat searches and carted domains, every number compared to the previous period and explained with a tooltip
+* A dashboard of search intent: searches, cart clicks, trends, top TLDs, repeat searches, carted domains, added products and transfer searches, every number compared to the previous period and explained with a tooltip
 * Filter the whole dashboard by the page a search happened on, or watch all pages together
 * Every list pages through the full dataset; any range exports as CSV or JSON
-* An optional style pack for the search widget, plus three shortcodes: TLD price strip, live product price, regional support number
+* An optional style pack for the Reseller Store widgets, plus three shortcodes: TLD price strip, live product price, regional support number
 * Today and this week at a glance on your WordPress dashboard
 
 = Privacy =
@@ -36,7 +36,7 @@ Filter `rintent_should_track` to pause tracking, `rintent_event_data` to change 
 
 1. Install and set up the free Reseller Store plugin first.
 2. Install and activate Reseller Intent.
-3. Tracking starts straight away on any page that shows the domain search. Open Reseller Intent in the admin menu and watch it come in. Everything under Settings is optional.
+3. Tracking starts straight away on any page that shows a Reseller Store element. Open Reseller Intent in the admin menu and watch it come in. Everything under Settings is optional.
 
 == Frequently Asked Questions ==
 
@@ -47,6 +47,10 @@ Yes. Reseller Intent reads the domain search widget that Reseller Store renders.
 = Which Reseller Store versions are supported? =
 
 2.2.17 up to 3.0.1. On anything older the plugin pauses itself with a notice instead of guessing, update Reseller Store and it resumes on its own.
+
+= Which Reseller Store elements does it cover? =
+
+The domain search, the simple search box, the transfer box, product pods and their Add to cart button, the cart and the sign in link. Reseller Store renders all of these through the same classes whether you place them as a shortcode, a widget or a block, so tracking and styling reach all three placements at once.
 
 = My dashboard is empty =
 
@@ -78,7 +82,7 @@ Three low-value panels were removed on purpose: Missed Opportunities, Conversion
 
 = Will it change how my search widget looks? =
 
-Only if you let it. The style pack is optional and matches the widget to your accent color and corner rounding. Turn it off in Settings and the plugin loads no CSS at all.
+Only if you let it. The style pack is optional and matches the Reseller Store widgets to your accent color and corner rounding. Turn it off in Settings and the plugin loads no CSS at all.
 
 = What happens when I uninstall? =
 
@@ -134,7 +138,7 @@ The default support numbers for the phone shortcode are GoDaddy's published numb
 == Upgrade Notice ==
 
 = 2.1.0 =
-Fixes white button labels turning dark on the styled search widget when a Dark accent color is set. Update if you use the style pack.
+Adds transfer and product tracking with two new dashboard panels, and extends the style pack to the rest of the Reseller Store widgets. Also fixes white button labels turning dark when a Dark accent color is set.
 
 = 2.0.0 =
 The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value panels are gone. The price shortcode is now family-first; every old embed keeps working. Your data is untouched.
@@ -142,6 +146,11 @@ The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value 
 == Changelog ==
 
 = 2.1.0 =
+* Added: transfer searches and product Add to cart are now recorded. Both hand the visitor to GoDaddy the moment they fire, so they are sent with sendBeacon and survive the jump.
+* Added: two dashboard panels, Added Products and Transfer Searches. Each appears only once it has something in it, so a storefront without those widgets sees no change.
+* Added: the Recent Searches log carries transfer searches too, marked Transfer in the Result column beside Available and Registered.
+* Added: the style pack now covers the simple search, the transfer box, Add to cart, the cart and the sign in link, matching the search widget's field height, accent buttons and corner rounding.
+* Changed: the styling card in Settings is now Store widgets, and its theming reference lists the new classes.
 * Fixed: on sites with a Dark accent color set, the Search and Continue to cart buttons in a dark section drew their labels in dark ink instead of white. The Dark accent is a text color for dark surfaces and never colors buttons, so it no longer takes part in the button label color.
 * Fixed: a product family whose plans differ in the middle of their names was labelled by that one shared word alone, so two SSL services read as plain "Managed". The shared tail of the names joins the label, giving "Managed SSL Service".
 * Removed: the `--rintent-accent-dark-text` variable, which nothing consumed. Button labels follow `--rintent-accent-text`, and `--rintent-dark-button-text` still overrides them on dark sections.

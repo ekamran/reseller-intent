@@ -430,8 +430,8 @@ final class Reseller_Intent_Admin {
 
 				<div class="rintent-card">
 					<div class="rintent-card-head">
-						<h2><?php esc_html_e( 'Search widget', 'reseller-intent' ); ?></h2>
-						<p><?php esc_html_e( 'Styling for the Reseller Store domain search widget on your site. Turn the style pack off if it fights with your theme. Tracking is never affected.', 'reseller-intent' ); ?></p>
+						<h2><?php esc_html_e( 'Store widgets', 'reseller-intent' ); ?></h2>
+						<p><?php esc_html_e( 'Styling for the Reseller Store elements on your site. Turn the style pack off if it fights with your theme. Tracking is never affected.', 'reseller-intent' ); ?></p>
 					</div>
 					<div class="rintent-card-body">
 						<div class="rintent-field">
@@ -439,9 +439,9 @@ final class Reseller_Intent_Admin {
 							<span class="rintent-check-group">
 								<label for="rintent-style-widget">
 									<input type="checkbox" id="rintent-style-widget" name="style_widget" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'style_widget' ) ); ?> />
-									<?php esc_html_e( 'Style the domain search widget', 'reseller-intent' ); ?>
+									<?php esc_html_e( 'Style the Reseller Store widgets', 'reseller-intent' ); ?>
 								</label>
-								<small><?php esc_html_e( 'Accent buttons, aligned rows, skeleton loading, mobile layout. Dark page sections are detected automatically; force either way with a .rintent-dark or .rintent-light wrapper class.', 'reseller-intent' ); ?></small>
+								<small><?php esc_html_e( 'Accent buttons, aligned rows, skeleton loading, mobile layout. Covers the domain search, simple search, transfer, Add to cart, cart and sign in, whether you place them as shortcodes, widgets or blocks. Dark page sections are detected automatically; force either way with a .rintent-dark or .rintent-light wrapper class.', 'reseller-intent' ); ?></small>
 								<span class="rintent-children" id="rintent-style-children" <?php echo Reseller_Intent_Settings::get( 'style_widget' ) ? '' : 'style="display:none;"'; ?>>
 									<label for="rintent-clear-all">
 										<input type="checkbox" id="rintent-clear-all" name="widget_clear_all" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'widget_clear_all' ) ); ?> />
@@ -460,7 +460,7 @@ final class Reseller_Intent_Admin {
 							<span class="rintent-label"><label for="rintent-accent"><?php esc_html_e( 'Accent color', 'reseller-intent' ); ?></label></span>
 							<span>
 								<input type="text" id="rintent-accent" name="accent_color" class="rintent-colorpicker" value="<?php echo esc_attr( $accent ); ?>" />
-								<p class="description"><?php esc_html_e( 'Used by the styled widget and the TLD price strip.', 'reseller-intent' ); ?></p>
+								<p class="description"><?php esc_html_e( 'Used by the styled store widgets and the TLD price strip.', 'reseller-intent' ); ?></p>
 							</span>
 						</div>
 						<div class="rintent-field">
@@ -485,6 +485,9 @@ final class Reseller_Intent_Admin {
 										<tr><td><?php esc_html_e( 'Clear All button', 'reseller-intent' ); ?></td><td><code>.rintent-clear-btn</code><br /><code>--rintent-clear-color</code> &middot; <code>--rintent-clear-size</code></td></tr>
 										<tr><td><?php esc_html_e( 'Result row card', 'reseller-intent' ); ?></td><td><code>.rstore-domain-search .domain-result</code></td></tr>
 										<tr><td><?php esc_html_e( 'Search button / Continue to cart', 'reseller-intent' ); ?></td><td><code>.search-form input[type=submit]</code> &middot; <code>.rstore-domain-continue-button</code></td></tr>
+										<tr><td><?php esc_html_e( 'Simple search / transfer bar', 'reseller-intent' ); ?></td><td><code>.rstore-domain-form .search-field</code> &middot; <code>.rstore-domain-form .search-submit</code></td></tr>
+										<tr><td><?php esc_html_e( 'Add to cart button', 'reseller-intent' ); ?></td><td><code>.rstore-add-to-cart</code></td></tr>
+										<tr><td><?php esc_html_e( 'Cart and sign in links', 'reseller-intent' ); ?></td><td><code>.rstore-cart a</code> &middot; <code>.rstore-login .login-link</code> &middot; <code>.logout-link</code></td></tr>
 										<tr><td><?php esc_html_e( 'Select / Selected links', 'reseller-intent' ); ?></td><td><code>.rstore-domain-buy-button.select</code> &middot; <code>.rstore-domain-buy-button.selected</code></td></tr>
 										<tr><td><?php esc_html_e( 'Accent (buttons, focus ring)', 'reseller-intent' ); ?></td><td><code>--rintent-accent</code> <?php esc_html_e( '(set by the color picker above)', 'reseller-intent' ); ?></td></tr>
 										<tr><td><?php esc_html_e( 'Accent as text on light surfaces', 'reseller-intent' ); ?></td><td><code>--rintent-accent-ink</code> <?php esc_html_e( '(the accent darkened only as far as it needs to stay readable, used for prices in the light TLD strip)', 'reseller-intent' ); ?></td></tr>

@@ -552,6 +552,178 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 	}
 }
 
+/* ---------- The other store surfaces ----------
+ * Reseller Store renders every component through the same Widget classes,
+ * so a shortcode, a block-theme widget and a block all produce the markup
+ * below. Styling these classes covers all three placements at once.
+ *
+ * The search widget above is the deep one. These are the small surfaces
+ * that sat on theme defaults, which is what made a branded search bar look
+ * borrowed next to an unbranded Add to cart on the same page. Everything
+ * here reads the same tokens, so a dark section still flips once.
+ */
+
+/* Simple search and transfer: one form class, two destinations. */
+.rstore-domain-form {
+	display: flex !important;
+	/* Themes style the shared `.search-form` class and hand it a wrapping
+	 * row, which drops the button to a line of its own. */
+	flex-wrap: nowrap !important;
+	align-items: center;
+	width: 100%;
+}
+
+/* The field ships wrapped in a bare label. Themes leave that label either
+ * as display:contents, which makes the field the flex item, or as a block,
+ * which makes the label the item. Stretch both so the field fills the row
+ * either way. */
+.rstore-domain-form label {
+	display: flex;
+	flex: 1 1 auto;
+	min-width: 0;
+	margin: 0;
+}
+
+.rstore-domain-form .search-field {
+	appearance: none;
+	-webkit-appearance: none;
+	flex: 1 1 auto;
+	min-width: 0;
+	height: 44px !important;
+	margin: 0 !important;
+	padding: 0 16px !important;
+	box-sizing: border-box !important;
+	font-size: 1rem !important;
+	font-family: inherit !important;
+	border: 1px solid var(--rintent-w-field-border) !important;
+	border-radius: var(--rintent-radius, 8px) 0 0 var(--rintent-radius, 8px) !important;
+	background: var(--rintent-w-field-bg) !important;
+}
+
+/* Same quiet focus as the search widget: the border turns accent, no glow. */
+.rstore-domain-form .search-field:focus,
+.rstore-domain-form .search-field:focus-visible {
+	outline: none !important;
+	box-shadow: none !important;
+	border-color: var(--rintent-widget-accent) !important;
+}
+
+.rstore-domain-form .search-submit {
+	appearance: none !important;
+	-webkit-appearance: none !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	flex: 0 1 auto !important;
+	white-space: nowrap !important;
+	width: auto !important;
+	height: 44px !important;
+	margin: 0 !important;
+	padding: 0 22px !important;
+	box-sizing: border-box !important;
+	font-size: 1rem !important;
+	font-family: inherit !important;
+	font-weight: 700;
+	line-height: 1 !important;
+	border: none !important;
+	border-radius: 0 var(--rintent-radius, 8px) var(--rintent-radius, 8px) 0 !important;
+	background: var(--rintent-widget-accent) !important;
+	color: var(--rintent-widget-accent-text) !important;
+	cursor: pointer;
+}
+
+/* No color shift on press, matching the search widget's own submit; the
+ * pair must not move or glow on click. */
+.rstore-domain-form .search-submit:hover,
+.rstore-domain-form .search-submit:focus,
+.rstore-domain-form .search-submit:active {
+	outline: none !important;
+	box-shadow: none !important;
+	transform: none !important;
+	border: none !important;
+	height: 44px !important;
+	margin: 0 !important;
+}
+
+.rstore-domain-form .search-submit:focus-visible {
+	outline: 2px solid var(--rintent-w-focus-outline) !important;
+	outline-offset: 2px !important;
+}
+
+/* Add to cart, on product pods and every other product surface. It is a
+ * buy action, so it takes the hover the buy buttons take. */
+.rstore-add-to-cart {
+	appearance: none !important;
+	-webkit-appearance: none !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	min-height: 44px !important;
+	padding: 0 22px !important;
+	box-sizing: border-box !important;
+	font-size: 1rem !important;
+	font-family: inherit !important;
+	font-weight: 700;
+	line-height: 1 !important;
+	border: none !important;
+	border-radius: var(--rintent-radius, 8px) !important;
+	background: var(--rintent-widget-accent) !important;
+	color: var(--rintent-widget-accent-text) !important;
+	cursor: pointer;
+}
+
+.rstore-add-to-cart:hover,
+.rstore-add-to-cart:focus {
+	background: var(--rintent-widget-accent-hover) !important;
+	color: var(--rintent-widget-accent-text) !important;
+	transform: none !important;
+	box-shadow: none !important;
+}
+
+.rstore-add-to-cart:focus-visible {
+	outline: 2px solid var(--rintent-w-focus-outline) !important;
+	outline-offset: 2px !important;
+}
+
+/* Cart and sign-in are plain links the theme leaves grey. They are the two
+ * places a visitor finishes, so they read as actions, not body text. The
+ * color needs !important: themes reach these through `.widget a:link`,
+ * which carries a pseudo-class and outruns a two-class selector. */
+.rstore-cart a,
+.rstore-login .login-link,
+.rstore-login .logout-link {
+	color: var(--rintent-widget-accent-hover) !important;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.rstore-cart a:hover,
+.rstore-login .login-link:hover,
+.rstore-login .logout-link:hover {
+	text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+	/* Below this the field has no room left for a side-by-side button. */
+	.rstore-domain-form {
+		flex-wrap: wrap !important;
+		row-gap: 8px;
+	}
+
+	.rstore-domain-form label {
+		flex: 1 1 100%;
+	}
+
+	.rstore-domain-form .search-field {
+		border-radius: var(--rintent-radius, 8px) !important;
+	}
+
+	.rstore-domain-form .search-submit {
+		flex: 1 1 100% !important;
+		border-radius: var(--rintent-radius, 8px) !important;
+	}
+}
+
 /* ---------- Dark context ----------
  * Three ways in, same look:
  * 1. auto: widget.js reads the surface behind the widget and adds
@@ -560,11 +732,14 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
  *    light and wins over auto)
  * 3. legacy wrapper: .rstore-dark, kept for Add-On migrations */
 
-:is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) {
+:is(.rintent-dark, .rstore-dark) :is(.rstore-domain-search, .rstore-domain-form, .rstore-product, .rstore-cart, .rstore-login),
+:is(.rstore-domain-search, .rstore-domain-form, .rstore-product, .rstore-cart, .rstore-login).rintent-dark {
 	/*
 	 * The flip: a dark section reassigns the surface tokens once and every
 	 * rule above follows. Only text the widget does not paint in light
-	 * needs its own rule, grouped by token below.
+	 * needs its own rule, grouped by token below. The auto-detection adds
+	 * .rintent-dark to search widgets; the other surfaces come along
+	 * through a .rintent-dark or .rstore-dark wrapper.
 	 */
 	--rintent-w-row-bg: rgba(255, 255, 255, 0.04);
 	--rintent-w-row-border: rgba(255, 255, 255, 0.12);
@@ -605,6 +780,13 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 :is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) button.rstore-domain-buy-button.select.btn.btn-secondary,
 :is(.rintent-dark .rstore-domain-search, .rstore-dark .rstore-domain-search, .rstore-domain-search.rintent-dark) .rintent-clear-btn {
 	color: var(--rintent-w-on-dark-quiet) !important;
+}
+
+/* The cart and sign-in links carry the accent's dark ink in light, which
+ * would disappear into a dark section. */
+:is(.rintent-dark, .rstore-dark) :is(.rstore-cart a, .rstore-login .login-link, .rstore-login .logout-link),
+:is(.rstore-cart, .rstore-login).rintent-dark :is(a, .login-link, .logout-link) {
+	color: var(--rintent-w-on-dark-strong) !important;
 }
 
 /* ---------- Mobile ---------- */

@@ -50,11 +50,10 @@ final class Reseller_Intent_Assets {
 		wp_add_inline_style(
 			'reseller-intent-widget',
 			sprintf(
-				'body{--rintent-accent:%1$s;--rintent-accent-hover:color-mix(in srgb, %1$s 78%%, #000);--rintent-accent-text:%2$s;--rintent-accent-dark:%3$s;--rintent-accent-dark-text:%4$s;}',
+				'body{--rintent-accent:%1$s;--rintent-accent-hover:color-mix(in srgb, %1$s 78%%, #000);--rintent-accent-text:%2$s;--rintent-accent-dark:%3$s;}',
 				$accent,
 				Reseller_Intent_Settings::accent_text_color(),
-				Reseller_Intent_Settings::accent_dark_color(),
-				Reseller_Intent_Settings::accent_dark_text_color()
+				Reseller_Intent_Settings::accent_dark_color()
 			)
 		);
 

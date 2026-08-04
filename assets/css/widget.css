@@ -20,7 +20,15 @@ body {
 	 * theme to give dark-section buttons their own color.
 	 */
 	--rintent-widget-accent-dark: var(--rintent-dark-button, var(--rintent-accent, #3858e9));
-	--rintent-widget-accent-dark-text: var(--rintent-dark-button-text, var(--rintent-accent-dark-text, var(--rintent-accent-text, #ffffff)));
+	/*
+	 * Text sitting on a dark-section button. Those buttons are filled with
+	 * the accent, never with the Dark accent (which is a text color for
+	 * dark surfaces), so the readable pair here is the accent's own text
+	 * color. --rintent-accent-dark-text belongs to the Dark accent and
+	 * must stay out of this chain: on a bright Dark accent it computes to
+	 * dark ink and turns white button labels black.
+	 */
+	--rintent-widget-accent-dark-text: var(--rintent-dark-button-text, var(--rintent-accent-text, #ffffff));
 
 	/*
 	 * Theming knobs, override these (or target the classes listed in

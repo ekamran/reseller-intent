@@ -46,14 +46,6 @@ final class Reseller_Intent_Settings {
 		return self::text_color_for( self::accent_color() );
 	}
 
-	/**
-	 * Readable text color on the dark-surface accent. The auto-derived
-	 * pastel is light, so this usually lands on dark ink.
-	 */
-	public static function accent_dark_text_color() {
-		return self::text_color_for( self::accent_dark_color() );
-	}
-
 	private static function text_color_for( $color ) {
 		$rgb = self::hex_to_rgb( $color );
 

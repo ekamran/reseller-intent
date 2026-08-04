@@ -4,7 +4,7 @@ Tags: godaddy, godaddy reseller, reseller store, domain reseller, reseller analy
 Requires at least: 6.2
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.0.0
+Stable tag: 2.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -133,10 +133,17 @@ The default support numbers for the phone shortcode are GoDaddy's published numb
 
 == Upgrade Notice ==
 
+= 2.0.1 =
+Fixes white button labels turning dark on the styled search widget when a Dark accent color is set. Update if you use the style pack.
+
 = 2.0.0 =
 The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value panels are gone. The price shortcode is now family-first; every old embed keeps working. Your data is untouched.
 
 == Changelog ==
+
+= 2.0.1 =
+* Fixed: on sites with a Dark accent color set, the Search and Continue to cart buttons in a dark section drew their labels in dark ink instead of white. The Dark accent is a text color for dark surfaces and never colors buttons, so it no longer takes part in the button label color.
+* Removed: the `--rintent-accent-dark-text` variable, which nothing consumed. Button labels follow `--rintent-accent-text`, and `--rintent-dark-button-text` still overrides them on dark sections.
 
 = 2.0.0 =
 * Added: filter the whole dashboard by the page a search happened on.

@@ -1,10 +1,11 @@
 /**
  * Reseller Intent, frontend tracker.
  *
- * Listens to the GoDaddy Reseller Store widgets and records six anonymous
+ * Listens to the GoDaddy Reseller Store widgets and records nine anonymous
  * events: domain_search (the advanced widget and the simple box alike),
  * search_result (availability attached to the matching search),
- * domain_select, continue_to_cart, domain_transfer and product_add.
+ * domain_select, continue_to_cart, domain_transfer, product_add, and the
+ * three outbound clicks cart_view, login_click and phone_click.
  *
  * Privacy: no cookies, no fingerprinting, no IP storage, no user accounts.
  */
@@ -39,7 +40,7 @@
 	}
 
 	// Events fired as the browser is already navigating away.
-	var LEAVES_PAGE = ['continue_to_cart', 'domain_transfer', 'product_add'];
+	var LEAVES_PAGE = ['continue_to_cart', 'domain_transfer', 'product_add', 'cart_view', 'login_click', 'phone_click'];
 
 	function trackEvent(eventType, payload) {
 		var data = $.extend(
@@ -408,6 +409,51 @@
 		$(NEW_TAB_LINKS).attr({ target: '_blank', rel: 'noopener' });
 	}
 
+	/*
+	 * The three links that leave the site without a domain or a product
+	 * attached: the cart, the sign in link, and the support number from
+	 * [rintent_phone]. Nothing else in the plugin could tell you whether
+	 * anyone ever used them.
+	 *
+	 * The tapped number is recorded because a reseller can publish one per
+	 * region, and knowing which one people reach for is the whole point of
+	 * the shortcode. It is the reseller's own published number, never the
+	 * visitor's.
+	 */
+	function bindOutboundTracking() {
+		if (window.__rintentOutboundBound) {
+			return;
+		}
+
+		window.__rintentOutboundBound = true;
+
+		document.addEventListener('click', function(event) {
+			var target = event.target && event.target.closest ? event.target : null;
+			var link;
+
+			if (!target) {
+				return;
+			}
+
+			if (target.closest('.rstore-cart a')) {
+				trackEvent('cart_view', {});
+				return;
+			}
+
+			if (target.closest('.rstore-login .login-link')) {
+				trackEvent('login_click', {});
+				return;
+			}
+
+			link = target.closest('a[data-rintent-phone]');
+			if (link) {
+				trackEvent('phone_click', {
+					domain_query: String((link.querySelector('.rintent-phone-number') || {}).textContent || '').trim()
+				});
+			}
+		}, true);
+	}
+
 	$(document).ready(function() {
 		/*
 		 * The widget also searches on mount, with no submit, when the URL
@@ -435,6 +481,7 @@
 
 		bindSelectTracking();
 		bindProductTracking();
+		bindOutboundTracking();
 		reportSearchOutcome();
 		applyNewTab();
 

@@ -1240,6 +1240,28 @@ final class Reseller_Intent_Admin {
 		$products  = $this->get_query_ranking( $table_name, 'product_add', $range_start, $range_end, $page_sql, $page_params );
 		$transfers = $this->get_query_ranking( $table_name, 'domain_transfer', $range_start, $range_end, $page_sql, $page_params );
 
+		/*
+		 * The three links that leave the site carrying nothing to rank. They
+		 * are counts, not a list, so they share one small panel.
+		 */
+		$outbound_row = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT
+					COALESCE(SUM(CASE WHEN event_type = 'cart_view' THEN event_count ELSE 0 END),0) AS cart,
+					COALESCE(SUM(CASE WHEN event_type = 'login_click' THEN event_count ELSE 0 END),0) AS login,
+					COALESCE(SUM(CASE WHEN event_type = 'phone_click' THEN event_count ELSE 0 END),0) AS phone
+				FROM {$table_name}
+				WHERE created_at >= %s AND created_at < %s{$page_sql}",
+				array_merge( array( $range_start, $range_end ), $page_params )
+			),
+			ARRAY_A
+		);
+		$outbound     = array(
+			'cart'  => isset( $outbound_row['cart'] ) ? (int) $outbound_row['cart'] : 0,
+			'login' => isset( $outbound_row['login'] ) ? (int) $outbound_row['login'] : 0,
+			'phone' => isset( $outbound_row['phone'] ) ? (int) $outbound_row['phone'] : 0,
+		);
+
 		// Tracking health: time since the newest event, any range. Surfaces
 		// silent breakage (JS error, markup drift, blocked AJAX) at a glance.
 		$last_event_at = $wpdb->get_var( "SELECT MAX(created_at) FROM {$table_name}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
@@ -1294,6 +1316,7 @@ final class Reseller_Intent_Admin {
 			'transfers'    => array(
 				'items' => $transfers,
 			),
+			'outbound'     => $outbound,
 			'totals'       => array(
 				'tlds'      => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT LOWER(SUBSTRING_INDEX(domain_query, '.', -1))) FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s{$page_sql}", array_merge( array( '%' . $wpdb->esc_like( '.' ) . '%', $range_start, $range_end ), $page_params ) ) ),
 				'repeats'   => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM (SELECT 1 FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql} GROUP BY domain_query HAVING SUM(event_count) >= 2) grouped", array_merge( array( $range_start, $range_end ), $page_params ) ) ),

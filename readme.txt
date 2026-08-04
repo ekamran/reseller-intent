@@ -18,7 +18,7 @@ Your analytics tell you about pages and traffic. They tell you nothing about the
 
 = What you get =
 
-* A dashboard of search intent: searches, cart clicks, trends, top TLDs, repeat searches, carted domains, added products and transfer searches, every number compared to the previous period and explained with a tooltip
+* A dashboard of search intent: searches, cart clicks, trends, top TLDs, repeat searches, carted domains, added products, transfer searches and outbound clicks, every number compared to the previous period and explained with a tooltip
 * Filter the whole dashboard by the page a search happened on, or watch all pages together
 * Every list pages through the full dataset; any range exports as CSV or JSON
 * An optional style pack for the Reseller Store widgets, with corner style, domain name size and price color as plain settings, plus three shortcodes: TLD price strip, live product price, regional support number
@@ -27,11 +27,11 @@ Your analytics tell you about pages and traffic. They tell you nothing about the
 
 = Privacy =
 
-Events are written to one table in your own database and never leave your site. No cookies, no fingerprinting, no IP addresses. An event is "someone on a mobile device searched example.com and it was available", nothing more. Clear data by time window with a count shown first, set a retention window, ignore your own test searches. Bots are never recorded.
+Events are written to one table in your own database and never leave your site. No cookies, no fingerprinting, no IP addresses. An event is "someone on a mobile device searched example.com and it was available", nothing more. A tapped support number is your own published number, never the visitor's. Clear data by time window with a count shown first, set a retention window, ignore your own test searches. Bots are never recorded.
 
 = For developers =
 
-Filter `rintent_should_track` to pause tracking, `rintent_event_data` to change or drop an event, `rintent_page_needs_store` when a page builder hides the widget from detection, and `rintent_track_bots` for the rare debugging session that needs bot traffic recorded. Everything lives in one indexed custom table, and the event types are `domain_search`, `search_result`, `domain_select`, `continue_to_cart`, `domain_transfer` and `product_add`.
+Filter `rintent_should_track` to pause tracking, `rintent_event_data` to change or drop an event, `rintent_page_needs_store` when a page builder hides the widget from detection, and `rintent_track_bots` for the rare debugging session that needs bot traffic recorded. Everything lives in one indexed custom table, and the event types are `domain_search`, `search_result`, `domain_select`, `continue_to_cart`, `domain_transfer`, `product_add`, `cart_view`, `login_click` and `phone_click`.
 
 == Installation ==
 
@@ -51,7 +51,7 @@ Yes. Reseller Intent reads the domain search widget that Reseller Store renders.
 
 = Which Reseller Store elements does it cover? =
 
-The domain search, the simple search box, the transfer box, product pods and their Add to cart button, the cart and the sign in link. Reseller Store renders all of these through the same classes whether you place them as a shortcode, a widget or a block, so tracking and styling reach all three placements at once.
+The domain search, the simple search box, the transfer box, product pods and their Add to cart button, the cart, the sign in link, and the support number from the phone shortcode. Reseller Store renders all of these through the same classes whether you place them as a shortcode, a widget or a block, so tracking and styling reach all three placements at once.
 
 = My dashboard is empty =
 
@@ -165,6 +165,7 @@ The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value 
 == Changelog ==
 
 = 2.1.0 =
+* Added: the three links that hand a visitor on are recorded too: View cart, Sign in and the support number from `[rintent_phone]`. They sit in one Outbound Clicks panel, and until now the phone shortcode gave you no idea whether anyone ever tapped it.
 * Added: transfer searches and product Add to cart are now recorded. Both hand the visitor to GoDaddy the moment they fire, so they are sent with sendBeacon and survive the jump.
 * Added: two dashboard panels, Added Products and Transfer Searches. Each appears only once it has something in it, so a storefront without those widgets sees no change.
 * Added: the Recent Searches log carries transfer searches too, marked Transfer in the Result column beside Available and Registered.
@@ -174,7 +175,7 @@ The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value 
 * Added: corner style (rounded, square or pill), domain name size and price color are settings now, so the most asked for changes need no CSS at all.
 * Added: an option to open store links in a new tab. Searching, transferring and checking out all finish on GoDaddy, and this leaves your site standing behind them. Covers Continue to cart, the simple search and transfer boxes, Add to cart, the cart and the sign in link, including shortcode placements that Reseller Store gives no such option. Off by default.
 * Changed: the styling card in Settings is now Store widgets, and its theming reference lists the new classes, seven more elements, and why targeting a class needs !important while a variable does not.
-* Changed: `wp rintent stats` reports transfer searches and product adds alongside the existing counts.
+* Changed: `wp rintent stats` reports transfer searches, product adds, cart views, sign in clicks and support calls alongside the existing counts.
 * Fixed: the page filter could not reach a page that only ever saw a product added or a domain transferred, because its list came from the Search by Page panel, which counts searches and cart clicks. The filter now lists every page with any tracked event; the panel still counts what it says it counts.
 * Fixed: on right-to-left sites the search bar reversed but its corners did not, leaving the field and button rounded where they meet and square on the outside. The corners are logical now, so they follow the text direction. This affected the domain search bar as well.
 * Fixed: the cart widget sat flush against the left edge of the page instead of in the content column, because Reseller Store renders it as an inline-block that auto margins cannot centre. The button placed inside a product pod is unaffected.

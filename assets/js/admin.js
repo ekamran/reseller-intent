@@ -77,6 +77,7 @@
 		{ key: 'pages', label: __( 'Search by Page', 'reseller-intent' ) },
 		{ key: 'products', label: __( 'Added Products', 'reseller-intent' ) },
 		{ key: 'transfers', label: __( 'Transfer Searches', 'reseller-intent' ) },
+		{ key: 'outbound', label: __( 'Outbound Clicks', 'reseller-intent' ) },
 		{ key: 'countries', label: __( 'Top Countries', 'reseller-intent' ) },
 		{ key: 'recent', label: __( 'Recent Searches', 'reseller-intent' ) }
 	];
@@ -585,6 +586,32 @@
 		});
 	}
 
+	/*
+	 * Three links that leave the site with nothing to rank: the cart, the
+	 * sign in link and the support number. Counts, not a list, so the rows
+	 * are fixed and only the numbers move.
+	 */
+	function OutboundPanel(props) {
+		var counts = props.counts || {};
+		var total = (counts.cart || 0) + (counts.login || 0) + (counts.phone || 0);
+		var rows = [
+			[__( 'View cart', 'reseller-intent' ), fmt(counts.cart || 0)],
+			[__( 'Sign in', 'reseller-intent' ), fmt(counts.login || 0)],
+			[__( 'Support call', 'reseller-intent' ), fmt(counts.phone || 0)]
+		];
+
+		return el(ListPanel, {
+			title: __( 'Outbound Clicks', 'reseller-intent' ),
+			note: __( 'Links that hand the visitor on, from the cart, sign in and support number.', 'reseller-intent' ),
+			columns: [__( 'Link', 'reseller-intent' ), __( 'Clicks', 'reseller-intent' )],
+			colWidths: ['', '100px'],
+			rows: rows,
+			empty: __( 'No clicks on these yet.', 'reseller-intent' ),
+			/* translators: %s: number of clicks */
+			footLabel: sprintf( _n( '%s click', '%s clicks', total, 'reseller-intent' ), fmt(total) )
+		});
+	}
+
 	function flagEmoji(code) {
 		if (!/^[A-Z]{2}$/.test(code)) {
 			return '';
@@ -955,13 +982,19 @@
 			if (isShown('countries') && data.countries.items.length > 0) {
 				extras.push(['countries', el(CountriesPanel, { countries: data.countries, loadRows: loadRows })]);
 			}
+			var outbound = data.outbound || {};
+			if (isShown('outbound') && ((outbound.cart || 0) + (outbound.login || 0) + (outbound.phone || 0)) > 0) {
+				extras.push(['outbound', el(OutboundPanel, { counts: outbound })]);
+			}
 
 			var kpisNow = data.kpis.now || {};
 			if (isShown('recent')) {
 				cells.push(el('div', { key: 'recent', className: extras.length === 1 ? 'ri-s8' : 'ri-s12' },
 					el(RecentLog, { recent: data.recent, totalSearches: (kpisNow.searches || 0) + (kpisNow.transfers || 0) })));
 			}
-			var extraSpan = extras.length === 2 ? 'ri-s6' : 'ri-s4';
+			// Four splits into two halves over two rows; three thirds and two
+			// halves both fill a row exactly, one rides beside the feed.
+			var extraSpan = (extras.length === 2 || extras.length === 4) ? 'ri-s6' : 'ri-s4';
 			extras.forEach(function(extra) {
 				cells.push(el('div', { key: extra[0], className: extraSpan }, extra[1]));
 			});

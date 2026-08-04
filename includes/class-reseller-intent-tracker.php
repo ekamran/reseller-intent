@@ -40,7 +40,7 @@ final class Reseller_Intent_Tracker {
 		}
 
 		$event_type = isset( $_POST['event_type'] ) ? sanitize_key( wp_unslash( $_POST['event_type'] ) ) : '';
-		if ( ! in_array( $event_type, array( 'domain_search', 'continue_to_cart', 'domain_select', 'search_result', 'domain_transfer', 'product_add' ), true ) ) {
+		if ( ! in_array( $event_type, array( 'domain_search', 'continue_to_cart', 'domain_select', 'search_result', 'domain_transfer', 'product_add', 'cart_view', 'login_click', 'phone_click' ), true ) ) {
 			wp_send_json_error( array( 'message' => 'Invalid event type' ), 400 );
 		}
 

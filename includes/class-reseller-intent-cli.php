@@ -42,7 +42,10 @@ final class Reseller_Intent_CLI {
 					SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END) AS carts,
 					SUM(CASE WHEN event_type = 'continue_to_cart' THEN items_count ELSE 0 END) AS domains_added,
 					SUM(CASE WHEN event_type = 'domain_transfer' THEN 1 ELSE 0 END) AS transfers,
-					SUM(CASE WHEN event_type = 'product_add' THEN 1 ELSE 0 END) AS product_adds
+					SUM(CASE WHEN event_type = 'product_add' THEN 1 ELSE 0 END) AS product_adds,
+					SUM(CASE WHEN event_type = 'cart_view' THEN 1 ELSE 0 END) AS cart_views,
+					SUM(CASE WHEN event_type = 'login_click' THEN 1 ELSE 0 END) AS login_clicks,
+					SUM(CASE WHEN event_type = 'phone_click' THEN 1 ELSE 0 END) AS phone_clicks
 				FROM {$table_name} WHERE created_at >= %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$cutoff
 			)
@@ -77,6 +80,18 @@ final class Reseller_Intent_CLI {
 				array(
 					'metric' => 'product adds',
 					'value'  => $row ? (int) $row->product_adds : 0,
+				),
+				array(
+					'metric' => 'cart views',
+					'value'  => $row ? (int) $row->cart_views : 0,
+				),
+				array(
+					'metric' => 'sign in clicks',
+					'value'  => $row ? (int) $row->login_clicks : 0,
+				),
+				array(
+					'metric' => 'support calls',
+					'value'  => $row ? (int) $row->phone_clicks : 0,
 				),
 				array(
 					'metric' => 'search to cart rate',

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-04T21:00:06+00:00\n"
+"POT-Creation-Date: 2026-08-04T22:24:05+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: reseller-intent\n"
@@ -36,10 +36,10 @@ msgstr ""
 
 #: includes/class-reseller-intent-admin.php:110
 #: includes/class-reseller-intent-admin.php:111
-#: includes/class-reseller-intent-admin.php:1881
+#: includes/class-reseller-intent-admin.php:1942
 #: includes/class-reseller-intent-health.php:39
 #: includes/class-reseller-intent.php:226
-#: assets/js/admin.js:977
+#: assets/js/admin.js:1010
 msgid "Reseller Intent"
 msgstr ""
 
@@ -340,7 +340,7 @@ msgid "Everything is optional. Tracking works out of the box."
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:424
-#: assets/js/admin.js:1049
+#: assets/js/admin.js:1084
 msgid "Settings saved."
 msgstr ""
 
@@ -718,57 +718,57 @@ msgid "per month"
 msgstr ""
 
 #. translators: %s: human readable time difference
-#: includes/class-reseller-intent-admin.php:1256
+#: includes/class-reseller-intent-admin.php:1278
 #, php-format
 msgid "Last event %s ago"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1257
+#: includes/class-reseller-intent-admin.php:1279
 msgid "No events yet"
 msgstr ""
 
 #. translators: 1: range start date, 2: range end date
-#: includes/class-reseller-intent-admin.php:1263
+#: includes/class-reseller-intent-admin.php:1285
 #, php-format
 msgid "%1$s to %2$s"
 msgstr ""
 
 #. translators: %d: number of days
-#: includes/class-reseller-intent-admin.php:1269
+#: includes/class-reseller-intent-admin.php:1291
 #, php-format
 msgid "Last %d days"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1270
+#: includes/class-reseller-intent-admin.php:1292
 #: assets/js/admin.js:38
 msgid "Lifetime"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1457
+#: includes/class-reseller-intent-admin.php:1518
 msgid "Home"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1645
+#: includes/class-reseller-intent-admin.php:1706
 msgid "You are not allowed to export data."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1709
+#: includes/class-reseller-intent-admin.php:1770
 msgid "You are not allowed to clear data."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1915
+#: includes/class-reseller-intent-admin.php:1976
 msgid "searches today"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1916
+#: includes/class-reseller-intent-admin.php:1977
 msgid "searches, 7 days"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1917
+#: includes/class-reseller-intent-admin.php:1978
 msgid "search → cart, 7 days"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:1922
+#: includes/class-reseller-intent-admin.php:1983
 msgid "Open the full dashboard →"
 msgstr ""
 
@@ -909,342 +909,383 @@ msgid "90d"
 msgstr ""
 
 #: assets/js/admin.js:73
-#: assets/js/admin.js:415
+#: assets/js/admin.js:416
 msgid "Search vs Cart Trend"
 msgstr ""
 
 #: assets/js/admin.js:74
-#: assets/js/admin.js:438
+#: assets/js/admin.js:439
 msgid "Searched TLDs"
 msgstr ""
 
 #: assets/js/admin.js:75
-#: assets/js/admin.js:457
+#: assets/js/admin.js:458
 msgid "Repeat Demand"
 msgstr ""
 
 #: assets/js/admin.js:76
-#: assets/js/admin.js:494
+#: assets/js/admin.js:495
 msgid "Carted Domains"
 msgstr ""
 
 #: assets/js/admin.js:77
-#: assets/js/admin.js:520
+#: assets/js/admin.js:521
 msgid "Search by Page"
 msgstr ""
 
 #: assets/js/admin.js:78
-#: assets/js/admin.js:558
+#: assets/js/admin.js:559
 msgid "Added Products"
 msgstr ""
 
 #: assets/js/admin.js:79
-#: assets/js/admin.js:575
+#: assets/js/admin.js:576
 msgid "Transfer Searches"
 msgstr ""
 
 #: assets/js/admin.js:80
-#: assets/js/admin.js:601
-msgid "Top Countries"
+#: assets/js/admin.js:604
+msgid "Outbound Clicks"
 msgstr ""
 
 #: assets/js/admin.js:81
-#: assets/js/admin.js:666
+#: assets/js/admin.js:628
+msgid "Top Countries"
+msgstr ""
+
+#: assets/js/admin.js:82
+#: assets/js/admin.js:693
 msgid "Recent Searches"
 msgstr ""
 
-#: assets/js/admin.js:108
+#: assets/js/admin.js:109
 msgid "Last hour"
 msgstr ""
 
-#: assets/js/admin.js:109
+#: assets/js/admin.js:110
 msgid "Last 24 hours"
 msgstr ""
 
-#: assets/js/admin.js:110
+#: assets/js/admin.js:111
 msgid "Last 7 days"
 msgstr ""
 
-#: assets/js/admin.js:111
+#: assets/js/admin.js:112
 msgid "Last 30 days"
 msgstr ""
 
-#: assets/js/admin.js:112
+#: assets/js/admin.js:113
 msgid "Last 6 months"
 msgstr ""
 
-#: assets/js/admin.js:113
+#: assets/js/admin.js:114
 msgid "Last year"
 msgstr ""
 
-#: assets/js/admin.js:114
-#: assets/js/admin.js:141
+#: assets/js/admin.js:115
+#: assets/js/admin.js:142
 msgid "All time"
 msgstr ""
 
-#: assets/js/admin.js:146
+#: assets/js/admin.js:147
 msgid "New"
 msgstr ""
 
-#: assets/js/admin.js:160
+#: assets/js/admin.js:161
 msgid "vs previous period"
 msgstr ""
 
 #. translators: 1: number of listed rows, 2: total number of rows
-#: assets/js/admin.js:220
-#: assets/js/admin.js:657
+#: assets/js/admin.js:221
+#: assets/js/admin.js:684
 #, js-format
 msgid "%1$s of %2$s. Export has everything."
 msgstr ""
 
-#: assets/js/admin.js:260
+#: assets/js/admin.js:261
 msgid "Previous page"
 msgstr ""
 
-#: assets/js/admin.js:262
+#: assets/js/admin.js:263
 msgid "Next page"
 msgstr ""
 
-#: assets/js/admin.js:349
+#: assets/js/admin.js:350
 msgid "No activity yet."
 msgstr ""
 
-#: assets/js/admin.js:352
+#: assets/js/admin.js:353
 msgid "Search vs cart trend chart"
 msgstr ""
 
-#: assets/js/admin.js:375
+#: assets/js/admin.js:376
 msgid "Domain Searches"
 msgstr ""
 
-#: assets/js/admin.js:375
+#: assets/js/admin.js:376
 msgid "Every search run in the domain search box during the period."
 msgstr ""
 
-#: assets/js/admin.js:376
+#: assets/js/admin.js:377
 msgid "Repeat Searches"
 msgstr ""
 
-#: assets/js/admin.js:376
+#: assets/js/admin.js:377
 msgid "Searches for a name already searched before in this period."
 msgstr ""
 
-#: assets/js/admin.js:377
+#: assets/js/admin.js:378
 msgid "Cart Clicks"
 msgstr ""
 
-#: assets/js/admin.js:377
+#: assets/js/admin.js:378
 msgid "Presses of Continue to cart in the domain search widget."
 msgstr ""
 
-#: assets/js/admin.js:378
+#: assets/js/admin.js:379
 msgid "Domains Sent to Cart"
 msgstr ""
 
-#: assets/js/admin.js:378
+#: assets/js/admin.js:379
 msgid "Names still selected when Continue was pressed. Unticked or abandoned names are not counted."
 msgstr ""
 
-#: assets/js/admin.js:379
+#: assets/js/admin.js:380
 msgid "Avg per Cart Click"
 msgstr ""
 
-#: assets/js/admin.js:379
+#: assets/js/admin.js:380
 msgid "Domains sent to cart divided by cart clicks."
 msgstr ""
 
-#: assets/js/admin.js:380
+#: assets/js/admin.js:381
 msgid "Search → Cart Rate"
 msgstr ""
 
-#: assets/js/admin.js:380
+#: assets/js/admin.js:381
 msgid "Cart clicks as a share of all searches. Compare against your own past periods."
 msgstr ""
 
-#: assets/js/admin.js:403
+#: assets/js/admin.js:404
 msgid "How often the searched name was free to register."
 msgstr ""
 
-#: assets/js/admin.js:404
-#: assets/js/admin.js:640
+#: assets/js/admin.js:405
+#: assets/js/admin.js:667
 msgid "Available"
 msgstr ""
 
-#: assets/js/admin.js:408
+#: assets/js/admin.js:409
 msgid "Share of searches made on a phone."
 msgstr ""
 
-#: assets/js/admin.js:409
+#: assets/js/admin.js:410
 msgid "Mobile"
 msgstr ""
 
-#: assets/js/admin.js:416
+#: assets/js/admin.js:417
 msgid "Daily activity in this range."
 msgstr ""
 
-#: assets/js/admin.js:416
+#: assets/js/admin.js:417
 msgid "Monthly activity, all time."
 msgstr ""
 
-#: assets/js/admin.js:422
-#: assets/js/admin.js:440
-#: assets/js/admin.js:459
-#: assets/js/admin.js:522
-#: assets/js/admin.js:578
-#: assets/js/admin.js:603
+#: assets/js/admin.js:423
+#: assets/js/admin.js:441
+#: assets/js/admin.js:460
+#: assets/js/admin.js:523
+#: assets/js/admin.js:579
+#: assets/js/admin.js:630
 msgid "Searches"
 msgstr ""
 
-#: assets/js/admin.js:423
+#: assets/js/admin.js:424
 msgid "Cart clicks"
 msgstr ""
 
-#: assets/js/admin.js:439
+#: assets/js/admin.js:440
 msgid "Which extensions people look for."
 msgstr ""
 
-#: assets/js/admin.js:440
+#: assets/js/admin.js:441
 msgid "TLD"
 msgstr ""
 
-#: assets/js/admin.js:443
+#: assets/js/admin.js:444
 msgid "No searches yet. Every search adds its TLD here."
 msgstr ""
 
 #. translators: %s: number of TLDs
-#: assets/js/admin.js:447
+#: assets/js/admin.js:448
 #, js-format
 msgid "%s TLD"
 msgid_plural "%s TLDs"
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/js/admin.js:458
+#: assets/js/admin.js:459
 msgid "Domains searched 2+ times, buyers circling."
 msgstr ""
 
-#: assets/js/admin.js:459
-#: assets/js/admin.js:496
-#: assets/js/admin.js:577
-#: assets/js/admin.js:668
+#: assets/js/admin.js:460
+#: assets/js/admin.js:497
+#: assets/js/admin.js:578
+#: assets/js/admin.js:695
 msgid "Domain"
 msgstr ""
 
-#: assets/js/admin.js:462
+#: assets/js/admin.js:463
 msgid "Quiet so far. When a visitor searches the same name twice, it lands here, a buyer circling."
 msgstr ""
 
 #. translators: %s: number of repeated domains
-#: assets/js/admin.js:466
+#: assets/js/admin.js:467
 #, js-format
 msgid "%s repeat"
 msgid_plural "%s repeats"
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/js/admin.js:495
+#: assets/js/admin.js:496
 msgid "What shoppers sent to cart."
 msgstr ""
 
-#: assets/js/admin.js:496
+#: assets/js/admin.js:497
 msgid "Sent"
 msgstr ""
 
-#: assets/js/admin.js:499
+#: assets/js/admin.js:500
 msgid "Cart clicks will land here. Tracking is live, watch the Last event chip up top."
 msgstr ""
 
 #. translators: %s: number of domains
-#: assets/js/admin.js:504
-#: assets/js/admin.js:583
+#: assets/js/admin.js:505
+#: assets/js/admin.js:584
 #, js-format
 msgid "%s domain"
 msgid_plural "%s domains"
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/js/admin.js:521
+#: assets/js/admin.js:522
 msgid "Where each search and cart click happened."
 msgstr ""
 
-#: assets/js/admin.js:522
+#: assets/js/admin.js:523
 msgid "Page"
 msgstr ""
 
-#: assets/js/admin.js:522
+#: assets/js/admin.js:523
 msgid "Carts"
 msgstr ""
 
-#: assets/js/admin.js:525
+#: assets/js/admin.js:526
 msgid "Once searches come in, you will see which page they happen on."
 msgstr ""
 
 #. translators: %s: number of pages
-#: assets/js/admin.js:527
+#: assets/js/admin.js:528
 #, js-format
 msgid "%s page"
 msgid_plural "%s pages"
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/js/admin.js:559
+#: assets/js/admin.js:560
 msgid "Hosting, email and SSL sent to cart, by product ID."
 msgstr ""
 
-#: assets/js/admin.js:560
+#: assets/js/admin.js:561
 msgid "Product"
 msgstr ""
 
-#: assets/js/admin.js:561
+#: assets/js/admin.js:562
 msgid "Adds"
 msgstr ""
 
-#: assets/js/admin.js:564
+#: assets/js/admin.js:565
 msgid "No product added to cart yet."
 msgstr ""
 
 #. translators: %s: number of products
-#: assets/js/admin.js:566
+#: assets/js/admin.js:567
 #, js-format
 msgid "%s product"
 msgid_plural "%s products"
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/js/admin.js:576
+#: assets/js/admin.js:577
 msgid "Domains people already own and want to move to you."
 msgstr ""
 
-#: assets/js/admin.js:581
+#: assets/js/admin.js:582
 msgid "No transfer search yet."
 msgstr ""
 
-#: assets/js/admin.js:602
-msgid "Searches by visitor country (edge geo header)."
+#: assets/js/admin.js:598
+msgid "View cart"
 msgstr ""
 
-#: assets/js/admin.js:603
-msgid "Country"
+#: assets/js/admin.js:599
+msgid "Sign in"
+msgstr ""
+
+#: assets/js/admin.js:600
+msgid "Support call"
+msgstr ""
+
+#: assets/js/admin.js:605
+msgid "Links that hand the visitor on, from the cart, sign in and support number."
 msgstr ""
 
 #: assets/js/admin.js:606
+msgid "Link"
+msgstr ""
+
+#: assets/js/admin.js:606
+msgid "Clicks"
+msgstr ""
+
+#: assets/js/admin.js:609
+msgid "No clicks on these yet."
+msgstr ""
+
+#. translators: %s: number of clicks
+#: assets/js/admin.js:611
+#, js-format
+msgid "%s click"
+msgid_plural "%s clicks"
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/js/admin.js:629
+msgid "Searches by visitor country (edge geo header)."
+msgstr ""
+
+#: assets/js/admin.js:630
+msgid "Country"
+msgstr ""
+
+#: assets/js/admin.js:633
 msgid "No country data yet. Your host/CDN needs to send a geo header (e.g. Cloudflare’s CF-IPCountry)."
 msgstr ""
 
-#: assets/js/admin.js:608
+#: assets/js/admin.js:635
 msgid "Searches by country"
 msgstr ""
 
-#: assets/js/admin.js:638
+#: assets/js/admin.js:665
 msgid "Transfer"
 msgstr ""
 
-#: assets/js/admin.js:642
+#: assets/js/admin.js:669
 msgid "Registered"
 msgstr ""
 
 #. translators: 1: number of listed searches, 2: timezone label
-#: assets/js/admin.js:649
+#: assets/js/admin.js:676
 #, js-format
 msgid "Latest %1$s search in this range (%2$s), transfers included. Use Export for full data."
 msgid_plural "Latest %1$s searches in this range (%2$s), transfers included. Use Export for full data."
@@ -1252,165 +1293,165 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: number of searches
-#: assets/js/admin.js:660
+#: assets/js/admin.js:687
 #, js-format
 msgid "%s search"
 msgid_plural "%s searches"
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/js/admin.js:668
+#: assets/js/admin.js:695
 msgid "Result"
 msgstr ""
 
-#: assets/js/admin.js:668
+#: assets/js/admin.js:695
 msgid "Device"
 msgstr ""
 
-#: assets/js/admin.js:668
+#: assets/js/admin.js:695
 msgid "Searched At"
 msgstr ""
 
-#: assets/js/admin.js:671
+#: assets/js/admin.js:698
 msgid "Nothing matches that filter."
 msgstr ""
 
-#: assets/js/admin.js:671
+#: assets/js/admin.js:698
 msgid "No searches in this range."
 msgstr ""
 
 #. translators: %s: number of listed searches
-#: assets/js/admin.js:678
+#: assets/js/admin.js:705
 #, js-format
 msgid "Filter these %s..."
 msgstr ""
 
-#: assets/js/admin.js:679
+#: assets/js/admin.js:706
 msgid "Filter recent searches"
 msgstr ""
 
-#: assets/js/admin.js:754
-#: assets/js/admin.js:757
-#: assets/js/admin.js:779
-#: assets/js/admin.js:1008
+#: assets/js/admin.js:781
+#: assets/js/admin.js:784
+#: assets/js/admin.js:806
+#: assets/js/admin.js:1043
 msgid "Clear data"
 msgstr ""
 
-#: assets/js/admin.js:758
+#: assets/js/admin.js:785
 msgid "Delete tracked events from the selected time window. There is no undo."
 msgstr ""
 
-#: assets/js/admin.js:759
+#: assets/js/admin.js:786
 msgid "Time window"
 msgstr ""
 
-#: assets/js/admin.js:771
+#: assets/js/admin.js:798
 msgid "No events in this window."
 msgstr ""
 
 #. translators: %s: number of events
-#: assets/js/admin.js:771
+#: assets/js/admin.js:798
 #, js-format
 msgid "%s event will be permanently deleted."
 msgid_plural "%s events will be permanently deleted."
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/js/admin.js:774
+#: assets/js/admin.js:801
 msgid "Cancel"
 msgstr ""
 
-#: assets/js/admin.js:858
-#: assets/js/admin.js:863
+#: assets/js/admin.js:885
+#: assets/js/admin.js:890
 msgid "Could not load dashboard data."
 msgstr ""
 
-#: assets/js/admin.js:902
+#: assets/js/admin.js:929
 msgid "No events matched that window."
 msgstr ""
 
 #. translators: %s: number of events
-#: assets/js/admin.js:902
+#: assets/js/admin.js:929
 #, js-format
 msgid "%s event deleted."
 msgid_plural "%s events deleted."
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/js/admin.js:973
+#: assets/js/admin.js:1006
 msgid "Loading"
 msgstr ""
 
-#: assets/js/admin.js:981
+#: assets/js/admin.js:1014
 msgid "No recent events. Check that the search widget is live and tracking is not blocked."
 msgstr ""
 
-#: assets/js/admin.js:985
+#: assets/js/admin.js:1018
 msgid "Custom"
 msgstr ""
 
-#: assets/js/admin.js:996
+#: assets/js/admin.js:1029
 msgid "Filter by page"
 msgstr ""
 
-#: assets/js/admin.js:997
+#: assets/js/admin.js:1030
 msgid "Every panel follows this page filter. Search by Page keeps comparing all pages."
 msgstr ""
 
-#: assets/js/admin.js:999
+#: assets/js/admin.js:1032
 msgid "All pages"
 msgstr ""
 
-#: assets/js/admin.js:1005
+#: assets/js/admin.js:1040
 msgid "Export CSV"
 msgstr ""
 
-#: assets/js/admin.js:1005
+#: assets/js/admin.js:1040
 msgid "CSV"
 msgstr ""
 
-#: assets/js/admin.js:1006
+#: assets/js/admin.js:1041
 msgid "Export JSON"
 msgstr ""
 
-#: assets/js/admin.js:1006
+#: assets/js/admin.js:1041
 msgid "JSON"
 msgstr ""
 
-#: assets/js/admin.js:1014
+#: assets/js/admin.js:1049
 msgid "Choose which panels to show"
 msgstr ""
 
-#: assets/js/admin.js:1016
+#: assets/js/admin.js:1051
 msgid "Panels"
 msgstr ""
 
-#: assets/js/admin.js:1017
+#: assets/js/admin.js:1052
 msgid "Visible panels"
 msgstr ""
 
-#: assets/js/admin.js:1034
+#: assets/js/admin.js:1069
 msgid "From"
 msgstr ""
 
-#: assets/js/admin.js:1037
+#: assets/js/admin.js:1072
 msgid "To"
 msgstr ""
 
-#: assets/js/admin.js:1044
+#: assets/js/admin.js:1079
 msgid "Apply"
 msgstr ""
 
-#: assets/js/admin.js:1048
+#: assets/js/admin.js:1083
 msgid "Clearing data failed."
 msgstr ""
 
 #. translators: %s: number of events
-#: assets/js/admin.js:1050
+#: assets/js/admin.js:1085
 #, js-format
 msgid "%s legacy events imported."
 msgstr ""
 
-#: assets/js/admin.js:1058
+#: assets/js/admin.js:1093
 msgid "Loading..."
 msgstr ""

@@ -384,6 +384,30 @@
 		}, true);
 	}
 
+	/*
+	 * Optional: hand every outbound store link and form to a new tab. The
+	 * whole store journey finishes on GoDaddy, so leaving the site standing
+	 * means a visitor can come back and search again instead of navigating
+	 * back. Off by default: a forced new tab is a real preference, not a
+	 * default anyone should inherit.
+	 *
+	 * Reseller Store already offers this per widget for the simple search,
+	 * transfer and product buttons. It offers nothing for Continue to cart,
+	 * the cart link, the sign in link, or for any shortcode placement, which
+	 * is what this covers.
+	 */
+	var NEW_TAB_FORMS = 'form.rstore-domain-form, form.rstore-add-to-cart-form, .rstore-domain-search .continue-form';
+	var NEW_TAB_LINKS = '.rstore-cart a, .rstore-login .login-link, .rstore-login .logout-link';
+
+	function applyNewTab() {
+		if (!window.resellerIntent || !window.resellerIntent.newTab) {
+			return;
+		}
+
+		$(NEW_TAB_FORMS).attr({ target: '_blank', rel: 'noopener' });
+		$(NEW_TAB_LINKS).attr({ target: '_blank', rel: 'noopener' });
+	}
+
 	$(document).ready(function() {
 		/*
 		 * The widget also searches on mount, with no submit, when the URL
@@ -412,11 +436,14 @@
 		bindSelectTracking();
 		bindProductTracking();
 		reportSearchOutcome();
+		applyNewTab();
 
 		// React re-renders replace nodes; watch for results appearing.
 		$('.rstore-domain-search').each(function() {
+			// Continue to cart only exists once results are on screen.
 			var observer = new MutationObserver(function() {
 				reportSearchOutcome();
+				applyNewTab();
 			});
 
 			observer.observe(this, { childList: true, subtree: true });

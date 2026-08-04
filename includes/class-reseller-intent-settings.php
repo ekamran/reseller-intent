@@ -13,6 +13,10 @@ final class Reseller_Intent_Settings {
 		'delete_on_uninstall' => false,
 		'style_widget'        => true,
 		'widget_clear_all'    => true,
+		'widget_radius'       => 'rounded', // rounded | square | pill.
+		'domain_size'         => 0,     // 0 = inherit the theme's size.
+		'price_color'         => '',    // '' = inherit the theme's color.
+		'new_tab'             => false, // Open store links in a new tab.
 		'clear_all_label'     => '',    // '' = translated default "Clear All".
 		'blocklist'           => array(),
 		'support_numbers'     => null,  // null = built-in GoDaddy defaults; array = owner's own list.
@@ -104,6 +108,22 @@ final class Reseller_Intent_Settings {
 		}
 
 		return 0.2126 * $parts[0] + 0.7152 * $parts[1] + 0.0722 * $parts[2];
+	}
+
+	/**
+	 * The corner style as a CSS length. Named on the settings screen so the
+	 * choice reads as a look, not a number, but it feeds the same
+	 * --rintent-radius variable a theme author would set by hand.
+	 */
+	public static function radius_length() {
+		$map = array(
+			'rounded' => '8px',
+			'square'  => '0px',
+			'pill'    => '50px',
+		);
+		$key = (string) self::get( 'widget_radius' );
+
+		return isset( $map[ $key ] ) ? $map[ $key ] : $map['rounded'];
 	}
 
 	/**
@@ -247,6 +267,10 @@ final class Reseller_Intent_Settings {
 			'delete_on_uninstall' => ! empty( $_POST['delete_on_uninstall'] ),
 			'style_widget'        => ! empty( $_POST['style_widget'] ),
 			'widget_clear_all'    => ! empty( $_POST['widget_clear_all'] ),
+			'widget_radius'       => $this->sanitize_radius( isset( $_POST['widget_radius'] ) ? sanitize_key( wp_unslash( $_POST['widget_radius'] ) ) : '' ),
+			'domain_size'         => $this->sanitize_font_size( isset( $_POST['domain_size'] ) ? sanitize_text_field( wp_unslash( $_POST['domain_size'] ) ) : '' ),
+			'price_color'         => (string) sanitize_hex_color( isset( $_POST['price_color'] ) ? sanitize_text_field( wp_unslash( $_POST['price_color'] ) ) : '' ),
+			'new_tab'             => ! empty( $_POST['new_tab'] ),
 			'clear_all_label'     => substr( sanitize_text_field( isset( $_POST['clear_all_label'] ) ? wp_unslash( $_POST['clear_all_label'] ) : '' ), 0, 40 ),
 			'blocklist'           => $this->sanitize_blocklist( isset( $_POST['blocklist'] ) ? sanitize_textarea_field( wp_unslash( $_POST['blocklist'] ) ) : '' ),
 			'trim_gd_assets'      => ! empty( $_POST['trim_gd_assets'] ),
@@ -297,6 +321,21 @@ final class Reseller_Intent_Settings {
 		$color = sanitize_hex_color( (string) $value );
 
 		return $color ? $color : self::$defaults['accent_color'];
+	}
+
+	private function sanitize_radius( $value ) {
+		return in_array( $value, array( 'rounded', 'square', 'pill' ), true ) ? $value : 'rounded';
+	}
+
+	/**
+	 * A size in px, or 0 to keep whatever the theme sets. Anything outside
+	 * a sane range is treated as "not set" rather than clamped, so a typo
+	 * gives the theme back instead of a 2px domain name.
+	 */
+	private function sanitize_font_size( $value ) {
+		$size = (int) $value;
+
+		return ( $size >= 10 && $size <= 48 ) ? $size : 0;
 	}
 
 	private function sanitize_blocklist( $value ) {

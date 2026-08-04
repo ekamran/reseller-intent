@@ -21,7 +21,7 @@ Your analytics tell you about pages and traffic. They tell you nothing about the
 * A dashboard of search intent: searches, cart clicks, trends, top TLDs, repeat searches, carted domains, added products and transfer searches, every number compared to the previous period and explained with a tooltip
 * Filter the whole dashboard by the page a search happened on, or watch all pages together
 * Every list pages through the full dataset; any range exports as CSV or JSON
-* An optional style pack for the Reseller Store widgets, plus three shortcodes: TLD price strip, live product price, regional support number
+* An optional style pack for the Reseller Store widgets, with corner style, domain name size and price color as plain settings, plus three shortcodes: TLD price strip, live product price, regional support number
 * Today and this week at a glance on your WordPress dashboard
 
 = Privacy =
@@ -83,6 +83,20 @@ Three low-value panels were removed on purpose: Missed Opportunities, Conversion
 = Will it change how my search widget looks? =
 
 Only if you let it. The style pack is optional and matches the Reseller Store widgets to your accent color and corner rounding. Turn it off in Settings and the plugin loads no CSS at all.
+
+= I already style the store myself. What happens if I turn the style pack off? =
+
+You get your page back exactly as it was. Unticking it stops the stylesheet being loaded at all, so nothing of ours is left behind and your own CSS applies again. This is tested by comparing every measurement of the store elements with the pack off against the same page with the plugin deactivated, and the two match.
+
+= My own CSS does not override the style pack. Why? =
+
+Because the pack uses `!important` on the parts that have to win. Themes reach the same buttons through selectors like `button:not(:hover):not(:active):not(.has-background)`, which outranks a plain class on its own, so without `!important` the pack would lose to your theme and do nothing.
+
+The easy way round it is not to fight it. Set the variables instead:
+
+`body { --rintent-accent: #0f766e; --rintent-radius: 0; }`
+
+Variables win without `!important` and one line changes every button, field and card at once. Corner style, domain name size and price color also have plain settings on the Settings screen, no CSS needed. Full list of variables and classes lives under Settings, Store widgets, Theming reference. If you do target a class directly, add `!important` to it.
 
 = What happens when I uninstall? =
 
@@ -154,7 +168,10 @@ The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value 
 * Added: a product's own page and the archive listing carry the same price and Add to cart with no pod around them, so those are styled there too.
 * Fixed: on right-to-left sites the search bar reversed but its corners did not, leaving the field and button rounded where they meet and square on the outside. The corners are logical now, so they follow the text direction. This affected the domain search bar as well.
 * Fixed: the cart widget sat flush against the left edge of the page instead of in the content column, because Reseller Store renders it as an inline-block that auto margins cannot centre. The button placed inside a product pod is unaffected.
-* Changed: the styling card in Settings is now Store widgets, and its theming reference lists the new classes.
+* Added: corner style (rounded, square or pill), domain name size and price color are settings now, so the most asked for changes need no CSS at all.
+* Added: an option to open store links in a new tab. Searching, transferring and checking out all finish on GoDaddy, and this leaves your site standing behind them. Covers Continue to cart, the simple search and transfer boxes, Add to cart, the cart and the sign in link, including shortcode placements that Reseller Store gives no such option. Off by default.
+* Changed: the styling card in Settings is now Store widgets, and its theming reference lists the new classes, seven more elements, and why targeting a class needs !important while a variable does not.
+* Fixed: the selectors covering the simple search and transfer boxes weighed more than the ones the theming reference tells you to use, so your own CSS could not override them even with !important. They now match, and the documented selector wins.
 * Changed: `wp rintent stats` reports transfer searches and product adds alongside the existing counts.
 * Fixed: on sites with a Dark accent color set, the Search and Continue to cart buttons in a dark section drew their labels in dark ink instead of white. The Dark accent is a text color for dark surfaces and never colors buttons, so it no longer takes part in the button label color.
 * Fixed: a product family whose plans differ in the middle of their names was labelled by that one shared word alone, so two SSL services read as plain "Managed". The shared tail of the names joins the label, giving "Managed SSL Service".

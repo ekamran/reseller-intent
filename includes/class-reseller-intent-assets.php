@@ -30,6 +30,7 @@ final class Reseller_Intent_Assets {
 			'resellerIntent',
 			array(
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'newTab'  => (bool) Reseller_Intent_Settings::get( 'new_tab' ),
 			)
 		);
 
@@ -47,15 +48,30 @@ final class Reseller_Intent_Assets {
 
 		$accent = Reseller_Intent_Settings::accent_color();
 
-		wp_add_inline_style(
-			'reseller-intent-widget',
-			sprintf(
-				'body{--rintent-accent:%1$s;--rintent-accent-hover:color-mix(in srgb, %1$s 78%%, #000);--rintent-accent-text:%2$s;--rintent-accent-dark:%3$s;}',
-				$accent,
-				Reseller_Intent_Settings::accent_text_color(),
-				Reseller_Intent_Settings::accent_dark_color()
-			)
+		$vars = sprintf(
+			'--rintent-accent:%1$s;--rintent-accent-hover:color-mix(in srgb, %1$s 78%%, #000);--rintent-accent-text:%2$s;--rintent-accent-dark:%3$s;--rintent-radius:%4$s;',
+			$accent,
+			Reseller_Intent_Settings::accent_text_color(),
+			Reseller_Intent_Settings::accent_dark_color(),
+			Reseller_Intent_Settings::radius_length()
 		);
+
+		/*
+		 * The look settings write the same variables a theme author would set
+		 * by hand. Left at their default they emit nothing at all, so the
+		 * "inherit" values in widget.css stand and the theme keeps the type.
+		 */
+		$domain_size = (int) Reseller_Intent_Settings::get( 'domain_size' );
+		if ( $domain_size > 0 ) {
+			$vars .= sprintf( '--rintent-domain-size:%dpx;', $domain_size );
+		}
+
+		$price_color = sanitize_hex_color( (string) Reseller_Intent_Settings::get( 'price_color' ) );
+		if ( $price_color ) {
+			$vars .= sprintf( '--rintent-price-color:%s;', $price_color );
+		}
+
+		wp_add_inline_style( 'reseller-intent-widget', 'body{' . $vars . '}' );
 
 		wp_enqueue_script(
 			'reseller-intent-widget',

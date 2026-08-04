@@ -464,6 +464,43 @@ final class Reseller_Intent_Admin {
 							</span>
 						</div>
 						<div class="rintent-field">
+							<span class="rintent-label"><label for="rintent-corners"><?php esc_html_e( 'Corners', 'reseller-intent' ); ?></label></span>
+							<span>
+								<?php $radius = (string) Reseller_Intent_Settings::get( 'widget_radius' ); ?>
+								<select id="rintent-corners" name="widget_radius">
+									<option value="rounded" <?php selected( 'rounded', $radius ); ?>><?php esc_html_e( 'Rounded', 'reseller-intent' ); ?></option>
+									<option value="square" <?php selected( 'square', $radius ); ?>><?php esc_html_e( 'Square', 'reseller-intent' ); ?></option>
+									<option value="pill" <?php selected( 'pill', $radius ); ?>><?php esc_html_e( 'Pill', 'reseller-intent' ); ?></option>
+								</select>
+								<p class="description"><?php esc_html_e( 'Rounding on the search bar, result rows, product cards and every button.', 'reseller-intent' ); ?></p>
+							</span>
+						</div>
+						<div class="rintent-field">
+							<span class="rintent-label"><label for="rintent-domain-size"><?php esc_html_e( 'Domain name size', 'reseller-intent' ); ?></label></span>
+							<span>
+								<?php $domain_size = (int) Reseller_Intent_Settings::get( 'domain_size' ); ?>
+								<input type="number" id="rintent-domain-size" name="domain_size" min="10" max="48" step="1" value="<?php echo $domain_size > 0 ? esc_attr( $domain_size ) : ''; ?>" placeholder="<?php esc_attr_e( 'Theme', 'reseller-intent' ); ?>" />
+								<p class="description"><?php esc_html_e( 'Size in pixels for the domain name in search results. Leave empty to keep your theme’s size.', 'reseller-intent' ); ?></p>
+							</span>
+						</div>
+						<div class="rintent-field">
+							<span class="rintent-label"><label for="rintent-price-color"><?php esc_html_e( 'Price color', 'reseller-intent' ); ?></label></span>
+							<span>
+								<input type="text" id="rintent-price-color" name="price_color" class="rintent-colorpicker" value="<?php echo esc_attr( (string) Reseller_Intent_Settings::get( 'price_color' ) ); ?>" />
+								<p class="description"><?php esc_html_e( 'Prices in search results. Clear it to keep your theme’s color.', 'reseller-intent' ); ?></p>
+							</span>
+						</div>
+						<div class="rintent-field">
+							<span class="rintent-label"><?php esc_html_e( 'Store links', 'reseller-intent' ); ?></span>
+							<span class="rintent-check-group">
+								<label for="rintent-new-tab">
+									<input type="checkbox" id="rintent-new-tab" name="new_tab" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'new_tab' ) ); ?> />
+									<?php esc_html_e( 'Open store links in a new tab', 'reseller-intent' ); ?>
+								</label>
+								<small><?php esc_html_e( 'Searching, transferring and checking out all finish on GoDaddy. This leaves your site open behind them, so a visitor can come back and search again. Covers Continue to cart, the simple search and transfer boxes, Add to cart, the cart and the sign in link.', 'reseller-intent' ); ?></small>
+							</span>
+						</div>
+						<div class="rintent-field">
 							<span class="rintent-label"><label for="rintent-accent-dark"><?php esc_html_e( 'Dark accent', 'reseller-intent' ); ?></label></span>
 							<span class="rintent-check-group">
 								<?php $accent_dark_custom = '' !== (string) Reseller_Intent_Settings::get( 'accent_dark' ); ?>
@@ -477,6 +514,8 @@ final class Reseller_Intent_Admin {
 							<details class="rintent-theming-ref">
 								<summary><?php esc_html_e( 'Theming reference: CSS classes and variables', 'reseller-intent' ); ?></summary>
 								<p class="description"><?php esc_html_e( 'Target these from your theme or Additional CSS to restyle any part of the widget.', 'reseller-intent' ); ?></p>
+								<p class="description"><strong><?php esc_html_e( 'Set the variables, not the classes, wherever you can.', 'reseller-intent' ); ?></strong> <?php esc_html_e( 'A variable wins on its own. Targeting a class needs !important, because the style pack has to outrank themes that reach the same buttons through selectors like button:not(:hover):not(:active).', 'reseller-intent' ); ?></p>
+								<p class="description"><code>body{--rintent-radius:0;--rintent-accent:#0f766e;}</code></p>
 								<table>
 									<thead><tr><th><?php esc_html_e( 'Element', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'CSS class / variable', 'reseller-intent' ); ?></th></tr></thead>
 									<tbody>
@@ -484,6 +523,12 @@ final class Reseller_Intent_Admin {
 										<tr><td><?php esc_html_e( 'Price', 'reseller-intent' ); ?></td><td><code>.rstore-message .salePrice</code> / <code>.listPrice</code><br /><code>--rintent-price-size</code> &middot; <code>--rintent-price-color</code> &middot; <code>--rintent-price-font</code> &middot; <code>--rintent-price-weight</code></td></tr>
 										<tr><td><?php esc_html_e( 'Clear All button', 'reseller-intent' ); ?></td><td><code>.rintent-clear-btn</code><br /><code>--rintent-clear-color</code> &middot; <code>--rintent-clear-size</code></td></tr>
 										<tr><td><?php esc_html_e( 'Result row card', 'reseller-intent' ); ?></td><td><code>.rstore-domain-search .domain-result</code></td></tr>
+										<tr><td><?php esc_html_e( 'Available / taken wording', 'reseller-intent' ); ?></td><td><code>.result-content p.available</code> &middot; <code>.result-content p.not-available</code></td></tr>
+										<tr><td><?php esc_html_e( 'Price and button column', 'reseller-intent' ); ?></td><td><code>.rstore-domain-search .purchase-info</code></td></tr>
+										<tr><td><?php esc_html_e( 'Exact match block', 'reseller-intent' ); ?></td><td><code>.rstore-exact-domain-list</code></td></tr>
+										<tr><td><?php esc_html_e( 'Loading placeholder rows', 'reseller-intent' ); ?></td><td><code>.rintent-skeleton-row</code></td></tr>
+										<tr><td><?php esc_html_e( 'Small print under results', 'reseller-intent' ); ?></td><td><code>.rstore-disclaimer</code></td></tr>
+										<tr><td><?php esc_html_e( 'Error message', 'reseller-intent' ); ?></td><td><code>.rstore-error</code></td></tr>
 										<tr><td><?php esc_html_e( 'Search button / Continue to cart', 'reseller-intent' ); ?></td><td><code>.search-form input[type=submit]</code> &middot; <code>.rstore-domain-continue-button</code></td></tr>
 										<tr><td><?php esc_html_e( 'Simple search / transfer bar', 'reseller-intent' ); ?></td><td><code>.rstore-domain-form .search-field</code> &middot; <code>.rstore-domain-form .search-submit</code></td></tr>
 										<tr><td><?php esc_html_e( 'Add to cart button', 'reseller-intent' ); ?></td><td><code>.rstore-add-to-cart</code></td></tr>

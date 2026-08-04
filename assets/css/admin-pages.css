@@ -250,10 +250,13 @@
 	min-width: 100px;
 }
 
-/* Number inputs keep their own width, no flex stretch */
-.rintent-inline input[type='number'] {
+/* Number inputs keep their own width, no flex stretch. The floor is wide
+ * enough for the word a placeholder can carry, not just the digits: at the
+ * browser default the "Theme" hint on the domain size field read "The". */
+.rintent-inline input[type='number'],
+.rintent-field input[type='number'] {
 	flex: 0 0 auto;
-	min-width: 0;
+	min-width: 10ch;
 }
 
 /* Long lists (the 30 default support numbers) scroll inside the card */

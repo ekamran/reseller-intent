@@ -112,11 +112,12 @@ Nothing is deleted unless you asked for it. Tick the uninstall option in Setting
 1. The intent dashboard: six KPI cards with tooltips, search vs cart trend, and every list paging in place.
 2. The whole dashboard following one page through the page filter.
 3. Repeat Demand, Carted Domains with the cart-size split, and Search by Page on one row.
-4. The Shortcodes page: the family-first price builder with a live preview.
-5. The TLD price strip builder, with the refresh clock in the card footer.
-6. The support number card, previewed with your own timezone.
-7. Settings: four cards, everything optional.
-8. Browser-style clear data with a preview count before anything is deleted.
+4. Added Products, Transfer Searches and Outbound Clicks. Each one hides itself until it has something to show.
+5. The Shortcodes page: the family-first price builder with a live preview.
+6. The TLD price strip builder, with the refresh clock in the card footer.
+7. The support number card, previewed with your own timezone.
+8. Settings: four cards, everything optional.
+9. Browser-style clear data with a preview count before anything is deleted.
 
 == Shortcodes ==
 

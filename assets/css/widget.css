@@ -659,6 +659,80 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 	outline-offset: 2px !important;
 }
 
+/* Product pods. Reseller Store means these to be dropped straight onto a
+ * page as the product itself, but ships them as bare stacked markup, so
+ * they read as loose text next to a styled search bar. Same card vocabulary
+ * as the result rows above, and the same two tokens, so a dark section
+ * needs nothing extra. */
+.rstore-product {
+	box-sizing: border-box;
+	padding: 20px;
+	border: 1px solid var(--rintent-w-row-border);
+	border-radius: var(--rintent-radius, 8px);
+	background: var(--rintent-w-row-bg);
+}
+
+.rstore-product .rstore-product-icons {
+	margin-bottom: 14px;
+}
+
+/* Reseller Store centres the icon at 8rem, which towers over the name it
+ * belongs to. Cap it and let it sit with the text. */
+.rstore-product .rstore-product-icons svg {
+	width: 100%;
+	max-width: 72px;
+	height: auto;
+	margin: 0;
+}
+
+/*
+ * Only the spacing here. The name is a real heading and the price already
+ * carries Reseller Store's own size and weight; the --rintent-domain-* and
+ * --rintent-price-* knobs default to `inherit`, which on a heading is not
+ * "leave it alone", it flattens the heading to body text.
+ */
+.rstore-product .widget-title {
+	margin: 0 0 6px;
+}
+
+.rstore-product .rstore-pricing {
+	margin: 0 0 14px;
+	color: var(--rintent-widget-muted);
+}
+
+/*
+ * The summary carries an inline height when the owner sets one in the
+ * widget, and Reseller Store clips it with overflow:hidden. That setting is
+ * theirs, so only the type inside it is touched here.
+ */
+.rstore-product .rstore-product-summary > *:first-child {
+	margin-top: 0;
+}
+
+.rstore-product .rstore-product-summary ul {
+	margin: 0;
+	padding-inline-start: 1.15em;
+}
+
+.rstore-product .rstore-product-summary li + li {
+	margin-top: 4px;
+}
+
+.rstore-product .rstore-product-permalink {
+	margin-top: 14px;
+}
+
+.rstore-product .rstore-product-permalink .link {
+	font-size: 0.9em;
+	font-weight: 600;
+	color: var(--rintent-widget-accent-hover) !important;
+	text-decoration: none;
+}
+
+.rstore-product .rstore-product-permalink .link:hover {
+	text-decoration: underline;
+}
+
 /* Add to cart, on product pods and every other product surface. It is a
  * buy action, so it takes the hover the buy buttons take. */
 .rstore-add-to-cart {

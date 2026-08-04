@@ -150,6 +150,8 @@ The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value 
 * Added: two dashboard panels, Added Products and Transfer Searches. Each appears only once it has something in it, so a storefront without those widgets sees no change.
 * Added: the Recent Searches log carries transfer searches too, marked Transfer in the Result column beside Available and Registered.
 * Added: the style pack now covers the simple search, the transfer box, Add to cart, the cart and the sign in link, matching the search widget's field height, accent buttons and corner rounding.
+* Added: product pods are drawn as cards, with the oversized product icon capped and the More info link styled. Reseller Store's own name and price emphasis is left intact, and the summary height you set on the widget is untouched.
+* Fixed: the cart widget sat flush against the left edge of the page instead of in the content column, because Reseller Store renders it as an inline-block that auto margins cannot centre. The button placed inside a product pod is unaffected.
 * Changed: the styling card in Settings is now Store widgets, and its theming reference lists the new classes.
 * Changed: `wp rintent stats` reports transfer searches and product adds alongside the existing counts.
 * Fixed: on sites with a Dark accent color set, the Search and Continue to cart buttons in a dark section drew their labels in dark ink instead of white. The Dark accent is a text color for dark surfaces and never colors buttons, so it no longer takes part in the button label color.

@@ -75,6 +75,9 @@
 		{ key: 'repeats', label: __( 'Repeat Demand', 'reseller-intent' ) },
 		{ key: 'carted', label: __( 'Carted Domains', 'reseller-intent' ) },
 		{ key: 'pages', label: __( 'Search by Page', 'reseller-intent' ) },
+		{ key: 'products', label: __( 'Added Products', 'reseller-intent' ) },
+		{ key: 'transfers', label: __( 'Transfer Searches', 'reseller-intent' ) },
+		{ key: 'outbound', label: __( 'Outbound Clicks', 'reseller-intent' ) },
 		{ key: 'countries', label: __( 'Top Countries', 'reseller-intent' ) },
 		{ key: 'recent', label: __( 'Recent Searches', 'reseller-intent' ) }
 	];
@@ -498,7 +501,7 @@
 			pageSize: split ? 7 : PAGE_SIZE,
 			initialFetched: 15,
 			totalRows: props.totalRows,
-			/* translators: %s: number of carted domains */
+			/* translators: %s: number of domains */
 			footLabel: sprintf( _n( '%s domain', '%s domains', props.totalRows || 0, 'reseller-intent' ), fmt(props.totalRows || 0) ),
 			loadMore: props.loadRows ? function(offset) { return props.loadRows('carted', offset, mapItem); } : null,
 			children: split
@@ -523,6 +526,89 @@
 			empty: __( 'Once searches come in, you will see which page they happen on.', 'reseller-intent' ),
 			/* translators: %s: number of pages */
 			footLabel: sprintf( _n( '%s page', '%s pages', items.length, 'reseller-intent' ), fmt(items.length) )
+		});
+	}
+
+	/*
+	 * Products and transfers are the same shape of answer: a name and how
+	 * often it came up. Both surfaces are optional in Reseller Store, so a
+	 * store that has neither never sees either panel (see the grid below).
+	 */
+	function RankingPanel(props) {
+		function mapItem(item) {
+			return [item.label, fmt(item.count)];
+		}
+		return el(ListPanel, {
+			title: props.title,
+			note: props.note,
+			columns: [props.nameColumn, props.countColumn],
+			colWidths: ['', '100px'],
+			rows: (props.items || []).map(mapItem),
+			empty: props.empty,
+			initialFetched: 15,
+			totalRows: props.totalRows,
+			footLabel: props.footLabel,
+			loadMore: props.loadRows ? function(offset) { return props.loadRows(props.panelKey, offset, mapItem); } : null
+		});
+	}
+
+	function ProductsPanel(props) {
+		var total = props.totalRows || 0;
+		return el(RankingPanel, {
+			panelKey: 'products',
+			title: __( 'Added Products', 'reseller-intent' ),
+			note: __( 'Hosting, email and SSL sent to cart, by product ID.', 'reseller-intent' ),
+			nameColumn: __( 'Product', 'reseller-intent' ),
+			countColumn: __( 'Adds', 'reseller-intent' ),
+			items: props.items,
+			totalRows: total,
+			empty: __( 'No product added to cart yet.', 'reseller-intent' ),
+			/* translators: %s: number of products */
+			footLabel: sprintf( _n( '%s product', '%s products', total, 'reseller-intent' ), fmt(total) ),
+			loadRows: props.loadRows
+		});
+	}
+
+	function TransfersPanel(props) {
+		var total = props.totalRows || 0;
+		return el(RankingPanel, {
+			panelKey: 'transfers',
+			title: __( 'Transfer Searches', 'reseller-intent' ),
+			note: __( 'Domains people already own and want to move to you.', 'reseller-intent' ),
+			nameColumn: __( 'Domain', 'reseller-intent' ),
+			countColumn: __( 'Searches', 'reseller-intent' ),
+			items: props.items,
+			totalRows: total,
+			empty: __( 'No transfer search yet.', 'reseller-intent' ),
+			/* translators: %s: number of domains */
+			footLabel: sprintf( _n( '%s domain', '%s domains', total, 'reseller-intent' ), fmt(total) ),
+			loadRows: props.loadRows
+		});
+	}
+
+	/*
+	 * Three links that leave the site with nothing to rank: the cart, the
+	 * sign in link and the support number. Counts, not a list, so the rows
+	 * are fixed and only the numbers move.
+	 */
+	function OutboundPanel(props) {
+		var counts = props.counts || {};
+		var total = (counts.cart || 0) + (counts.login || 0) + (counts.phone || 0);
+		var rows = [
+			[__( 'View cart', 'reseller-intent' ), fmt(counts.cart || 0)],
+			[__( 'Sign in', 'reseller-intent' ), fmt(counts.login || 0)],
+			[__( 'Support call', 'reseller-intent' ), fmt(counts.phone || 0)]
+		];
+
+		return el(ListPanel, {
+			title: __( 'Outbound Clicks', 'reseller-intent' ),
+			note: __( 'Links that hand the visitor on, from the cart, sign in and support number.', 'reseller-intent' ),
+			columns: [__( 'Link', 'reseller-intent' ), __( 'Clicks', 'reseller-intent' )],
+			colWidths: ['', '100px'],
+			rows: rows,
+			empty: __( 'No clicks on these yet.', 'reseller-intent' ),
+			/* translators: %s: number of clicks */
+			footLabel: sprintf( _n( '%s click', '%s clicks', total, 'reseller-intent' ), fmt(total) )
 		});
 	}
 
@@ -567,8 +653,17 @@
 		}, [rows, filter]);
 
 		var mapped = filtered.map(function(row) {
+			/*
+			 * One column, three outcomes. A transfer search never gets an
+			 * availability check, the visitor already owns the name, so the
+			 * intent itself is the result worth showing. A plain dash is a
+			 * search whose result never came back, usually because the
+			 * visitor was handed straight to GoDaddy.
+			 */
 			var availCell = '-';
-			if (row.available === true) {
+			if (row.transfer) {
+				availCell = el('span', { className: 'ri-tag is-info' }, __( 'Transfer', 'reseller-intent' ));
+			} else if (row.available === true) {
 				availCell = el('span', { className: 'ri-tag is-good' }, __( 'Available', 'reseller-intent' ));
 			} else if (row.available === false) {
 				availCell = el('span', { className: 'ri-tag is-bad' }, __( 'Registered', 'reseller-intent' ));
@@ -578,7 +673,7 @@
 
 		var noteText = sprintf(
 			/* translators: 1: number of listed searches, 2: timezone label */
-			_n( 'Latest %1$s search in this range (%2$s). Use Export for full data.', 'Latest %1$s searches in this range (%2$s). Use Export for full data.', rows.length, 'reseller-intent' ),
+			_n( 'Latest %1$s search in this range (%2$s), transfers included. Use Export for full data.', 'Latest %1$s searches in this range (%2$s), transfers included. Use Export for full data.', rows.length, 'reseller-intent' ),
 			fmt(rows.length),
 			TZ_LABEL
 		);
@@ -868,17 +963,41 @@
 				cells.push(el('div', { key: 'pages', className: 'ri-s4' },
 					el(PagesPanel, { pages: data.pages })));
 			}
-			// Countries shares the feed row instead of sitting alone on its
-			// own: a lone third-width panel leaves eight empty columns.
-			var showCountries = isShown('countries') && data.countries.items.length > 0;
+			/*
+			 * Three panels only some storefronts ever fill: countries needs
+			 * an edge geo header, products and transfers need those Reseller
+			 * Store surfaces to be on the site at all. Each one hides itself
+			 * while empty, so the row below has to survive any count of them.
+			 * One extra rides beside the feed, because a lone third-width
+			 * panel would otherwise leave eight columns bare. Two or three
+			 * take a row of their own and split it evenly.
+			 */
+			var extras = [];
+			if (isShown('products') && data.products.items.length > 0) {
+				extras.push(['products', el(ProductsPanel, { items: data.products.items, totalRows: totals.products, loadRows: loadRows })]);
+			}
+			if (isShown('transfers') && data.transfers.items.length > 0) {
+				extras.push(['transfers', el(TransfersPanel, { items: data.transfers.items, totalRows: totals.transfers, loadRows: loadRows })]);
+			}
+			if (isShown('countries') && data.countries.items.length > 0) {
+				extras.push(['countries', el(CountriesPanel, { countries: data.countries, loadRows: loadRows })]);
+			}
+			var outbound = data.outbound || {};
+			if (isShown('outbound') && ((outbound.cart || 0) + (outbound.login || 0) + (outbound.phone || 0)) > 0) {
+				extras.push(['outbound', el(OutboundPanel, { counts: outbound })]);
+			}
+
+			var kpisNow = data.kpis.now || {};
 			if (isShown('recent')) {
-				cells.push(el('div', { key: 'recent', className: showCountries ? 'ri-s8' : 'ri-s12' },
-					el(RecentLog, { recent: data.recent, totalSearches: (data.kpis.now || {}).searches })));
+				cells.push(el('div', { key: 'recent', className: extras.length === 1 ? 'ri-s8' : 'ri-s12' },
+					el(RecentLog, { recent: data.recent, totalSearches: (kpisNow.searches || 0) + (kpisNow.transfers || 0) })));
 			}
-			if (showCountries) {
-				cells.push(el('div', { key: 'countries', className: 'ri-s4' },
-					el(CountriesPanel, { countries: data.countries, loadRows: loadRows })));
-			}
+			// Four splits into two halves over two rows; three thirds and two
+			// halves both fill a row exactly, one rides beside the feed.
+			var extraSpan = (extras.length === 2 || extras.length === 4) ? 'ri-s6' : 'ri-s4';
+			extras.forEach(function(extra) {
+				cells.push(el('div', { key: extra[0], className: extraSpan }, extra[1]));
+			});
 
 			grid = el('div', { className: 'ri-grid12', key: rangeKey }, cells);
 		}
@@ -904,14 +1023,16 @@
 							onClick: function() { setRange(option.key); }
 						}, option.label);
 					})),
-					data && (data.pages || []).length > 1 ? el('select', {
+					data && (data.pageOptions || data.pages || []).length > 1 ? el('select', {
 						className: 'ri-page-filter' + (pageFilter ? ' is-active' : ''),
 						value: pageFilter,
 						'aria-label': __( 'Filter by page', 'reseller-intent' ),
 						title: __( 'Every panel follows this page filter. Search by Page keeps comparing all pages.', 'reseller-intent' ),
 						onChange: function(event) { setPageFilter(event.target.value); }
 					}, [el('option', { key: '', value: '' }, __( 'All pages', 'reseller-intent' ))].concat(
-						(data.pages || []).map(function(row) {
+						// Every page with any event, not just the ones the
+						// Search by Page panel counts.
+						(data.pageOptions || data.pages || []).map(function(row) {
 							return el('option', { key: row.path, value: row.path }, row.label || row.path);
 						})
 					)) : null,

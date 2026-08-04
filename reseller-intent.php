@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Reseller Intent for GoDaddy Reseller Store
  * Description: See which domains visitors search on your reseller storefront, which ones they pick, and which ones they take to cart.
- * Version: 2.0.0
+ * Version: 2.1.0
  * Author: Kamran Abdul Aziz
  * Author URI: https://shifteq.com
  * License: GPL-2.0-or-later

@@ -141,7 +141,45 @@ final class Reseller_Intent_Price {
 				}
 				$common = $keep;
 			}
-			$label = rtrim( preg_replace( '/(?:\s+(?:up|to|with|for|and))+$/i', '', implode( ' ', $common ) ), ' -' );
+
+			/*
+			 * A one-word head can be too thin to name a family: "Managed DV
+			 * SSL Service" and "Managed SAN SSL Service" differ in the
+			 * middle, so the head alone reads as plain "Managed". Borrow the
+			 * shared tail in that case only, giving "Managed SSL Service".
+			 * Longer heads already name themselves ("SSL Setup Service - up
+			 * to 5/10 sites" must not become "...up to sites"), and families
+			 * that differ only at the end have no shared tail at all.
+			 */
+			$tail_common = array();
+			if ( 1 === count( $common ) ) {
+				$tails = array();
+				foreach ( $word_lists as $word_list ) {
+					$tails[] = array_reverse( array_slice( $word_list, count( $common ) ) );
+				}
+				$tail_common = $tails[0];
+				foreach ( $tails as $tail ) {
+					$keep = array();
+					foreach ( $tail as $ti => $word ) {
+						if ( isset( $tail_common[ $ti ] ) && $tail_common[ $ti ] === $word ) {
+							$keep[] = $word;
+						} else {
+							break;
+						}
+					}
+					$tail_common = $keep;
+				}
+				// A tail that swallows a whole member's remainder
+				// distinguishes nothing, so it stays out of the name.
+				foreach ( $tails as $tail ) {
+					if ( count( $tail_common ) >= count( $tail ) ) {
+						$tail_common = array();
+						break;
+					}
+				}
+			}
+
+			$label = rtrim( preg_replace( '/(?:\s+(?:up|to|with|for|and))+$/i', '', implode( ' ', array_merge( $common, array_reverse( $tail_common ) ) ) ), ' -' );
 			$label = '' !== $label ? $label : $family_key;
 			$slug  = sanitize_title( $label );
 

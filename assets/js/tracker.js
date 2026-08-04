@@ -1,9 +1,11 @@
 /**
  * Reseller Intent, frontend tracker.
  *
- * Listens to the GoDaddy Reseller Store domain-search widget (React 18) and
- * records four anonymous events: domain_search, search_result (availability
- * attached to the matching search), domain_select, continue_to_cart.
+ * Listens to the GoDaddy Reseller Store widgets and records nine anonymous
+ * events: domain_search (the advanced widget and the simple box alike),
+ * search_result (availability attached to the matching search),
+ * domain_select, continue_to_cart, domain_transfer, product_add, and the
+ * three outbound clicks cart_view, login_click and phone_click.
  *
  * Privacy: no cookies, no fingerprinting, no IP storage, no user accounts.
  */
@@ -37,6 +39,9 @@
 		}
 	}
 
+	// Events fired as the browser is already navigating away.
+	var LEAVES_PAGE = ['continue_to_cart', 'domain_transfer', 'product_add', 'cart_view', 'login_click', 'phone_click'];
+
 	function trackEvent(eventType, payload) {
 		var data = $.extend(
 			{
@@ -54,11 +59,13 @@
 		}
 
 		/*
-		 * Cart clicks navigate away immediately; a plain XHR can be killed
-		 * mid-flight and the most valuable event is lost. sendBeacon is
+		 * These all leave the page the moment they fire: the cart button, a
+		 * simple or transfer search (both GET straight to GoDaddy) and the
+		 * add-to-cart form. A plain XHR can be killed mid-flight and the most
+		 * valuable event is lost, so hand them to sendBeacon, which is
 		 * guaranteed to survive the navigation.
 		 */
-		if (eventType === 'continue_to_cart' && navigator.sendBeacon) {
+		if (LEAVES_PAGE.indexOf(eventType) !== -1 && navigator.sendBeacon) {
 			var formData = new FormData();
 
 			Object.keys(data).forEach(function(key) {
@@ -297,6 +304,156 @@
 		});
 	});
 
+	/*
+	 * Simple search and transfer. Both are plain GET forms that hand the
+	 * visitor to GoDaddy, so this is the only moment their intent can be
+	 * recorded. They share one form class and one field name; the action
+	 * URL is what separates a registration search from a transfer. The
+	 * advanced widget's form does not carry .rstore-domain-form, so it
+	 * never reaches here twice.
+	 */
+	$(document).on('submit', 'form.rstore-domain-form', function() {
+		var $form = $(this);
+		var action = String($form.attr('action') || '');
+		var query = String($form.find('input[name="domainToCheck"], .search-field').first().val() || '').trim();
+
+		if (!query) {
+			return;
+		}
+
+		trackEvent(action.indexOf('/domain-transfer') !== -1 ? 'domain_transfer' : 'domain_search', {
+			domain_query: query
+		});
+	});
+
+	/*
+	 * Add to cart, on every product surface. Reseller Store ships two modes:
+	 * a form that posts to GoDaddy and navigates, and an in-page AJAX add.
+	 * One click handler covers both. The product id sits on the button in
+	 * AJAX mode and inside the form's items payload otherwise; it is the
+	 * stable identifier, so it is what gets recorded.
+	 */
+	function bindProductTracking() {
+		if (window.__rintentProductTrackingBound) {
+			return;
+		}
+
+		window.__rintentProductTrackingBound = true;
+
+		document.addEventListener('click', function(event) {
+			var button = event.target && event.target.closest
+				? event.target.closest('.rstore-add-to-cart')
+				: null;
+			var scope;
+			var hidden;
+			var productId = '';
+			var quantity = 1;
+			var parsed;
+
+			if (!button) {
+				return;
+			}
+
+			productId = String(button.getAttribute('data-id') || '').trim();
+			quantity = parseInt(button.getAttribute('data-quantity') || '1', 10);
+
+			if (!productId) {
+				scope = button.closest('.rstore-product') || button.closest('.widget') || button.closest('form');
+				hidden = scope ? scope.querySelector('input[name="items"]') : null;
+
+				if (hidden) {
+					try {
+						parsed = JSON.parse(hidden.value);
+						if (Array.isArray(parsed) && parsed[0] && parsed[0].id) {
+							productId = String(parsed[0].id);
+							quantity = parseInt(parsed[0].quantity || 1, 10);
+						}
+					} catch (error) {
+						productId = '';
+					}
+				}
+			}
+
+			if (!productId) {
+				return;
+			}
+
+			trackEvent('product_add', {
+				domain_query: productId,
+				items_count: quantity > 0 ? quantity : 1
+			});
+		}, true);
+	}
+
+	/*
+	 * Optional: hand every outbound store link and form to a new tab. The
+	 * whole store journey finishes on GoDaddy, so leaving the site standing
+	 * means a visitor can come back and search again instead of navigating
+	 * back. Off by default: a forced new tab is a real preference, not a
+	 * default anyone should inherit.
+	 *
+	 * Reseller Store already offers this per widget for the simple search,
+	 * transfer and product buttons. It offers nothing for Continue to cart,
+	 * the cart link, the sign in link, or for any shortcode placement, which
+	 * is what this covers.
+	 */
+	var NEW_TAB_FORMS = 'form.rstore-domain-form, form.rstore-add-to-cart-form, .rstore-domain-search .continue-form';
+	var NEW_TAB_LINKS = '.rstore-cart a, .rstore-login .login-link, .rstore-login .logout-link';
+
+	function applyNewTab() {
+		if (!window.resellerIntent || !window.resellerIntent.newTab) {
+			return;
+		}
+
+		$(NEW_TAB_FORMS).attr({ target: '_blank', rel: 'noopener' });
+		$(NEW_TAB_LINKS).attr({ target: '_blank', rel: 'noopener' });
+	}
+
+	/*
+	 * The three links that leave the site without a domain or a product
+	 * attached: the cart, the sign in link, and the support number from
+	 * [rintent_phone]. Nothing else in the plugin could tell you whether
+	 * anyone ever used them.
+	 *
+	 * The tapped number is recorded because a reseller can publish one per
+	 * region, and knowing which one people reach for is the whole point of
+	 * the shortcode. It is the reseller's own published number, never the
+	 * visitor's.
+	 */
+	function bindOutboundTracking() {
+		if (window.__rintentOutboundBound) {
+			return;
+		}
+
+		window.__rintentOutboundBound = true;
+
+		document.addEventListener('click', function(event) {
+			var target = event.target && event.target.closest ? event.target : null;
+			var link;
+
+			if (!target) {
+				return;
+			}
+
+			if (target.closest('.rstore-cart a')) {
+				trackEvent('cart_view', {});
+				return;
+			}
+
+			if (target.closest('.rstore-login .login-link')) {
+				trackEvent('login_click', {});
+				return;
+			}
+
+			link = target.closest('a[data-rintent-phone]');
+			if (link) {
+				trackEvent('phone_click', {
+					domain_query: String((link.querySelector('.rintent-phone-number') || {}).textContent || '').trim()
+				});
+			}
+		}, true);
+	}
+
 	$(document).ready(function() {
 		/*
 		 * The widget also searches on mount, with no submit, when the URL
@@ -323,12 +480,17 @@
 		}
 
 		bindSelectTracking();
+		bindProductTracking();
+		bindOutboundTracking();
 		reportSearchOutcome();
+		applyNewTab();
 
 		// React re-renders replace nodes; watch for results appearing.
 		$('.rstore-domain-search').each(function() {
+			// Continue to cart only exists once results are on screen.
 			var observer = new MutationObserver(function() {
 				reportSearchOutcome();
+				applyNewTab();
 			});
 
 			observer.observe(this, { childList: true, subtree: true });

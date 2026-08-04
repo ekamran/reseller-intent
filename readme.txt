@@ -4,7 +4,7 @@ Tags: godaddy, godaddy reseller, reseller store, domain reseller, reseller analy
 Requires at least: 6.2
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.0.0
+Stable tag: 2.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -14,29 +14,30 @@ See which domains visitors search on your reseller storefront, which ones they p
 
 **An add-on for the free [Reseller Store](https://wordpress.org/plugins/reseller-store/) plugin by GoDaddy Reseller Programs. Set that up first.**
 
-Your analytics tell you about pages and traffic. They tell you nothing about the search box that actually sells. Reseller Intent records what happens in it: what people search, whether the name was free, what they pick instead, and what reaches the cart.
+Your analytics tell you about pages and traffic. They tell you nothing about the search box that actually sells. Reseller Intent records what happens in it: what people search, whether the name was free, what they pick instead, and what reaches the cart. It watches the transfer box and the product buttons too, so hosting, email and SSL demand shows up next to the domains.
 
 = What you get =
 
-* A dashboard of search intent: searches, cart clicks, trends, top TLDs, repeat searches and carted domains, every number compared to the previous period and explained with a tooltip
+* A dashboard of search intent: searches, cart clicks, trends, top TLDs, repeat searches, carted domains, added products, transfer searches and outbound clicks, every number compared to the previous period and explained with a tooltip
 * Filter the whole dashboard by the page a search happened on, or watch all pages together
 * Every list pages through the full dataset; any range exports as CSV or JSON
-* An optional style pack for the search widget, plus three shortcodes: TLD price strip, live product price, regional support number
+* An optional style pack for the Reseller Store widgets, with corner style, domain name size and price color as plain settings, plus three shortcodes: TLD price strip, live product price, regional support number
+* An option to send every store link to a new tab, so your site stays open while the visitor finishes on GoDaddy
 * Today and this week at a glance on your WordPress dashboard
 
 = Privacy =
 
-Events are written to one table in your own database and never leave your site. No cookies, no fingerprinting, no IP addresses. An event is "someone on a mobile device searched example.com and it was available", nothing more. Clear data by time window with a count shown first, set a retention window, ignore your own test searches. Bots are never recorded.
+Events are written to one table in your own database and never leave your site. No cookies, no fingerprinting, no IP addresses. An event is "someone on a mobile device searched example.com and it was available", nothing more. A tapped support number is your own published number, never the visitor's. Clear data by time window with a count shown first, set a retention window, ignore your own test searches. Bots are never recorded.
 
 = For developers =
 
-Filter `rintent_should_track` to pause tracking, `rintent_event_data` to change or drop an event, `rintent_page_needs_store` when a page builder hides the widget from detection, and `rintent_track_bots` for the rare debugging session that needs bot traffic recorded. Everything lives in one indexed custom table.
+Filter `rintent_should_track` to pause tracking, `rintent_event_data` to change or drop an event, `rintent_page_needs_store` when a page builder hides the widget from detection, and `rintent_track_bots` for the rare debugging session that needs bot traffic recorded. Everything lives in one indexed custom table, and the event types are `domain_search`, `search_result`, `domain_select`, `continue_to_cart`, `domain_transfer`, `product_add`, `cart_view`, `login_click` and `phone_click`.
 
 == Installation ==
 
 1. Install and set up the free Reseller Store plugin first.
 2. Install and activate Reseller Intent.
-3. Tracking starts straight away on any page that shows the domain search. Open Reseller Intent in the admin menu and watch it come in. Everything under Settings is optional.
+3. Tracking starts straight away on any page that shows a Reseller Store element. Open Reseller Intent in the admin menu and watch it come in. Everything under Settings is optional.
 
 == Frequently Asked Questions ==
 
@@ -47,6 +48,10 @@ Yes. Reseller Intent reads the domain search widget that Reseller Store renders.
 = Which Reseller Store versions are supported? =
 
 2.2.17 up to 3.0.1. On anything older the plugin pauses itself with a notice instead of guessing, update Reseller Store and it resumes on its own.
+
+= Which Reseller Store elements does it cover? =
+
+The domain search, the simple search box, the transfer box, product pods and their Add to cart button, the cart, the sign in link, and the support number from the phone shortcode. Reseller Store renders all of these through the same classes whether you place them as a shortcode, a widget or a block, so tracking and styling reach all three placements at once.
 
 = My dashboard is empty =
 
@@ -70,7 +75,7 @@ From your edge or host, when it says: Cloudflare and similar CDNs send an exact 
 
 = Can I see the numbers for one page only? =
 
-Yes. The page filter next to the date ranges follows every panel: KPIs, trend, TLDs, repeats, carted domains and the recent log. Search by Page keeps comparing all pages so you always see the whole field, and exports always carry everything.
+Yes. The page filter next to the date ranges follows every panel: KPIs, trend, TLDs, repeats, carted domains, added products, transfer searches and the recent log. It lists every page that carries any tracked event, so a page that only sees products added is in there too. Search by Page keeps comparing all pages so you always see the whole field, and exports always carry everything.
 
 = I updated to 2.0 and some panels are gone =
 
@@ -78,7 +83,25 @@ Three low-value panels were removed on purpose: Missed Opportunities, Conversion
 
 = Will it change how my search widget looks? =
 
-Only if you let it. The style pack is optional and matches the widget to your accent color and corner rounding. Turn it off in Settings and the plugin loads no CSS at all.
+Only if you let it. The style pack is optional and matches the Reseller Store widgets to your accent color and corner rounding. Turn it off in Settings and the plugin loads no CSS at all.
+
+= I already style the store myself. What happens if I turn the style pack off? =
+
+You get your page back exactly as it was. Unticking it stops the stylesheet being loaded at all, so nothing of ours is left behind and your own CSS applies again. This is tested by comparing every measurement of the store elements with the pack off against the same page with the plugin deactivated, and the two match.
+
+= My own CSS does not override the style pack. Why? =
+
+Because the pack uses `!important` on the parts that have to win. Themes reach the same buttons through selectors like `button:not(:hover):not(:active):not(.has-background)`, which outranks a plain class on its own, so without `!important` the pack would lose to your theme and do nothing.
+
+The easy way round it is not to fight it. Set the variables instead:
+
+`body { --rintent-accent: #0f766e; --rintent-radius: 0; }`
+
+Variables win without `!important` and one line changes every button, field and card at once. Corner style, domain name size and price color also have plain settings on the Settings screen, no CSS needed. Full list of variables and classes lives under Settings, Store widgets, Theming reference. If you do target a class directly, add `!important` to it.
+
+= Should I open store links in a new tab? =
+
+It is worth trying. Every purchase finishes on GoDaddy, not on your site, so a visitor who lands there in the same tab has to press back to search again. With the option on, your storefront stays open behind them. It is off by default, because a forced new tab is a preference and not everyone shares it, and it covers the places Reseller Store gives you no switch for: Continue to cart, the cart and sign in links, and every shortcode placement.
 
 = What happens when I uninstall? =
 
@@ -89,11 +112,12 @@ Nothing is deleted unless you asked for it. Tick the uninstall option in Setting
 1. The intent dashboard: six KPI cards with tooltips, search vs cart trend, and every list paging in place.
 2. The whole dashboard following one page through the page filter.
 3. Repeat Demand, Carted Domains with the cart-size split, and Search by Page on one row.
-4. The Shortcodes page: the family-first price builder with a live preview.
-5. The TLD price strip builder, with the refresh clock in the card footer.
-6. The support number card, previewed with your own timezone.
-7. Settings: four cards, everything optional.
-8. Browser-style clear data with a preview count before anything is deleted.
+4. Added Products, Transfer Searches and Outbound Clicks. Each one hides itself until it has something to show.
+5. The Shortcodes page: the family-first price builder with a live preview.
+6. The TLD price strip builder, with the refresh clock in the card footer.
+7. The support number card, previewed with your own timezone.
+8. Settings: four cards, everything optional.
+9. Browser-style clear data with a preview count before anything is deleted.
 
 == Shortcodes ==
 
@@ -113,7 +137,7 @@ One phone number as a tap to call link, picked for the visitor's region from the
 
 == WP-CLI ==
 
-`wp rintent stats --days=30` prints searches, unique searches, cart clicks, domains added and the search to cart rate.
+`wp rintent stats --days=30` prints searches, unique searches, cart clicks, domains added, transfer searches, product adds and the search to cart rate.
 
 `wp rintent export --days=90 --format=csv > events.csv` streams every event as CSV or JSON, in batches.
 
@@ -133,10 +157,33 @@ The default support numbers for the phone shortcode are GoDaddy's published numb
 
 == Upgrade Notice ==
 
+= 2.1.0 =
+Transfer searches and product add to cart are tracked now, with two new dashboard panels. The style pack reaches the rest of the Reseller Store widgets, corner style and type are plain settings, and store links can open in a new tab. Also fixes white button labels turning dark when a Dark accent color is set.
+
 = 2.0.0 =
 The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value panels are gone. The price shortcode is now family-first; every old embed keeps working. Your data is untouched.
 
 == Changelog ==
+
+= 2.1.0 =
+* Added: the three links that hand a visitor on are recorded too: View cart, Sign in and the support number from `[rintent_phone]`. They sit in one Outbound Clicks panel, and until now the phone shortcode gave you no idea whether anyone ever tapped it.
+* Added: transfer searches and product Add to cart are now recorded. Both hand the visitor to GoDaddy the moment they fire, so they are sent with sendBeacon and survive the jump.
+* Added: two dashboard panels, Added Products and Transfer Searches. Each appears only once it has something in it, so a storefront without those widgets sees no change.
+* Added: the Recent Searches log carries transfer searches too, marked Transfer in the Result column beside Available and Registered.
+* Added: the style pack now covers the simple search, the transfer box, Add to cart, the cart and the sign in link, matching the search widget's field height, accent buttons and corner rounding.
+* Added: product pods are drawn as cards, with the oversized product icon capped and the More info link styled. Reseller Store's own name and price emphasis is left intact, and the summary height you set on the widget is untouched. Both spellings are covered: Reseller Store renders `rstore-product` from the shortcode and `rstore-Product` from the widget.
+* Added: a product's own page and the archive listing carry the same price and Add to cart with no pod around them, so those are styled there too.
+* Added: corner style (rounded, square or pill), domain name size and price color are settings now, so the most asked for changes need no CSS at all.
+* Added: an option to open store links in a new tab. Searching, transferring and checking out all finish on GoDaddy, and this leaves your site standing behind them. Covers Continue to cart, the simple search and transfer boxes, Add to cart, the cart and the sign in link, including shortcode placements that Reseller Store gives no such option. Off by default.
+* Changed: the styling card in Settings is now Store widgets, and its theming reference lists the new classes, seven more elements, and why targeting a class needs !important while a variable does not.
+* Changed: `wp rintent stats` reports transfer searches, product adds, cart views, sign in clicks and support calls alongside the existing counts.
+* Fixed: the page filter could not reach a page that only ever saw a product added or a domain transferred, because its list came from the Search by Page panel, which counts searches and cart clicks. The filter now lists every page with any tracked event; the panel still counts what it says it counts.
+* Fixed: on right-to-left sites the search bar reversed but its corners did not, leaving the field and button rounded where they meet and square on the outside. The corners are logical now, so they follow the text direction. This affected the domain search bar as well.
+* Fixed: the cart widget sat flush against the left edge of the page instead of in the content column, because Reseller Store renders it as an inline-block that auto margins cannot centre. The button placed inside a product pod is unaffected.
+* Fixed: the selectors covering the simple search and transfer boxes weighed more than the ones the theming reference tells you to use, so your own CSS could not override them even with !important. They now match, and the documented selector wins.
+* Fixed: on sites with a Dark accent color set, the Search and Continue to cart buttons in a dark section drew their labels in dark ink instead of white. The Dark accent is a text color for dark surfaces and never colors buttons, so it no longer takes part in the button label color.
+* Fixed: a product family whose plans differ in the middle of their names was labelled by that one shared word alone, so two SSL services read as plain "Managed". The shared tail of the names joins the label, giving "Managed SSL Service".
+* Removed: the `--rintent-accent-dark-text` variable, which nothing consumed. Button labels follow `--rintent-accent-text`, and `--rintent-dark-button-text` still overrides them on dark sections.
 
 = 2.0.0 =
 * Added: filter the whole dashboard by the page a search happened on.

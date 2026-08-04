@@ -430,8 +430,8 @@ final class Reseller_Intent_Admin {
 
 				<div class="rintent-card">
 					<div class="rintent-card-head">
-						<h2><?php esc_html_e( 'Search widget', 'reseller-intent' ); ?></h2>
-						<p><?php esc_html_e( 'Styling for the Reseller Store domain search widget on your site. Turn the style pack off if it fights with your theme. Tracking is never affected.', 'reseller-intent' ); ?></p>
+						<h2><?php esc_html_e( 'Store widgets', 'reseller-intent' ); ?></h2>
+						<p><?php esc_html_e( 'Styling for the Reseller Store elements on your site. Turn the style pack off if it fights with your theme. Tracking is never affected.', 'reseller-intent' ); ?></p>
 					</div>
 					<div class="rintent-card-body">
 						<div class="rintent-field">
@@ -439,9 +439,9 @@ final class Reseller_Intent_Admin {
 							<span class="rintent-check-group">
 								<label for="rintent-style-widget">
 									<input type="checkbox" id="rintent-style-widget" name="style_widget" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'style_widget' ) ); ?> />
-									<?php esc_html_e( 'Style the domain search widget', 'reseller-intent' ); ?>
+									<?php esc_html_e( 'Style the Reseller Store widgets', 'reseller-intent' ); ?>
 								</label>
-								<small><?php esc_html_e( 'Accent buttons, aligned rows, skeleton loading, mobile layout. Dark page sections are detected automatically; force either way with a .rintent-dark or .rintent-light wrapper class.', 'reseller-intent' ); ?></small>
+								<small><?php esc_html_e( 'Accent buttons, aligned rows, skeleton loading, mobile layout. Covers the domain search, simple search, transfer, Add to cart, cart and sign in, whether you place them as shortcodes, widgets or blocks. Dark page sections are detected automatically; force either way with a .rintent-dark or .rintent-light wrapper class.', 'reseller-intent' ); ?></small>
 								<span class="rintent-children" id="rintent-style-children" <?php echo Reseller_Intent_Settings::get( 'style_widget' ) ? '' : 'style="display:none;"'; ?>>
 									<label for="rintent-clear-all">
 										<input type="checkbox" id="rintent-clear-all" name="widget_clear_all" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'widget_clear_all' ) ); ?> />
@@ -460,7 +460,44 @@ final class Reseller_Intent_Admin {
 							<span class="rintent-label"><label for="rintent-accent"><?php esc_html_e( 'Accent color', 'reseller-intent' ); ?></label></span>
 							<span>
 								<input type="text" id="rintent-accent" name="accent_color" class="rintent-colorpicker" value="<?php echo esc_attr( $accent ); ?>" />
-								<p class="description"><?php esc_html_e( 'Used by the styled widget and the TLD price strip.', 'reseller-intent' ); ?></p>
+								<p class="description"><?php esc_html_e( 'Used by the styled store widgets and the TLD price strip.', 'reseller-intent' ); ?></p>
+							</span>
+						</div>
+						<div class="rintent-field">
+							<span class="rintent-label"><label for="rintent-corners"><?php esc_html_e( 'Corners', 'reseller-intent' ); ?></label></span>
+							<span>
+								<?php $radius = (string) Reseller_Intent_Settings::get( 'widget_radius' ); ?>
+								<select id="rintent-corners" name="widget_radius">
+									<option value="rounded" <?php selected( 'rounded', $radius ); ?>><?php esc_html_e( 'Rounded', 'reseller-intent' ); ?></option>
+									<option value="square" <?php selected( 'square', $radius ); ?>><?php esc_html_e( 'Square', 'reseller-intent' ); ?></option>
+									<option value="pill" <?php selected( 'pill', $radius ); ?>><?php esc_html_e( 'Pill', 'reseller-intent' ); ?></option>
+								</select>
+								<p class="description"><?php esc_html_e( 'Rounding on the search bar, result rows, product cards and every button.', 'reseller-intent' ); ?></p>
+							</span>
+						</div>
+						<div class="rintent-field">
+							<span class="rintent-label"><label for="rintent-domain-size"><?php esc_html_e( 'Domain name size', 'reseller-intent' ); ?></label></span>
+							<span>
+								<?php $domain_size = (int) Reseller_Intent_Settings::get( 'domain_size' ); ?>
+								<input type="number" id="rintent-domain-size" name="domain_size" min="10" max="48" step="1" value="<?php echo $domain_size > 0 ? esc_attr( $domain_size ) : ''; ?>" placeholder="<?php esc_attr_e( 'Theme', 'reseller-intent' ); ?>" />
+								<p class="description"><?php esc_html_e( 'Size in pixels for the domain name in search results. Leave empty to keep your theme’s size.', 'reseller-intent' ); ?></p>
+							</span>
+						</div>
+						<div class="rintent-field">
+							<span class="rintent-label"><label for="rintent-price-color"><?php esc_html_e( 'Price color', 'reseller-intent' ); ?></label></span>
+							<span>
+								<input type="text" id="rintent-price-color" name="price_color" class="rintent-colorpicker" value="<?php echo esc_attr( (string) Reseller_Intent_Settings::get( 'price_color' ) ); ?>" />
+								<p class="description"><?php esc_html_e( 'Prices in search results. Clear it to keep your theme’s color.', 'reseller-intent' ); ?></p>
+							</span>
+						</div>
+						<div class="rintent-field">
+							<span class="rintent-label"><?php esc_html_e( 'Store links', 'reseller-intent' ); ?></span>
+							<span class="rintent-check-group">
+								<label for="rintent-new-tab">
+									<input type="checkbox" id="rintent-new-tab" name="new_tab" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'new_tab' ) ); ?> />
+									<?php esc_html_e( 'Open store links in a new tab', 'reseller-intent' ); ?>
+								</label>
+								<small><?php esc_html_e( 'Searching, transferring and checking out all finish on GoDaddy. This leaves your site open behind them, so a visitor can come back and search again. Covers Continue to cart, the simple search and transfer boxes, Add to cart, the cart and the sign in link.', 'reseller-intent' ); ?></small>
 							</span>
 						</div>
 						<div class="rintent-field">
@@ -477,6 +514,8 @@ final class Reseller_Intent_Admin {
 							<details class="rintent-theming-ref">
 								<summary><?php esc_html_e( 'Theming reference: CSS classes and variables', 'reseller-intent' ); ?></summary>
 								<p class="description"><?php esc_html_e( 'Target these from your theme or Additional CSS to restyle any part of the widget.', 'reseller-intent' ); ?></p>
+								<p class="description"><strong><?php esc_html_e( 'Set the variables, not the classes, wherever you can.', 'reseller-intent' ); ?></strong> <?php esc_html_e( 'A variable wins on its own. Targeting a class needs !important, because the style pack has to outrank themes that reach the same buttons through selectors like button:not(:hover):not(:active).', 'reseller-intent' ); ?></p>
+								<p class="description"><code>body{--rintent-radius:0;--rintent-accent:#0f766e;}</code></p>
 								<table>
 									<thead><tr><th><?php esc_html_e( 'Element', 'reseller-intent' ); ?></th><th><?php esc_html_e( 'CSS class / variable', 'reseller-intent' ); ?></th></tr></thead>
 									<tbody>
@@ -484,12 +523,22 @@ final class Reseller_Intent_Admin {
 										<tr><td><?php esc_html_e( 'Price', 'reseller-intent' ); ?></td><td><code>.rstore-message .salePrice</code> / <code>.listPrice</code><br /><code>--rintent-price-size</code> &middot; <code>--rintent-price-color</code> &middot; <code>--rintent-price-font</code> &middot; <code>--rintent-price-weight</code></td></tr>
 										<tr><td><?php esc_html_e( 'Clear All button', 'reseller-intent' ); ?></td><td><code>.rintent-clear-btn</code><br /><code>--rintent-clear-color</code> &middot; <code>--rintent-clear-size</code></td></tr>
 										<tr><td><?php esc_html_e( 'Result row card', 'reseller-intent' ); ?></td><td><code>.rstore-domain-search .domain-result</code></td></tr>
+										<tr><td><?php esc_html_e( 'Available / taken wording', 'reseller-intent' ); ?></td><td><code>.result-content p.available</code> &middot; <code>.result-content p.not-available</code></td></tr>
+										<tr><td><?php esc_html_e( 'Price and button column', 'reseller-intent' ); ?></td><td><code>.rstore-domain-search .purchase-info</code></td></tr>
+										<tr><td><?php esc_html_e( 'Exact match block', 'reseller-intent' ); ?></td><td><code>.rstore-exact-domain-list</code></td></tr>
+										<tr><td><?php esc_html_e( 'Loading placeholder rows', 'reseller-intent' ); ?></td><td><code>.rintent-skeleton-row</code></td></tr>
+										<tr><td><?php esc_html_e( 'Small print under results', 'reseller-intent' ); ?></td><td><code>.rstore-disclaimer</code></td></tr>
+										<tr><td><?php esc_html_e( 'Error message', 'reseller-intent' ); ?></td><td><code>.rstore-error</code></td></tr>
 										<tr><td><?php esc_html_e( 'Search button / Continue to cart', 'reseller-intent' ); ?></td><td><code>.search-form input[type=submit]</code> &middot; <code>.rstore-domain-continue-button</code></td></tr>
+										<tr><td><?php esc_html_e( 'Simple search / transfer bar', 'reseller-intent' ); ?></td><td><code>.rstore-domain-form .search-field</code> &middot; <code>.rstore-domain-form .search-submit</code></td></tr>
+										<tr><td><?php esc_html_e( 'Add to cart button', 'reseller-intent' ); ?></td><td><code>.rstore-add-to-cart</code></td></tr>
+										<tr><td><?php esc_html_e( 'Product pod card', 'reseller-intent' ); ?></td><td><code>.rstore-product</code> / <code>.rstore-Product</code> <?php esc_html_e( '(shortcode / widget spelling)', 'reseller-intent' ); ?><br /><code>.rstore-pricing</code> &middot; <code>.rstore-product-icons svg</code> &middot; <code>.rstore-product-permalink .link</code></td></tr>
+										<tr><td><?php esc_html_e( 'Cart and sign in links', 'reseller-intent' ); ?></td><td><code>.rstore-cart a</code> &middot; <code>.rstore-login .login-link</code> &middot; <code>.logout-link</code></td></tr>
 										<tr><td><?php esc_html_e( 'Select / Selected links', 'reseller-intent' ); ?></td><td><code>.rstore-domain-buy-button.select</code> &middot; <code>.rstore-domain-buy-button.selected</code></td></tr>
 										<tr><td><?php esc_html_e( 'Accent (buttons, focus ring)', 'reseller-intent' ); ?></td><td><code>--rintent-accent</code> <?php esc_html_e( '(set by the color picker above)', 'reseller-intent' ); ?></td></tr>
 										<tr><td><?php esc_html_e( 'Accent as text on light surfaces', 'reseller-intent' ); ?></td><td><code>--rintent-accent-ink</code> <?php esc_html_e( '(the accent darkened only as far as it needs to stay readable, used for prices in the light TLD strip)', 'reseller-intent' ); ?></td></tr>
 										<tr><td><?php esc_html_e( 'Accent on dark surfaces', 'reseller-intent' ); ?></td><td><code>--rintent-accent-dark</code> <?php esc_html_e( '(set by the Dark accent picker above; this variable overrides it)', 'reseller-intent' ); ?></td></tr>
-										<tr><td><?php esc_html_e( 'Text on accent surfaces', 'reseller-intent' ); ?></td><td><code>--rintent-accent-text</code> &middot; <code>--rintent-accent-dark-text</code> <?php esc_html_e( '(auto-computed for contrast; set to force your own)', 'reseller-intent' ); ?></td></tr>
+										<tr><td><?php esc_html_e( 'Text on accent buttons', 'reseller-intent' ); ?></td><td><code>--rintent-accent-text</code> <?php esc_html_e( '(auto-computed for contrast; set to force your own)', 'reseller-intent' ); ?></td></tr>
 										<tr><td><?php esc_html_e( 'Buttons on dark sections', 'reseller-intent' ); ?></td><td><code>--rintent-dark-button</code> &middot; <code>--rintent-dark-button-text</code> <?php esc_html_e( '(default: the accent; the Dark accent picker never recolors buttons)', 'reseller-intent' ); ?></td></tr>
 										<tr><td><?php esc_html_e( 'Corner rounding', 'reseller-intent' ); ?></td><td><code>--rintent-radius</code> <?php esc_html_e( '(search bar, result rows and buttons; default 8px, use 0 for square or 50px for pills)', 'reseller-intent' ); ?></td></tr>
 										<tr><td><?php esc_html_e( 'Dark section context', 'reseller-intent' ); ?></td><td><code>.rintent-dark</code> &middot; <code>.rintent-light</code> <?php esc_html_e( '(wrapper classes; auto-detected when absent)', 'reseller-intent' ); ?></td></tr>
@@ -934,6 +983,14 @@ final class Reseller_Intent_Admin {
 				}
 				break;
 
+			case 'products':
+				$items = $this->get_query_ranking( $table_name, 'product_add', $range_start, $range_end, $page_sql, $page_params, $fetch, $offset );
+				break;
+
+			case 'transfers':
+				$items = $this->get_query_ranking( $table_name, 'domain_transfer', $range_start, $range_end, $page_sql, $page_params, $fetch, $offset );
+				break;
+
 			default:
 				wp_send_json_error( array( 'message' => 'Unknown panel' ), 400 );
 		}
@@ -1149,12 +1206,16 @@ final class Reseller_Intent_Admin {
 			);
 		}
 
-		// Recent search log: latest 1000 in range; filtered/paged client-side.
+		/*
+		 * Recent search log: latest 1000 in range; filtered/paged client-side.
+		 * Transfer searches ride along, they are the same act with a different
+		 * destination, and the Result column tells the two apart.
+		 */
 		$recent_rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT domain_query, created_at, is_available, device
+				"SELECT domain_query, created_at, is_available, device, event_type
 				FROM {$table_name}
-				WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql}
+				WHERE event_type IN ('domain_search', 'domain_transfer') AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql}
 				ORDER BY id DESC
 				LIMIT 1000",
 				array_merge( array( $range_start, $range_end ), $page_params )
@@ -1167,8 +1228,39 @@ final class Reseller_Intent_Admin {
 				'time'      => $this->format_datetime_local( (string) $recent_row->created_at ),
 				'available' => ( null === $recent_row->is_available || '' === (string) $recent_row->is_available ) ? null : (bool) (int) $recent_row->is_available,
 				'device'    => (string) $recent_row->device,
+				'transfer'  => 'domain_transfer' === (string) $recent_row->event_type,
 			);
 		}
+
+		/*
+		 * Product adds and transfer searches. Both come from Reseller Store
+		 * surfaces a storefront may never place, so an empty list hides the
+		 * panel rather than parking a blank one on the grid forever.
+		 */
+		$products  = $this->get_query_ranking( $table_name, 'product_add', $range_start, $range_end, $page_sql, $page_params );
+		$transfers = $this->get_query_ranking( $table_name, 'domain_transfer', $range_start, $range_end, $page_sql, $page_params );
+
+		/*
+		 * The three links that leave the site carrying nothing to rank. They
+		 * are counts, not a list, so they share one small panel.
+		 */
+		$outbound_row = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT
+					COALESCE(SUM(CASE WHEN event_type = 'cart_view' THEN event_count ELSE 0 END),0) AS cart,
+					COALESCE(SUM(CASE WHEN event_type = 'login_click' THEN event_count ELSE 0 END),0) AS login,
+					COALESCE(SUM(CASE WHEN event_type = 'phone_click' THEN event_count ELSE 0 END),0) AS phone
+				FROM {$table_name}
+				WHERE created_at >= %s AND created_at < %s{$page_sql}",
+				array_merge( array( $range_start, $range_end ), $page_params )
+			),
+			ARRAY_A
+		);
+		$outbound     = array(
+			'cart'  => isset( $outbound_row['cart'] ) ? (int) $outbound_row['cart'] : 0,
+			'login' => isset( $outbound_row['login'] ) ? (int) $outbound_row['login'] : 0,
+			'phone' => isset( $outbound_row['phone'] ) ? (int) $outbound_row['phone'] : 0,
+		);
 
 		// Tracking health: time since the newest event, any range. Surfaces
 		// silent breakage (JS error, markup drift, blocked AJAX) at a glance.
@@ -1208,12 +1300,30 @@ final class Reseller_Intent_Admin {
 			'trend'        => $trend,
 			'cartSizes'    => $cart_sizes,
 			'repeats'      => $repeats,
-			'pages'        => $pages,
+			'pages'        => array_values(
+				array_filter(
+					$pages,
+					static function ( $page ) {
+						return $page['searches'] > 0 || $page['carts'] > 0;
+					}
+				)
+			),
+			'pageOptions'  => $this->page_filter_options( $pages ),
 			'carted'       => $carted,
+			'products'     => array(
+				'items' => $products,
+			),
+			'transfers'    => array(
+				'items' => $transfers,
+			),
+			'outbound'     => $outbound,
 			'totals'       => array(
-				'tlds'    => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT LOWER(SUBSTRING_INDEX(domain_query, '.', -1))) FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s{$page_sql}", array_merge( array( '%' . $wpdb->esc_like( '.' ) . '%', $range_start, $range_end ), $page_params ) ) ),
-				'repeats' => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM (SELECT 1 FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql} GROUP BY domain_query HAVING SUM(event_count) >= 2) grouped", array_merge( array( $range_start, $range_end ), $page_params ) ) ),
-				'carted'  => (int) $carted['total'],
+				'tlds'      => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT LOWER(SUBSTRING_INDEX(domain_query, '.', -1))) FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s{$page_sql}", array_merge( array( '%' . $wpdb->esc_like( '.' ) . '%', $range_start, $range_end ), $page_params ) ) ),
+				'repeats'   => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM (SELECT 1 FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql} GROUP BY domain_query HAVING SUM(event_count) >= 2) grouped", array_merge( array( $range_start, $range_end ), $page_params ) ) ),
+				'carted'    => (int) $carted['total'],
+				// Only worth a round trip when the panel is on screen at all.
+				'products'  => $products ? $this->count_query_ranking( $table_name, 'product_add', $range_start, $range_end, $page_sql, $page_params ) : 0,
+				'transfers' => $transfers ? $this->count_query_ranking( $table_name, 'domain_transfer', $range_start, $range_end, $page_sql, $page_params ) : 0,
 			),
 			'availability' => array(
 				'available' => $avail,
@@ -1323,9 +1433,10 @@ final class Reseller_Intent_Admin {
 			$wpdb->prepare(
 				"SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(page_url, '#', 1), '?', 1) AS page_url,
 					COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN event_count ELSE 0 END),0) AS searches,
-					COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END),0) AS carts
+					COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END),0) AS carts,
+					COUNT(*) AS events
 				FROM {$table_name}
-				WHERE event_type IN ('domain_search','continue_to_cart') AND page_url IS NOT NULL AND page_url <> '' AND created_at >= %s AND created_at < %s
+				WHERE page_url IS NOT NULL AND page_url <> '' AND created_at >= %s AND created_at < %s
 				GROUP BY 1
 				ORDER BY searches DESC
 				LIMIT 200",
@@ -1345,10 +1456,12 @@ final class Reseller_Intent_Admin {
 					'path'     => $path,
 					'searches' => 0,
 					'carts'    => 0,
+					'events'   => 0,
 				);
 			}
 			$by_path[ $path ]['searches'] += (int) $page_row->searches;
 			$by_path[ $path ]['carts']    += (int) $page_row->carts;
+			$by_path[ $path ]['events']   += (int) $page_row->events;
 		}
 
 		usort(
@@ -1366,6 +1479,33 @@ final class Reseller_Intent_Admin {
 		unset( $page );
 
 		return $top;
+	}
+
+	/**
+	 * Every page carrying any tracked event, busiest first. The Search by
+	 * Page panel counts searches and cart clicks only, which is what it says
+	 * it does, but the filter beside it has to reach a page that only ever
+	 * saw a product added or a domain transfer, so it reads this instead.
+	 */
+	private function page_filter_options( $rows ) {
+		$rows = (array) $rows;
+
+		usort(
+			$rows,
+			static function ( $a, $b ) {
+				return $b['events'] <=> $a['events'];
+			}
+		);
+
+		$options = array();
+		foreach ( $rows as $row ) {
+			$options[] = array(
+				'path'  => $row['path'],
+				'label' => $row['label'],
+			);
+		}
+
+		return $options;
 	}
 
 	/**
@@ -1448,6 +1588,8 @@ final class Reseller_Intent_Admin {
 					COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN event_count ELSE 0 END),0) AS searches,
 					COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END),0) AS cart_clicks,
 					COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN items_count ELSE 0 END),0) AS domains_added,
+					COALESCE(SUM(CASE WHEN event_type = 'domain_transfer' THEN event_count ELSE 0 END),0) AS transfers,
+					COALESCE(SUM(CASE WHEN event_type = 'product_add' THEN event_count ELSE 0 END),0) AS product_adds,
 					COUNT(DISTINCT CASE WHEN event_type = 'domain_search' AND domain_query <> '' THEN domain_query END) AS unique_searches
 				FROM {$table_name}
 				WHERE created_at >= %s AND created_at < %s{$page_sql}",
@@ -1466,7 +1608,61 @@ final class Reseller_Intent_Admin {
 			'domainsAdded'   => isset( $row['domains_added'] ) ? (int) $row['domains_added'] : 0,
 			// Searches beyond the first for a name: total minus distinct names.
 			'repeatSearches' => max( 0, $searches - $uniques ),
+			// Not KPI cards, the panels that own these events read them.
+			'transfers'      => isset( $row['transfers'] ) ? (int) $row['transfers'] : 0,
+			'productAdds'    => isset( $row['product_adds'] ) ? (int) $row['product_adds'] : 0,
 		);
+	}
+
+	/**
+	 * Top domain_query values for one event type, most hits first. Transfer
+	 * searches and product adds are both plain "which name, how often"
+	 * lists, so they share this instead of carrying a query each.
+	 */
+	private function get_query_ranking( $table_name, $event_type, $range_start, $range_end, $page_sql = '', $page_params = array(), $limit = 15, $offset = 0 ) {
+		global $wpdb;
+
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders -- $table_name is the fixed prefixed table; $page_sql is a class constant carrying its own placeholders.
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT domain_query, SUM(event_count) AS hits
+				FROM {$table_name}
+				WHERE event_type = %s AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql}
+				GROUP BY domain_query
+				ORDER BY hits DESC, domain_query ASC
+				LIMIT %d OFFSET %d",
+				array_merge( array( $event_type, $range_start, $range_end ), $page_params, array( $limit, $offset ) )
+			)
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders
+
+		$items = array();
+		foreach ( $rows as $row ) {
+			$items[] = array(
+				'label' => self::display_domain( (string) $row->domain_query ),
+				'count' => (int) $row->hits,
+			);
+		}
+
+		return $items;
+	}
+
+	/**
+	 * How many distinct names the ranking above has in total, for its pager.
+	 */
+	private function count_query_ranking( $table_name, $event_type, $range_start, $range_end, $page_sql = '', $page_params = array() ) {
+		global $wpdb;
+
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders -- $table_name is the fixed prefixed table; $page_sql is a class constant carrying its own placeholders.
+		return (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(DISTINCT domain_query)
+				FROM {$table_name}
+				WHERE event_type = %s AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql}",
+				array_merge( array( $event_type, $range_start, $range_end ), $page_params )
+			)
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders
 	}
 
 	/**

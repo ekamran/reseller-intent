@@ -40,7 +40,7 @@ final class Reseller_Intent_Tracker {
 		}
 
 		$event_type = isset( $_POST['event_type'] ) ? sanitize_key( wp_unslash( $_POST['event_type'] ) ) : '';
-		if ( ! in_array( $event_type, array( 'domain_search', 'continue_to_cart', 'domain_select', 'search_result' ), true ) ) {
+		if ( ! in_array( $event_type, array( 'domain_search', 'continue_to_cart', 'domain_select', 'search_result', 'domain_transfer', 'product_add' ), true ) ) {
 			wp_send_json_error( array( 'message' => 'Invalid event type' ), 400 );
 		}
 
@@ -98,7 +98,7 @@ final class Reseller_Intent_Tracker {
 		if ( 'continue_to_cart' === $event_type && $items_count < 1 ) {
 			$items_count = 1;
 		}
-		if ( in_array( $event_type, array( 'domain_search', 'domain_select' ), true ) && '' === $domain_query ) {
+		if ( in_array( $event_type, array( 'domain_search', 'domain_select', 'domain_transfer', 'product_add' ), true ) && '' === $domain_query ) {
 			wp_send_json_success( array( 'ignored' => true ) );
 		}
 		if ( $this->is_rate_limited( $event_type, $domain_query, $items_count ) ) {

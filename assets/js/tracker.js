@@ -37,6 +37,9 @@
 		}
 	}
 
+	// Events fired as the browser is already navigating away.
+	var LEAVES_PAGE = ['continue_to_cart', 'domain_transfer', 'product_add'];
+
 	function trackEvent(eventType, payload) {
 		var data = $.extend(
 			{
@@ -54,11 +57,13 @@
 		}
 
 		/*
-		 * Cart clicks navigate away immediately; a plain XHR can be killed
-		 * mid-flight and the most valuable event is lost. sendBeacon is
+		 * These all leave the page the moment they fire: the cart button, a
+		 * simple or transfer search (both GET straight to GoDaddy) and the
+		 * add-to-cart form. A plain XHR can be killed mid-flight and the most
+		 * valuable event is lost, so hand them to sendBeacon, which is
 		 * guaranteed to survive the navigation.
 		 */
-		if (eventType === 'continue_to_cart' && navigator.sendBeacon) {
+		if (LEAVES_PAGE.indexOf(eventType) !== -1 && navigator.sendBeacon) {
 			var formData = new FormData();
 
 			Object.keys(data).forEach(function(key) {
@@ -297,6 +302,87 @@
 		});
 	});
 
+	/*
+	 * Simple search and transfer. Both are plain GET forms that hand the
+	 * visitor to GoDaddy, so this is the only moment their intent can be
+	 * recorded. They share one form class and one field name; the action
+	 * URL is what separates a registration search from a transfer. The
+	 * advanced widget's form does not carry .rstore-domain-form, so it
+	 * never reaches here twice.
+	 */
+	$(document).on('submit', 'form.rstore-domain-form', function() {
+		var $form = $(this);
+		var action = String($form.attr('action') || '');
+		var query = String($form.find('input[name="domainToCheck"], .search-field').first().val() || '').trim();
+
+		if (!query) {
+			return;
+		}
+
+		trackEvent(action.indexOf('/domain-transfer') !== -1 ? 'domain_transfer' : 'domain_search', {
+			domain_query: query
+		});
+	});
+
+	/*
+	 * Add to cart, on every product surface. Reseller Store ships two modes:
+	 * a form that posts to GoDaddy and navigates, and an in-page AJAX add.
+	 * One click handler covers both. The product id sits on the button in
+	 * AJAX mode and inside the form's items payload otherwise; it is the
+	 * stable identifier, so it is what gets recorded.
+	 */
+	function bindProductTracking() {
+		if (window.__rintentProductTrackingBound) {
+			return;
+		}
+
+		window.__rintentProductTrackingBound = true;
+
+		document.addEventListener('click', function(event) {
+			var button = event.target && event.target.closest
+				? event.target.closest('.rstore-add-to-cart')
+				: null;
+			var scope;
+			var hidden;
+			var productId = '';
+			var quantity = 1;
+			var parsed;
+
+			if (!button) {
+				return;
+			}
+
+			productId = String(button.getAttribute('data-id') || '').trim();
+			quantity = parseInt(button.getAttribute('data-quantity') || '1', 10);
+
+			if (!productId) {
+				scope = button.closest('.rstore-product') || button.closest('.widget') || button.closest('form');
+				hidden = scope ? scope.querySelector('input[name="items"]') : null;
+
+				if (hidden) {
+					try {
+						parsed = JSON.parse(hidden.value);
+						if (Array.isArray(parsed) && parsed[0] && parsed[0].id) {
+							productId = String(parsed[0].id);
+							quantity = parseInt(parsed[0].quantity || 1, 10);
+						}
+					} catch (error) {
+						productId = '';
+					}
+				}
+			}
+
+			if (!productId) {
+				return;
+			}
+
+			trackEvent('product_add', {
+				domain_query: productId,
+				items_count: quantity > 0 ? quantity : 1
+			});
+		}, true);
+	}
+
 	$(document).ready(function() {
 		/*
 		 * The widget also searches on mount, with no submit, when the URL
@@ -323,6 +409,7 @@
 		}
 
 		bindSelectTracking();
+		bindProductTracking();
 		reportSearchOutcome();
 
 		// React re-renders replace nodes; watch for results appearing.

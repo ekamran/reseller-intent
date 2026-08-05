@@ -935,6 +935,9 @@
 		var exportJsonHref = resellerIntentAdmin.exportUrl + rangeQuery + '&format=json';
 
 		var grid = null;
+		// Which optional panels have nothing to draw. Filled while the grid
+		// is built, read again by the Panels menu below.
+		var OPTIONAL_EMPTY = {};
 		if (data) {
 			var rangeKey = range + ('custom' === range ? '|' + customApplied.from + '|' + customApplied.to : '') + '|' + pageFilter;
 			var loadRows = function(panel, offset, mapRow) {
@@ -972,6 +975,14 @@
 			 * panel would otherwise leave eight columns bare. Two or three
 			 * take a row of their own and split it evenly.
 			 */
+			var outboundCounts = data.outbound || {};
+			OPTIONAL_EMPTY = {
+				products: data.products.items.length === 0,
+				transfers: data.transfers.items.length === 0,
+				countries: data.countries.items.length === 0,
+				outbound: ((outboundCounts.cart || 0) + (outboundCounts.login || 0) + (outboundCounts.phone || 0)) === 0
+			};
+
 			var extras = [];
 			if (isShown('products') && data.products.items.length > 0) {
 				extras.push(['products', el(ProductsPanel, { items: data.products.items, totalRows: totals.products, loadRows: loadRows })]);
@@ -982,9 +993,8 @@
 			if (isShown('countries') && data.countries.items.length > 0) {
 				extras.push(['countries', el(CountriesPanel, { countries: data.countries, loadRows: loadRows })]);
 			}
-			var outbound = data.outbound || {};
-			if (isShown('outbound') && ((outbound.cart || 0) + (outbound.login || 0) + (outbound.phone || 0)) > 0) {
-				extras.push(['outbound', el(OutboundPanel, { counts: outbound })]);
+			if (isShown('outbound') && !OPTIONAL_EMPTY.outbound) {
+				extras.push(['outbound', el(OutboundPanel, { counts: outboundCounts })]);
 			}
 
 			var kpisNow = data.kpis.now || {};
@@ -1051,13 +1061,24 @@
 						}, __( 'Panels', 'reseller-intent' )),
 						showPanelsMenu ? el('div', { className: 'ri-panels-pop', role: 'group', 'aria-label': __( 'Visible panels', 'reseller-intent' ) },
 							PANELS.map(function(panel) {
-								return el('label', { key: panel.key, className: 'ri-panels-item' },
+								/*
+								 * A panel that hides itself while empty would
+								 * otherwise sit here ticked with nothing on
+								 * screen, which reads as broken. Say so.
+								 */
+								var empty = OPTIONAL_EMPTY[panel.key];
+								return el('label', {
+									key: panel.key,
+									className: 'ri-panels-item' + (empty ? ' is-empty' : '')
+								},
 									el('input', {
 										type: 'checkbox',
 										checked: isShown(panel.key),
+										disabled: !!empty,
 										onChange: function() { togglePanel(panel.key); }
 									}),
-									panel.label
+									panel.label,
+									empty ? el('span', { className: 'ri-panels-note' }, __( 'nothing yet', 'reseller-intent' )) : null
 								);
 							})
 						) : null

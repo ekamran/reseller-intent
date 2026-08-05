@@ -818,18 +818,29 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 /* Cart and sign-in are plain links the theme leaves grey. They are the two
  * places a visitor finishes, so they read as actions, not body text. The
  * color needs !important: themes reach these through `.widget a:link`,
- * which carries a pseudo-class and outruns a two-class selector. */
+ * which carries a pseudo-class and outruns a two-class selector.
+ *
+ * Matched on Reseller Store's own inner classes, never on the widget
+ * wrapper: Elementor's WP Widget element supplies its own before_widget,
+ * so .rstore-cart and .rstore-login never reach the page there, while
+ * .rstore-view-cart and .rstore-login-block always do. .rstore-cart a
+ * stays for the Continue to cart link inside a product pod, which has no
+ * .rstore-view-cart around it. */
+.rstore-view-cart a,
 .rstore-cart a,
-.rstore-login .login-link,
-.rstore-login .logout-link {
+.rstore-login-block .login-link,
+.rstore-login-block .logout-link,
+.rstore-welcome-block .logout-link {
 	color: var(--rintent-widget-accent-hover) !important;
 	font-weight: 600;
 	text-decoration: none;
 }
 
+.rstore-view-cart a:hover,
 .rstore-cart a:hover,
-.rstore-login .login-link:hover,
-.rstore-login .logout-link:hover {
+.rstore-login-block .login-link:hover,
+.rstore-login-block .logout-link:hover,
+.rstore-welcome-block .logout-link:hover {
 	text-decoration: underline;
 }
 
@@ -862,8 +873,8 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
  *    light and wins over auto)
  * 3. legacy wrapper: .rstore-dark, kept for Add-On migrations */
 
-:is(.rintent-dark, .rstore-dark) :is(.rstore-domain-search, .rstore-domain-form, .rstore-product, .rstore-cart, .rstore-login),
-:is(.rstore-domain-search, .rstore-domain-form, .rstore-product, .rstore-cart, .rstore-login).rintent-dark {
+:is(.rintent-dark, .rstore-dark) :is(.rstore-domain-search, .rstore-domain-form, .rstore-product, .rstore-cart, .rstore-login, .rstore-view-cart, .rstore-login-block),
+:is(.rstore-domain-search, .rstore-domain-form, .rstore-product, .rstore-cart, .rstore-login, .rstore-view-cart, .rstore-login-block).rintent-dark {
 	/*
 	 * The flip: a dark section reassigns the surface tokens once and every
 	 * rule above follows. Only text the widget does not paint in light
@@ -914,8 +925,8 @@ button.rstore-domain-buy-button.select.btn.btn-secondary {
 
 /* The cart and sign-in links carry the accent's dark ink in light, which
  * would disappear into a dark section. */
-:is(.rintent-dark, .rstore-dark) :is(.rstore-cart a, .rstore-login .login-link, .rstore-login .logout-link),
-:is(.rstore-cart, .rstore-login).rintent-dark :is(a, .login-link, .logout-link) {
+:is(.rintent-dark, .rstore-dark) :is(.rstore-view-cart a, .rstore-cart a, .rstore-login-block .login-link, .rstore-login-block .logout-link, .rstore-welcome-block .logout-link),
+:is(.rstore-cart, .rstore-login, .rstore-view-cart, .rstore-login-block).rintent-dark :is(a, .login-link, .logout-link) {
 	color: var(--rintent-w-on-dark-strong) !important;
 }
 

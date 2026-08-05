@@ -4,7 +4,7 @@ Tags: godaddy, godaddy reseller, reseller store, domain reseller, reseller analy
 Requires at least: 6.2
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.1.0
+Stable tag: 2.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -157,6 +157,9 @@ The default support numbers for the phone shortcode are GoDaddy's published numb
 
 == Upgrade Notice ==
 
+= 2.1.1 =
+Fixes the cart and sign in links being missed on sites that place them with Elementor, the asset trim breaking store widgets that live in a builder's header, and the Panels menu offering panels that had nothing to show.
+
 = 2.1.0 =
 Transfer searches and product add to cart are tracked now, with two new dashboard panels. The style pack reaches the rest of the Reseller Store widgets, corner style and type are plain settings, and store links can open in a new tab. Also fixes white button labels turning dark when a Dark accent color is set.
 
@@ -164,6 +167,11 @@ Transfer searches and product add to cart are tracked now, with two new dashboar
 The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value panels are gone. The price shortcode is now family-first; every old embed keeps working. Your data is untouched.
 
 == Changelog ==
+
+= 2.1.1 =
+* Fixed: with the asset trim on, a store element placed in a page builder's site-wide header, footer or popup was invisible to the detection, because those live in their own template posts and never appear in the loop. The trim then removed Reseller Store's scripts on every page without store content, silently killing the cart count, the sign in state and this plugin's own click tracking. Elementor, Bricks, Beaver Builder and Oxygen templates are checked now, once and cached until a template is saved.
+* Fixed: the cart and sign in links got no styling and no click tracking when they were placed with Elementor's WP Widget element, which supplies its own wrapper and drops the `rstore-cart` and `rstore-login` classes the plugin was matching on. Reseller Store's own inner classes are used now, so every placement is covered. The new tab option reaches them too.
+* Fixed: the Panels menu listed Added Products, Transfer Searches, Outbound Clicks and Top Countries as ticked on a site that has no data for them, while the panels themselves stayed hidden. They now read "nothing yet" until there is something to show.
 
 = 2.1.0 =
 * Added: the three links that hand a visitor on are recorded too: View cart, Sign in and the support number from `[rintent_phone]`. They sit in one Outbound Clicks panel, and until now the phone shortcode gave you no idea whether anyone ever tapped it.

@@ -398,7 +398,14 @@
 	 * is what this covers.
 	 */
 	var NEW_TAB_FORMS = 'form.rstore-domain-form, form.rstore-add-to-cart-form, .rstore-domain-search .continue-form';
-	var NEW_TAB_LINKS = '.rstore-cart a, .rstore-login .login-link, .rstore-login .logout-link';
+	/*
+	 * Reseller Store's own inner classes, never the widget wrapper.
+	 * Elementor's WP Widget element supplies its own before_widget, so
+	 * .rstore-cart and .rstore-login never reach the page there while
+	 * .rstore-view-cart and .rstore-login-block always do. .rstore-cart a
+	 * stays for the Continue to cart link inside a product pod.
+	 */
+	var NEW_TAB_LINKS = '.rstore-view-cart a, .rstore-cart a, .rstore-login-block .login-link, .rstore-login-block .logout-link, .rstore-welcome-block .logout-link';
 
 	function applyNewTab() {
 		if (!window.resellerIntent || !window.resellerIntent.newTab) {
@@ -435,12 +442,13 @@
 				return;
 			}
 
-			if (target.closest('.rstore-cart a')) {
+			if (target.closest('.rstore-view-cart a') || target.closest('.rstore-cart a')) {
 				trackEvent('cart_view', {});
 				return;
 			}
 
-			if (target.closest('.rstore-login .login-link')) {
+			// Signing in is intent; signing out is not, so no logout event.
+			if (target.closest('.rstore-login-block .login-link')) {
 				trackEvent('login_click', {});
 				return;
 			}

@@ -321,6 +321,20 @@
 	white-space: nowrap;
 }
 
+/* A panel that hides itself while empty says so here, rather than sitting
+   ticked with nothing on screen. */
+.ri-panels-item.is-empty {
+	color: var(--ri-muted);
+	cursor: default;
+}
+
+.ri-panels-note {
+	margin-inline-start: auto;
+	padding-inline-start: 10px;
+	font-size: 11px;
+	color: var(--ri-muted);
+}
+
 /* ---- KPI cards ---- */
 .ri-kpis {
 	display: grid;

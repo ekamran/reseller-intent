@@ -20,8 +20,6 @@ final class Reseller_Intent_Settings {
 		'clear_all_label'     => '',    // '' = translated default "Clear All".
 		'blocklist'           => array(),
 		'support_numbers'     => null,  // null = built-in GoDaddy defaults; array = owner's own list.
-		'trim_gd_assets'      => false,
-		'gd_asset_pages'      => array(),
 	);
 
 	public static function get( $key ) {
@@ -273,8 +271,6 @@ final class Reseller_Intent_Settings {
 			'new_tab'             => ! empty( $_POST['new_tab'] ),
 			'clear_all_label'     => substr( sanitize_text_field( isset( $_POST['clear_all_label'] ) ? wp_unslash( $_POST['clear_all_label'] ) : '' ), 0, 40 ),
 			'blocklist'           => $this->sanitize_blocklist( isset( $_POST['blocklist'] ) ? sanitize_textarea_field( wp_unslash( $_POST['blocklist'] ) ) : '' ),
-			'trim_gd_assets'      => ! empty( $_POST['trim_gd_assets'] ),
-			'gd_asset_pages'      => $this->sanitize_id_list( isset( $_POST['gd_asset_pages'] ) ? sanitize_text_field( wp_unslash( $_POST['gd_asset_pages'] ) ) : '' ),
 		);
 
 		/*
@@ -387,20 +383,6 @@ final class Reseller_Intent_Settings {
 		}
 
 		return $clean;
-	}
-
-	private function sanitize_id_list( $value ) {
-		$ids = array();
-
-		foreach ( preg_split( '/[,\s]+/', (string) $value ) as $piece ) {
-			$id = absint( $piece );
-
-			if ( $id > 0 && count( $ids ) < 200 ) {
-				$ids[] = $id;
-			}
-		}
-
-		return array_values( array_unique( $ids ) );
 	}
 
 	private function sanitize_retention( $value ) {

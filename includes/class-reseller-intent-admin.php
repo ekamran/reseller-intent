@@ -553,32 +553,6 @@ final class Reseller_Intent_Admin {
 
 				<div class="rintent-card">
 					<div class="rintent-card-head">
-						<h2><?php esc_html_e( 'Performance', 'reseller-intent' ); ?></h2>
-						<p><?php esc_html_e( 'Reseller Store loads React, jQuery add-ons and styles on every page of the site, even pages with no store element. Trim that to the pages that need it.', 'reseller-intent' ); ?></p>
-					</div>
-					<div class="rintent-card-body">
-						<div class="rintent-field">
-							<span class="rintent-label"><?php esc_html_e( 'Asset trim', 'reseller-intent' ); ?></span>
-							<span class="rintent-check-group">
-								<label for="rintent-trim-gd">
-									<input type="checkbox" id="rintent-trim-gd" name="trim_gd_assets" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'trim_gd_assets' ) ); ?> />
-									<?php esc_html_e( 'Load Reseller Store assets only where they are used', 'reseller-intent' ); ?>
-								</label>
-								<small><?php esc_html_e( 'Kept automatically: pages with any Reseller Store shortcode, product pages, and everywhere when a store widget sits in a sidebar. This plugin\'s own assets follow the same rule.', 'reseller-intent' ); ?></small>
-							</span>
-						</div>
-						<div class="rintent-field">
-							<span class="rintent-label"><label for="rintent-gd-pages"><?php esc_html_e( 'Always keep on', 'reseller-intent' ); ?></label></span>
-							<span>
-								<input type="text" id="rintent-gd-pages" name="gd_asset_pages" class="rintent-wide" value="<?php echo esc_attr( implode( ', ', (array) Reseller_Intent_Settings::get( 'gd_asset_pages' ) ) ); ?>" placeholder="<?php esc_attr_e( 'Page or post IDs, comma-separated', 'reseller-intent' ); ?>" />
-								<p class="description"><?php esc_html_e( 'For builders or popups that render the widget outside the content, where detection cannot see it. Developers: rintent_page_needs_store filter.', 'reseller-intent' ); ?></p>
-							</span>
-						</div>
-					</div>
-				</div>
-
-				<div class="rintent-card">
-					<div class="rintent-card-head">
 						<h2><?php esc_html_e( 'Tracking', 'reseller-intent' ); ?></h2>
 						<p><?php esc_html_e( 'Anonymous by design. No cookies, no fingerprints, no IP stored. Bots are never recorded.', 'reseller-intent' ); ?></p>
 					</div>
@@ -634,6 +608,17 @@ final class Reseller_Intent_Admin {
 	public function enqueue_admin_assets( $hook_suffix ) {
 		$base_url  = plugin_dir_url( RINTENT_FILE );
 		$base_path = plugin_dir_path( RINTENT_FILE );
+
+		// The dashboard widget's own styles, on the WordPress dashboard only
+		// and only for someone who can see the widget at all.
+		if ( 'index.php' === $hook_suffix && current_user_can( self::capability() ) ) {
+			wp_enqueue_style(
+				'rintent-glance',
+				$base_url . 'assets/css/glance.css',
+				array(),
+				filemtime( $base_path . 'assets/css/glance.css' )
+			);
+		}
 
 		$page_hooks = array(
 			'reseller-intent_page_' . self::PAGE_SLUG . '-settings',
@@ -1944,41 +1929,165 @@ final class Reseller_Intent_Admin {
 		);
 	}
 
+	/**
+	 * A signed percentage change, or null when there is no honest one to
+	 * show: no previous period, or nothing on either side.
+	 */
+	private function glance_delta( $now, $prev ) {
+		if ( $prev <= 0 ) {
+			return $now > 0 ? 'new' : null;
+		}
+
+		return ( ( $now - $prev ) / $prev ) * 100;
+	}
+
+	private function print_glance_delta( $now, $prev ) {
+		$change = $this->glance_delta( $now, $prev );
+
+		if ( null === $change ) {
+			return;
+		}
+
+		if ( 'new' === $change ) {
+			printf( '<span class="rintent-glance-delta is-up">%s</span>', esc_html__( 'new', 'reseller-intent' ) );
+			return;
+		}
+
+		$class = 'is-flat';
+		$text  = '±0%';
+
+		if ( $change >= 0.05 ) {
+			$class = 'is-up';
+			$text  = '+' . number_format_i18n( abs( $change ), 1 ) . '%';
+		} elseif ( $change <= -0.05 ) {
+			$class = 'is-down';
+			$text  = '-' . number_format_i18n( abs( $change ), 1 ) . '%';
+		}
+
+		printf( '<span class="rintent-glance-delta %s">%s</span>', esc_attr( $class ), esc_html( $text ) );
+	}
+
+	/**
+	 * Two queries, no more: this runs on every visit to the WordPress
+	 * dashboard, which is the busiest screen in the admin.
+	 *
+	 * Counts cover the 2.1 event types too. A storefront selling hosting
+	 * through product pods was reading zeroes here while its dashboard
+	 * showed the adds, because this widget only ever asked about
+	 * domain_search and continue_to_cart.
+	 */
 	public function render_glance_widget() {
 		global $wpdb;
 
 		Reseller_Intent_DB::ensure_table();
 
-		$table_name  = Reseller_Intent_DB::table_name();
-		$today_start = wp_date( 'Y-m-d 00:00:00' );
-		$week_start  = wp_date( 'Y-m-d 00:00:00', self::day_anchor_ts() - ( 6 * DAY_IN_SECONDS ) );
+		$table_name = Reseller_Intent_DB::table_name();
+		$anchor     = self::day_anchor_ts();
+		$week_start = wp_date( 'Y-m-d 00:00:00', $anchor - ( 6 * DAY_IN_SECONDS ) );
+		$prev_start = wp_date( 'Y-m-d 00:00:00', $anchor - ( 13 * DAY_IN_SECONDS ) );
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_name is the fixed prefixed table.
 		$row = $wpdb->get_row(
 			$wpdb->prepare(
 				"SELECT
-					SUM(CASE WHEN event_type = 'domain_search' AND created_at >= %s THEN 1 ELSE 0 END) AS searches_today,
-					SUM(CASE WHEN event_type = 'domain_search' THEN 1 ELSE 0 END) AS searches_week,
-					SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END) AS carts_week
+					SUM(CASE WHEN created_at >= %s AND event_type IN ('domain_search','domain_transfer') THEN 1 ELSE 0 END) AS searches_now,
+					SUM(CASE WHEN created_at <  %s AND event_type IN ('domain_search','domain_transfer') THEN 1 ELSE 0 END) AS searches_prev,
+					SUM(CASE WHEN created_at >= %s AND event_type IN ('continue_to_cart','product_add') THEN 1 ELSE 0 END) AS carts_now,
+					SUM(CASE WHEN created_at <  %s AND event_type IN ('continue_to_cart','product_add') THEN 1 ELSE 0 END) AS carts_prev,
+					SUM(CASE WHEN created_at >= %s THEN 1 ELSE 0 END) AS events_now
 				FROM {$table_name}
 				WHERE created_at >= %s",
-				$today_start,
-				$week_start
+				$week_start,
+				$week_start,
+				$week_start,
+				$week_start,
+				$week_start,
+				$prev_start
 			)
 		);
 
-		$searches_today = $row ? (int) $row->searches_today : 0;
-		$searches_week  = $row ? (int) $row->searches_week : 0;
-		$carts_week     = $row ? (int) $row->carts_week : 0;
-		$rate           = $searches_week > 0 ? round( ( $carts_week / $searches_week ) * 100, 1 ) : 0;
+		$searches_now  = $row ? (int) $row->searches_now : 0;
+		$searches_prev = $row ? (int) $row->searches_prev : 0;
+		$carts_now     = $row ? (int) $row->carts_now : 0;
+		$carts_prev    = $row ? (int) $row->carts_prev : 0;
+		$events_now    = $row ? (int) $row->events_now : 0;
 
-		echo '<div class="rintent-glance" style="display:flex;gap:18px;flex-wrap:wrap;">';
-		printf( '<div><strong style="font-size:20px;">%s</strong><br /><span style="color:#646970;">%s</span></div>', esc_html( number_format_i18n( $searches_today ) ), esc_html__( 'searches today', 'reseller-intent' ) );
-		printf( '<div><strong style="font-size:20px;">%s</strong><br /><span style="color:#646970;">%s</span></div>', esc_html( number_format_i18n( $searches_week ) ), esc_html__( 'searches, 7 days', 'reseller-intent' ) );
-		printf( '<div><strong style="font-size:20px;">%s%%</strong><br /><span style="color:#646970;">%s</span></div>', esc_html( number_format_i18n( $rate, 1 ) ), esc_html__( 'search → cart, 7 days', 'reseller-intent' ) );
+		$rate      = $searches_now > 0 ? round( ( $carts_now / $searches_now ) * 100, 1 ) : 0;
+		$rate_prev = $searches_prev > 0 ? ( $carts_prev / $searches_prev ) * 100 : 0;
+
+		/*
+		 * The one line that turns three numbers into a reason to look. A
+		 * name people keep typing is the most useful thing this plugin
+		 * knows, so it goes above the stats, not buried in a panel.
+		 */
+		$lead = null;
+
+		if ( $events_now > 0 ) {
+			$lead = $wpdb->get_row(
+				$wpdb->prepare(
+					"SELECT domain_query AS label, COUNT(*) AS hits
+					FROM {$table_name}
+					WHERE created_at >= %s
+						AND domain_query <> ''
+						AND event_type IN ('domain_search','domain_transfer','product_add')
+					GROUP BY domain_query
+					ORDER BY hits DESC, label ASC
+					LIMIT 1",
+					$week_start
+				)
+			);
+		}
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+		// Nothing at all in fourteen days, on a table that has history: the
+		// numbers below would read as a quiet week when tracking may have
+		// stopped reaching the table.
+		if ( 0 === $events_now && Reseller_Intent_DB::count_events_since( 0 ) > 0 ) {
+			printf(
+				'<p class="rintent-glance-quiet">%s</p>',
+				esc_html__( 'No events in the last 7 days, though older ones are stored. Could be a quiet week. If it is not, Tools then Site Health checks the tracking for you.', 'reseller-intent' )
+			);
+		}
+
+		if ( $lead && (int) $lead->hits > 1 ) {
+			printf(
+				'<p class="rintent-glance-lead">%s</p>',
+				sprintf(
+					/* translators: 1: domain or product name, 2: number of times it came up */
+					esc_html__( 'Most wanted this week: %1$s, %2$s times.', 'reseller-intent' ),
+					'<strong>' . esc_html( $lead->label ) . '</strong>',
+					esc_html( number_format_i18n( (int) $lead->hits ) )
+				)
+			);
+		}
+
+		echo '<div class="rintent-glance-row">';
+
+		echo '<div class="rintent-glance-stat">';
+		printf( '<span class="rintent-glance-num">%s', esc_html( number_format_i18n( $searches_now ) ) );
+		$this->print_glance_delta( $searches_now, $searches_prev );
+		echo '</span>';
+		printf( '<span class="rintent-glance-label">%s</span>', esc_html__( 'searches, 7 days', 'reseller-intent' ) );
 		echo '</div>';
+
+		echo '<div class="rintent-glance-stat">';
+		printf( '<span class="rintent-glance-num">%s', esc_html( number_format_i18n( $carts_now ) ) );
+		$this->print_glance_delta( $carts_now, $carts_prev );
+		echo '</span>';
+		printf( '<span class="rintent-glance-label">%s</span>', esc_html__( 'sent to cart', 'reseller-intent' ) );
+		echo '</div>';
+
+		echo '<div class="rintent-glance-stat">';
+		printf( '<span class="rintent-glance-num">%s%%', esc_html( number_format_i18n( $rate, 1 ) ) );
+		$this->print_glance_delta( $rate, $rate_prev );
+		echo '</span>';
+		printf( '<span class="rintent-glance-label">%s</span>', esc_html__( 'search to cart', 'reseller-intent' ) );
+		echo '</div>';
+
+		echo '</div>';
+
 		printf(
-			'<p style="margin-bottom:0;"><a href="%s">%s</a></p>',
+			'<p class="rintent-glance-foot"><a href="%s">%s</a></p>',
 			esc_url( admin_url( 'admin.php?page=' . self::PAGE_SLUG ) ),
 			esc_html__( 'Open the full dashboard →', 'reseller-intent' )
 		);

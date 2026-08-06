@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class Reseller_Intent {
-	const VERSION                  = '2.1.1';
+	const VERSION                  = '2.2.0';
 	const REQUIRED_PLUGIN_BASENAME = 'reseller-store/reseller-store.php';
 	const TESTED_RSTORE            = '3.0.1';
 	const MIN_RSTORE               = '2.2.17';
@@ -16,7 +16,6 @@ final class Reseller_Intent {
 	private $tld_strip;
 	private $price;
 	private $phone;
-	private $perf;
 	private $health;
 
 	public function __construct() {
@@ -27,7 +26,6 @@ final class Reseller_Intent {
 		$this->tld_strip = new Reseller_Intent_TLD_Strip();
 		$this->price     = new Reseller_Intent_Price();
 		$this->phone     = new Reseller_Intent_Phone();
-		$this->perf      = new Reseller_Intent_Perf();
 		$this->health    = new Reseller_Intent_Health();
 
 		add_action( 'plugins_loaded', array( $this, 'bootstrap' ) );
@@ -69,7 +67,6 @@ final class Reseller_Intent {
 		$this->tld_strip->register();
 		$this->price->register();
 		$this->phone->register();
-		$this->perf->register();
 		$this->health->register();
 		Reseller_Intent_CLI::maybe_register();
 		add_action( 'admin_init', array( $this, 'add_privacy_policy_content' ) );

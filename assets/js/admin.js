@@ -161,6 +161,19 @@
 		return el('span', { className: cls, title: previous === null ? '' : __( 'vs previous period', 'reseller-intent' ) }, text);
 	}
 
+	/*
+	 * With a page filter on, a panel can be empty simply because that one
+	 * page has no such events, while the site has plenty. The sitewide copy
+	 * then reads as "nothing is being tracked", and Carted Domains even
+	 * sends the reader off to check the Last event chip for a fault that is
+	 * not there. Say what is actually true instead.
+	 */
+	function emptyText(pageFilter, sitewide) {
+		return pageFilter
+			? __( 'Nothing on this page in this range. Choose All pages to compare.', 'reseller-intent' )
+			: sitewide;
+	}
+
 	/**
 	 * The one list-panel machine: header, exactly 10 rows of 36px, pager
 	 * pinned in the footer. Row partners always match height, so the grid
@@ -441,7 +454,7 @@
 			columns: [__( 'TLD', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )],
 			colWidths: ['', '110px'],
 			rows: (props.items || []).map(mapItem),
-			empty: __( 'No searches yet. Every search adds its TLD here.', 'reseller-intent' ),
+			empty: emptyText( props.pageFilter, __( 'No searches yet. Every search adds its TLD here.', 'reseller-intent' ) ),
 			initialFetched: 25,
 			totalRows: props.totalRows,
 			/* translators: %s: number of TLDs */
@@ -460,7 +473,7 @@
 			columns: [__( 'Domain', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )],
 			colWidths: ['', '100px'],
 			rows: (props.repeats || []).map(mapItem),
-			empty: __( 'Quiet so far. When a visitor searches the same name twice, it lands here, a buyer circling.', 'reseller-intent' ),
+			empty: emptyText( props.pageFilter, __( 'Quiet so far. When a visitor searches the same name twice, it lands here, a buyer circling.', 'reseller-intent' ) ),
 			initialFetched: 25,
 			totalRows: props.totalRows,
 			/* translators: %s: number of repeated domains */
@@ -497,7 +510,7 @@
 			columns: [__( 'Domain', 'reseller-intent' ), __( 'Sent', 'reseller-intent' )],
 			colWidths: ['', '80px'],
 			rows: carted.domains.map(mapItem),
-			empty: __( 'Cart clicks will land here. Tracking is live, watch the Last event chip up top.', 'reseller-intent' ),
+			empty: emptyText( props.pageFilter, __( 'Cart clicks will land here. Tracking is live, watch the Last event chip up top.', 'reseller-intent' ) ),
 			pageSize: split ? 7 : PAGE_SIZE,
 			initialFetched: 15,
 			totalRows: props.totalRows,
@@ -519,7 +532,14 @@
 		});
 		return el(ListPanel, {
 			title: __( 'Search by Page', 'reseller-intent' ),
-			note: __( 'Where each search and cart click happened.', 'reseller-intent' ),
+			/*
+			 * This panel is the comparator, so it ignores the page filter by
+			 * design. Every other panel follows it, so say so here, otherwise
+			 * the one panel that did not change reads as a bug.
+			 */
+			note: props.pageFilter
+				? __( 'Where each search and cart click happened. This panel keeps comparing all pages.', 'reseller-intent' )
+				: __( 'Where each search and cart click happened.', 'reseller-intent' ),
 			columns: [__( 'Page', 'reseller-intent' ), __( 'Searches', 'reseller-intent' ), __( 'Carts', 'reseller-intent' )],
 			colWidths: ['', '90px', '70px'],
 			rows: rows,
@@ -544,7 +564,7 @@
 			columns: [props.nameColumn, props.countColumn],
 			colWidths: ['', '100px'],
 			rows: (props.items || []).map(mapItem),
-			empty: props.empty,
+			empty: emptyText( props.pageFilter, props.empty ),
 			initialFetched: 15,
 			totalRows: props.totalRows,
 			footLabel: props.footLabel,
@@ -562,6 +582,7 @@
 			countColumn: __( 'Adds', 'reseller-intent' ),
 			items: props.items,
 			totalRows: total,
+			pageFilter: props.pageFilter,
 			empty: __( 'No product added to cart yet.', 'reseller-intent' ),
 			/* translators: %s: number of products */
 			footLabel: sprintf( _n( '%s product', '%s products', total, 'reseller-intent' ), fmt(total) ),
@@ -579,6 +600,7 @@
 			countColumn: __( 'Searches', 'reseller-intent' ),
 			items: props.items,
 			totalRows: total,
+			pageFilter: props.pageFilter,
 			empty: __( 'No transfer search yet.', 'reseller-intent' ),
 			/* translators: %s: number of domains */
 			footLabel: sprintf( _n( '%s domain', '%s domains', total, 'reseller-intent' ), fmt(total) ),
@@ -630,7 +652,7 @@
 			columns: [__( 'Country', 'reseller-intent' ), __( 'Searches', 'reseller-intent' )],
 			colWidths: ['', '110px'],
 			rows: items.map(mapItem),
-			empty: __( 'No country data yet. Your host/CDN needs to send a geo header (e.g. Cloudflare’s CF-IPCountry).', 'reseller-intent' ),
+			empty: emptyText( props.pageFilter, __( 'No country data yet. Your host/CDN needs to send a geo header (e.g. Cloudflare’s CF-IPCountry).', 'reseller-intent' ) ),
 			initialFetched: 20,
 			footLabel: __( 'Searches by country', 'reseller-intent' ),
 			loadMore: props.loadRows ? function(offset) { return props.loadRows('countries', offset, mapItem); } : null
@@ -695,7 +717,7 @@
 			columns: [__( 'Domain', 'reseller-intent' ), __( 'Result', 'reseller-intent' ), __( 'Device', 'reseller-intent' ), __( 'Searched At', 'reseller-intent' )],
 			colWidths: ['', '110px', '95px', '155px'],
 			rows: mapped,
-			empty: filter ? __( 'Nothing matches that filter.', 'reseller-intent' ) : __( 'No searches in this range.', 'reseller-intent' ),
+			empty: filter ? __( 'Nothing matches that filter.', 'reseller-intent' ) : emptyText( props.pageFilter, __( 'No searches in this range.', 'reseller-intent' ) ),
 			footLabel: footLabel,
 			tools: el('div', { className: 'ri-feed-tools' },
 				el('input', {
@@ -952,19 +974,19 @@
 			}
 			if (isShown('tlds')) {
 				cells.push(el('div', { key: 'tlds', className: 'ri-s4' },
-					el(TldPanel, { items: data.tlds.items, totalRows: totals.tlds, loadRows: loadRows })));
+					el(TldPanel, { items: data.tlds.items, totalRows: totals.tlds, loadRows: loadRows, pageFilter: pageFilter })));
 			}
 			if (isShown('repeats')) {
 				cells.push(el('div', { key: 'repeats', className: 'ri-s4' },
-					el(DemandPanel, { repeats: data.repeats, totalRows: totals.repeats, loadRows: loadRows })));
+					el(DemandPanel, { repeats: data.repeats, totalRows: totals.repeats, loadRows: loadRows, pageFilter: pageFilter })));
 			}
 			if (isShown('carted')) {
 				cells.push(el('div', { key: 'carted', className: 'ri-s4' },
-					el(CartedPanel, { carted: data.carted, cartSizes: data.cartSizes, totalRows: totals.carted, loadRows: loadRows })));
+					el(CartedPanel, { carted: data.carted, cartSizes: data.cartSizes, totalRows: totals.carted, loadRows: loadRows, pageFilter: pageFilter })));
 			}
 			if (isShown('pages')) {
 				cells.push(el('div', { key: 'pages', className: 'ri-s4' },
-					el(PagesPanel, { pages: data.pages })));
+					el(PagesPanel, { pages: data.pages, pageFilter: pageFilter })));
 			}
 			/*
 			 * Three panels only some storefronts ever fill: countries needs
@@ -985,13 +1007,13 @@
 
 			var extras = [];
 			if (isShown('products') && data.products.items.length > 0) {
-				extras.push(['products', el(ProductsPanel, { items: data.products.items, totalRows: totals.products, loadRows: loadRows })]);
+				extras.push(['products', el(ProductsPanel, { items: data.products.items, totalRows: totals.products, loadRows: loadRows, pageFilter: pageFilter })]);
 			}
 			if (isShown('transfers') && data.transfers.items.length > 0) {
-				extras.push(['transfers', el(TransfersPanel, { items: data.transfers.items, totalRows: totals.transfers, loadRows: loadRows })]);
+				extras.push(['transfers', el(TransfersPanel, { items: data.transfers.items, totalRows: totals.transfers, loadRows: loadRows, pageFilter: pageFilter })]);
 			}
 			if (isShown('countries') && data.countries.items.length > 0) {
-				extras.push(['countries', el(CountriesPanel, { countries: data.countries, loadRows: loadRows })]);
+				extras.push(['countries', el(CountriesPanel, { countries: data.countries, loadRows: loadRows, pageFilter: pageFilter })]);
 			}
 			if (isShown('outbound') && !OPTIONAL_EMPTY.outbound) {
 				extras.push(['outbound', el(OutboundPanel, { counts: outboundCounts })]);
@@ -1000,7 +1022,7 @@
 			var kpisNow = data.kpis.now || {};
 			if (isShown('recent')) {
 				cells.push(el('div', { key: 'recent', className: extras.length === 1 ? 'ri-s8' : 'ri-s12' },
-					el(RecentLog, { recent: data.recent, totalSearches: (kpisNow.searches || 0) + (kpisNow.transfers || 0) })));
+					el(RecentLog, { recent: data.recent, totalSearches: (kpisNow.searches || 0) + (kpisNow.transfers || 0), pageFilter: pageFilter })));
 			}
 			// Four splits into two halves over two rows; three thirds and two
 			// halves both fill a row exactly, one rides beside the feed.

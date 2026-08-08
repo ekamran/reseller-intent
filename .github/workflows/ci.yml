@@ -47,9 +47,13 @@ jobs:
           coverage: none
           tools: composer
       # Pinned, so a green tick here means the same thing it means on a
-      # maintainer's machine. 3.4.1 is the floor: everything below it carries
-      # an arbitrary code execution advisory (PKSA-mh9b-91zm-m1gy) and newer
-      # Composer refuses to install it at all.
+      # maintainer's machine. Both pins are floors set by security advisories,
+      # because Composer now refuses to install an affected release at all and
+      # the job dies at install rather than at phpcs:
+      #   wpcs  3.4.1  - below it, arbitrary code execution (PKSA-mh9b-91zm-m1gy)
+      #   phpcs 3.13.6 - below it, OS command injection (PKSA-rdkp-vv9z-mjkg)
+      # Raise a pin when the next advisory lands; do not switch the advisory
+      # check off, it is the only thing that reported either of these.
       # Installed into its own directory: composer global on the runner
       # already carries tools of its own and cannot resolve these alongside
       # them.
@@ -60,7 +64,7 @@ jobs:
           composer init --no-interaction --name=reseller-intent/cs
           composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer require --no-interaction --no-progress \
-            squizlabs/php_codesniffer:3.13.5 \
+            squizlabs/php_codesniffer:3.13.6 \
             wp-coding-standards/wpcs:3.4.1
       - name: phpcs
         run: |

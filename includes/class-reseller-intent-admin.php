@@ -1994,9 +1994,17 @@ final class Reseller_Intent_Admin {
 					SUM(CASE WHEN created_at <  %s AND event_type IN ('domain_search','domain_transfer') THEN 1 ELSE 0 END) AS searches_prev,
 					SUM(CASE WHEN created_at >= %s AND event_type IN ('continue_to_cart','product_add') THEN 1 ELSE 0 END) AS carts_now,
 					SUM(CASE WHEN created_at <  %s AND event_type IN ('continue_to_cart','product_add') THEN 1 ELSE 0 END) AS carts_prev,
+					SUM(CASE WHEN created_at >= %s AND event_type = 'domain_search' THEN 1 ELSE 0 END) AS rate_base_now,
+					SUM(CASE WHEN created_at <  %s AND event_type = 'domain_search' THEN 1 ELSE 0 END) AS rate_base_prev,
+					SUM(CASE WHEN created_at >= %s AND event_type = 'continue_to_cart' THEN 1 ELSE 0 END) AS cart_clicks_now,
+					SUM(CASE WHEN created_at <  %s AND event_type = 'continue_to_cart' THEN 1 ELSE 0 END) AS cart_clicks_prev,
 					SUM(CASE WHEN created_at >= %s THEN 1 ELSE 0 END) AS events_now
 				FROM {$table_name}
 				WHERE created_at >= %s",
+				$week_start,
+				$week_start,
+				$week_start,
+				$week_start,
 				$week_start,
 				$week_start,
 				$week_start,
@@ -2012,8 +2020,23 @@ final class Reseller_Intent_Admin {
 		$carts_prev    = $row ? (int) $row->carts_prev : 0;
 		$events_now    = $row ? (int) $row->events_now : 0;
 
-		$rate      = $searches_now > 0 ? round( ( $carts_now / $searches_now ) * 100, 1 ) : 0;
-		$rate_prev = $searches_prev > 0 ? ( $carts_prev / $searches_prev ) * 100 : 0;
+		/*
+		 * The rate is the domain funnel only: a cart click as a share of the
+		 * searches that could have produced one. Product adds belong in the
+		 * count above but never in this ratio, because nothing counts the
+		 * product views they come from, and a numerator without its own
+		 * denominator pushes the percentage past 100. Transfer searches are
+		 * out for the same reason: a transfer leaves for GoDaddy instead of
+		 * reaching the cart. Same definition as Search → Cart Rate on the
+		 * dashboard and `wp rintent stats`, so the three never disagree.
+		 */
+		$rate_base_now    = $row ? (int) $row->rate_base_now : 0;
+		$rate_base_prev   = $row ? (int) $row->rate_base_prev : 0;
+		$cart_clicks_now  = $row ? (int) $row->cart_clicks_now : 0;
+		$cart_clicks_prev = $row ? (int) $row->cart_clicks_prev : 0;
+
+		$rate      = $rate_base_now > 0 ? round( ( $cart_clicks_now / $rate_base_now ) * 100, 1 ) : 0;
+		$rate_prev = $rate_base_prev > 0 ? ( $cart_clicks_prev / $rate_base_prev ) * 100 : 0;
 
 		/*
 		 * The one line that turns three numbers into a reason to look. A

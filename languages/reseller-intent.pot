@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Reseller Intent for GoDaddy Reseller Store 2.2.0\n"
+"Project-Id-Version: Reseller Intent for GoDaddy Reseller Store 2.2.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/reseller-intent\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-06T20:01:41+00:00\n"
+"POT-Creation-Date: 2026-08-08T18:29:34+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: reseller-intent\n"
@@ -37,7 +37,8 @@ msgstr ""
 #: includes/class-reseller-intent-admin.php:110
 #: includes/class-reseller-intent-admin.php:111
 #: includes/class-reseller-intent-admin.php:1927
-#: includes/class-reseller-intent-health.php:60
+#: includes/class-reseller-intent-health.php:34
+#: includes/class-reseller-intent-health.php:108
 #: includes/class-reseller-intent.php:223
 #: assets/js/admin.js:1042
 msgid "Reseller Intent"
@@ -138,7 +139,7 @@ msgid "Text on the more pill"
 msgstr ""
 
 #: includes/class-reseller-intent-admin.php:229
-#: includes/class-reseller-intent-tld-strip.php:163
+#: includes/class-reseller-intent-tld-strip.php:162
 msgid "More TLDs"
 msgstr ""
 
@@ -728,208 +729,210 @@ msgstr ""
 msgid "new"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:2048
+#: includes/class-reseller-intent-admin.php:2071
 msgid "No events in the last 7 days, though older ones are stored. Could be a quiet week. If it is not, Tools then Site Health checks the tracking for you."
 msgstr ""
 
 #. translators: 1: domain or product name, 2: number of times it came up
-#: includes/class-reseller-intent-admin.php:2057
+#: includes/class-reseller-intent-admin.php:2080
 #, php-format
 msgid "Most wanted this week: %1$s, %2$s times."
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:2070
+#: includes/class-reseller-intent-admin.php:2093
 msgid "searches, 7 days"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:2077
+#: includes/class-reseller-intent-admin.php:2100
 msgid "sent to cart"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:2084
+#: includes/class-reseller-intent-admin.php:2107
 msgid "search to cart"
 msgstr ""
 
-#: includes/class-reseller-intent-admin.php:2092
+#: includes/class-reseller-intent-admin.php:2115
 msgid "Open the full dashboard →"
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:19
-msgid "Reseller Intent events table"
+#: includes/class-reseller-intent-health.php:81
+msgid "Reseller Intent is healthy"
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:23
-msgid "Reseller Intent tracking"
+#. translators: 1: the most serious finding, 2: how many other findings there are
+#: includes/class-reseller-intent-health.php:97
+#, php-format
+msgid "%1$s, and %2$s more"
+msgid_plural "%1$s, and %2$s more"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-reseller-intent-health.php:156
+msgid "Open Reseller Intent"
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:27
-msgid "Reseller Store connection"
+#: includes/class-reseller-intent-health.php:195
+msgid "The events table exists"
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:31
-msgid "Reseller Intent TLD prices"
-msgstr ""
-
-#: includes/class-reseller-intent-health.php:35
-msgid "Reseller Intent scheduled tasks"
-msgstr ""
-
-#: includes/class-reseller-intent-health.php:39
-msgid "Reseller Intent stored events"
-msgstr ""
-
-#: includes/class-reseller-intent-health.php:79
-msgid "The Reseller Intent events table exists"
-msgstr ""
-
-#: includes/class-reseller-intent-health.php:80
+#: includes/class-reseller-intent-health.php:196
 msgid "Search events have somewhere to go."
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:87
-msgid "The Reseller Intent events table is missing"
+#: includes/class-reseller-intent-health.php:202
+msgid "The events table is missing"
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:88
+#: includes/class-reseller-intent-health.php:203
 msgid "Tracking cannot store anything. Open any Reseller Intent admin page, the table is recreated automatically. If it stays missing, check that the database user may create tables."
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:105
+#: includes/class-reseller-intent-health.php:216
 msgid "Tracking has nowhere to store events"
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:106
+#: includes/class-reseller-intent-health.php:217
 msgid "The events table is missing, so nothing can be recorded. Deactivate and reactivate Reseller Intent to recreate it."
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:116
+#: includes/class-reseller-intent-health.php:227
 msgid "No search events recorded yet"
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:117
+#: includes/class-reseller-intent-health.php:228
 msgid "Fine on a new site. If the domain search widget is live and this stays empty, check for JavaScript errors or a firewall blocking admin-ajax.php."
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:127
+#: includes/class-reseller-intent-health.php:237
 msgid "No search events for over a week"
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:128
+#: includes/class-reseller-intent-health.php:238
 msgid "Could just be quiet traffic. Worth a quick look: is the search widget still on the page, and does a test search appear on the dashboard?"
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:135
+#: includes/class-reseller-intent-health.php:244
 msgid "Tracking is receiving events"
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:136
+#: includes/class-reseller-intent-health.php:245
 msgid "Recent search activity is being recorded."
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:145
+#: includes/class-reseller-intent-health.php:253
 msgid "Reseller Store is connected"
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:146
+#: includes/class-reseller-intent-health.php:254
 msgid "The GoDaddy Reseller Store plugin is active and set up."
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:153
+#: includes/class-reseller-intent-health.php:260
 msgid "Reseller Store is not set up"
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:154
+#: includes/class-reseller-intent-health.php:261
 msgid "Reseller Intent tracks the Reseller Store domain search widget, connect the Reseller Store plugin to your reseller account first."
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:169
+#: includes/class-reseller-intent-health.php:275
 msgid "No TLD price strip on the site"
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:170
+#: includes/class-reseller-intent-health.php:276
 msgid "Nothing to keep fresh. This starts checking once a [rintent_tld_strip] shortcode renders somewhere."
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:180
+#: includes/class-reseller-intent-health.php:285
 msgid "TLD prices have never refreshed"
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:181
+#: includes/class-reseller-intent-health.php:286
 msgid "The strip is on the site but no price fetch has succeeded yet. Check that outbound requests to secureserver.net are allowed, then reload a page carrying the strip."
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:191
+#: includes/class-reseller-intent-health.php:295
 msgid "TLD prices are going stale"
 msgstr ""
 
 #. translators: %s: human readable time difference, e.g. "3 days"
-#: includes/class-reseller-intent-health.php:195
+#: includes/class-reseller-intent-health.php:299
 #, php-format
 msgid "The last successful price fetch was %s ago, so visitors may be reading prices that have changed since. The strip keeps showing the last good prices on purpose, a blank strip would be worse, which is why this goes unnoticed. Check that WordPress cron is running and that secureserver.net is reachable from the server."
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:205
+#: includes/class-reseller-intent-health.php:317
+msgid "Some TLD prices are missing"
+msgstr ""
+
+#. translators: 1: comma separated TLD list, e.g. ".org, .net", 2: human readable time difference, e.g. "4 hours"
+#: includes/class-reseller-intent-health.php:321
+#, php-format
+msgid "No price has come back for %1$s, so the strip leaves them out and shows only the TLDs it has. Prices last refreshed %2$s ago, so the connection works for the others. A TLD your reseller account does not sell will never return one, in which case drop it from the shortcode. Otherwise the lookups are being refused: check that the server can reach secureserver.net, since a host IP blocked at GoDaddy fails here while the same request from a browser succeeds."
+msgstr ""
+
+#: includes/class-reseller-intent-health.php:331
 msgid "TLD prices are fresh"
 msgstr ""
 
 #. translators: %s: human readable time difference, e.g. "4 hours"
-#: includes/class-reseller-intent-health.php:209
+#: includes/class-reseller-intent-health.php:335
 #, php-format
 msgid "Last refreshed %s ago."
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:226
+#: includes/class-reseller-intent-health.php:376
 msgid "the TLD price refresh"
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:230
+#: includes/class-reseller-intent-health.php:380
 msgid "the retention cleanup"
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:237
-msgid "A Reseller Intent scheduled task is not queued"
+#: includes/class-reseller-intent-health.php:386
+msgid "A scheduled task is not queued"
 msgstr ""
 
 #. translators: %s: list of unscheduled task names
-#: includes/class-reseller-intent-health.php:241
+#: includes/class-reseller-intent-health.php:390
 #, php-format
 msgid "Not scheduled: %s. Deactivating and reactivating Reseller Intent queues them again. If your site sets DISABLE_WP_CRON, make sure a real system cron is calling wp-cron.php, otherwise nothing scheduled ever runs."
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:251
-msgid "Reseller Intent scheduled tasks are queued"
+#: includes/class-reseller-intent-health.php:399
+msgid "Scheduled tasks are queued"
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:252
+#: includes/class-reseller-intent-health.php:400
 msgid "Everything this plugin schedules is waiting its turn."
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:269
+#: includes/class-reseller-intent-health.php:416
 msgid "Stored events are pruned automatically"
 msgstr ""
 
 #. translators: 1: number of stored events, 2: number of days
-#: includes/class-reseller-intent-health.php:273
+#: includes/class-reseller-intent-health.php:420
 #, php-format
 msgid "%1$s events stored, anything older than %2$s days is deleted daily."
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:285
+#: includes/class-reseller-intent-health.php:431
 msgid "Stored events are growing with no retention limit"
 msgstr ""
 
 #. translators: %s: number of stored events
-#: includes/class-reseller-intent-health.php:289
+#: includes/class-reseller-intent-health.php:435
 #, php-format
 msgid "%s events are stored and nothing is being deleted. That is fine if you want the full history, but a retention window under Settings keeps the table from growing forever. Exports always carry everything, so setting one does not lose you a report."
 msgstr ""
 
-#: includes/class-reseller-intent-health.php:299
+#: includes/class-reseller-intent-health.php:444
 msgid "Stored events are a sensible size"
 msgstr ""
 
 #. translators: %s: number of stored events
-#: includes/class-reseller-intent-health.php:303
+#: includes/class-reseller-intent-health.php:448
 #, php-format
 msgid "%s events stored, kept forever because no retention window is set."
 msgstr ""

@@ -150,8 +150,7 @@ final class Reseller_Intent_TLD_Strip {
 			$prices = $this->fetch_set( $tlds );
 
 			if ( array_filter( $prices ) ) {
-				set_transient( $this->cache_key( $tlds ), $prices, self::CACHE_TTL );
-				$this->remember_last_good( $tlds, $prices );
+				set_transient( $this->cache_key( $tlds ), $this->remember_last_good( $tlds, $prices ), self::CACHE_TTL );
 			}
 		}
 	}
@@ -174,19 +173,35 @@ final class Reseller_Intent_TLD_Strip {
 			return '';
 		}
 
-		$this->enqueue_style();
-
 		$prices = $this->get_prices( $tlds );
 		$theme  = ( 'dark' === $atts['theme'] ) ? 'dark' : 'light';
 
+		/*
+		 * A TLD with no price is left out rather than drawn empty. The pill
+		 * exists to show a number; beside priced neighbours a bare ".io" reads
+		 * as a broken page, and one missing lookup should not cost the whole
+		 * strip its credibility. If nothing priced, nothing renders at all,
+		 * and Site Health explains why under Tools.
+		 */
+		$priced = array_filter(
+			$tlds,
+			function ( $tld ) use ( $prices ) {
+				return ! empty( $prices[ $tld ] );
+			}
+		);
+
+		if ( empty( $priced ) ) {
+			return '';
+		}
+
+		// After the early return, so a strip that draws nothing costs no CSS.
+		$this->enqueue_style();
+
 		$html = '<div class="rintent-tld-strip rintent-tld-strip--' . esc_attr( $theme ) . '">';
 
-		foreach ( $tlds as $tld ) {
-			$html .= '<span class="rintent-tld"><b>' . esc_html( $tld ) . '</b>';
-			if ( ! empty( $prices[ $tld ] ) ) {
-				$html .= '<i>' . esc_html( $prices[ $tld ] ) . '</i>';
-			}
-			$html .= '</span>';
+		foreach ( $priced as $tld ) {
+			$html .= '<span class="rintent-tld"><b>' . esc_html( $tld ) . '</b>'
+				. '<i>' . esc_html( $prices[ $tld ] ) . '</i></span>';
 		}
 
 		if ( '' !== $atts['more_url'] && '' !== $atts['more_label'] ) {
@@ -257,15 +272,17 @@ final class Reseller_Intent_TLD_Strip {
 			return $last_good[ $key ];
 		}
 
-		$prices = $this->fetch_set( $tlds );
+		$prices  = $this->fetch_set( $tlds );
+		$got_any = (bool) array_filter( $prices );
+
+		// Merge first, then cache what the merge produced, so a TLD that
+		// failed this time still shows the price it had rather than a gap.
+		if ( $got_any ) {
+			$prices = $this->remember_last_good( $tlds, $prices );
+		}
 
 		// Cache short on total failure so one bad window doesn't stick for 12h.
-		$got_any = (bool) array_filter( $prices );
 		set_transient( $this->cache_key( $tlds ), $prices, $got_any ? self::CACHE_TTL : 15 * MINUTE_IN_SECONDS );
-
-		if ( $got_any ) {
-			$this->remember_last_good( $tlds, $prices );
-		}
 
 		return $prices;
 	}
@@ -273,17 +290,39 @@ final class Reseller_Intent_TLD_Strip {
 	/**
 	 * Keep the newest successful fetch per set in a non-autoloaded option,
 	 * survives transient wipes (object-cache flushes) with zero page cost.
+	 *
+	 * Merged per TLD, never replaced wholesale. A sweep that reaches the API
+	 * but comes back short for one TLD, a rate limit, a timeout, a single 403,
+	 * used to overwrite that TLD's good price with null and the strip lost it
+	 * for good. Only a real price may replace a real price; a null leaves the
+	 * last one standing, which is what "last good" was always meant to mean.
+	 *
+	 * @param string[]                  $tlds   Sanitized TLDs.
+	 * @param array<string,string|null> $prices What this fetch came back with.
+	 * @return array<string,string|null> The merged set, ready to cache.
 	 */
 	private function remember_last_good( array $tlds, array $prices ) {
 		$last_good = (array) get_option( self::LAST_GOOD, array() );
+		$key       = md5( implode( ',', $tlds ) );
+		$kept      = isset( $last_good[ $key ] ) && is_array( $last_good[ $key ] ) ? $last_good[ $key ] : array();
 
-		$last_good[ md5( implode( ',', $tlds ) ) ] = $prices;
+		foreach ( $prices as $tld => $price ) {
+			if ( ! empty( $price ) || ! isset( $kept[ $tld ] ) ) {
+				$kept[ $tld ] = $price;
+			}
+		}
+
+		// A TLD dropped from the shortcode should not linger in the cache.
+		$merged            = array_intersect_key( $kept, $prices );
+		$last_good[ $key ] = $merged;
 
 		update_option( self::LAST_GOOD, $last_good, false );
 
 		// Every successful fetch lands here, so this is the one honest
 		// place to stamp "prices refreshed" for the Shortcodes page.
 		update_option( self::LAST_REFRESH, time(), false );
+
+		return $merged;
 	}
 
 	/**

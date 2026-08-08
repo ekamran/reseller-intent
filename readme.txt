@@ -4,7 +4,7 @@ Tags: godaddy, godaddy reseller, reseller store, domain reseller, reseller analy
 Requires at least: 6.2
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.2.0
+Stable tag: 2.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -136,6 +136,9 @@ The default support numbers for the phone shortcode are GoDaddy's published numb
 
 == Upgrade Notice ==
 
+= 2.2.1 =
+Fixes a dashboard rate that could read above 100%, a price strip that lost a TLD's price after one failed lookup, and empty pills for TLDs with no price. The Site Health checks are one entry now.
+
 = 2.2.0 =
 New Site Health tests catch failures that used to stay silent, above all a price strip quietly serving stale prices. The dashboard widget was rebuilt and now counts transfers and product adds too. The asset trim setting is gone; it saved under 1% of a page and could break store widgets.
 
@@ -149,6 +152,13 @@ Transfer searches and product add to cart are tracked now, with a panel each. Th
 The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value panels are gone. The price shortcode is now family-first; every old embed keeps working. Your data is untouched.
 
 == Changelog ==
+
+= 2.2.1 =
+* Fixed: the dashboard widget could show a search to cart rate above 100%.
+* Fixed: a failed price lookup wiped that TLD's saved price for good.
+* Fixed: a TLD with no price drew an empty pill in the price strip.
+* Added: Site Health names any TLD it has no price for.
+* Changed: the six Site Health checks are one entry now.
 
 = 2.2.0 =
 * Added: Site Health now flags the failures that used to stay silent: a TLD price strip serving stale prices, a scheduled job that is not queued, and stored events growing with no retention window.

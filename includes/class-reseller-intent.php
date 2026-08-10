@@ -4,7 +4,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class Reseller_Intent {
-	const VERSION                  = '2.2.0';
+	// The version lives in the plugin header alone. It used to be duplicated
+	// here as a constant, and release 2.2.1 shipped with this copy still
+	// reading 2.2.0, because a number maintained by memory eventually is not.
 	const REQUIRED_PLUGIN_BASENAME = 'reseller-store/reseller-store.php';
 	const TESTED_RSTORE            = '3.0.1';
 	const MIN_RSTORE               = '2.2.17';

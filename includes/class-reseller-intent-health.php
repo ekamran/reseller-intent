@@ -183,12 +183,26 @@ final class Reseller_Intent_Health {
 		return ! empty( (array) get_option( Reseller_Intent_TLD_Strip::SETS_OPTION, array() ) );
 	}
 
+	/**
+	 * Memoized: two checks ask this on the same Site Health load, and the
+	 * answer cannot change between them.
+	 *
+	 * @var bool|null
+	 */
+	private $table_exists = null;
+
 	private function table_exists() {
 		global $wpdb;
 
+		if ( null !== $this->table_exists ) {
+			return $this->table_exists;
+		}
+
 		$table_name = Reseller_Intent_DB::table_name();
 
-		return $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) ) === $table_name;
+		$this->table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) ) === $table_name;
+
+		return $this->table_exists;
 	}
 
 	private function check_table() {

@@ -272,6 +272,23 @@ final class Reseller_Intent_TLD_Strip {
 			return $last_good[ $key ];
 		}
 
+		/*
+		 * Nothing cached and nothing remembered: this set has never fetched
+		 * successfully. Fetching here means a visitor waits on remote calls,
+		 * and on a host whose requests to secureserver.net time out that is
+		 * seconds per TLD before this page can finish rendering. A visitor
+		 * never pays that: hand the work to a one-off cron and render nothing
+		 * this once. Admin screens (the Shortcodes preview) and cron itself
+		 * still fetch inline, because there someone chose to wait.
+		 */
+		if ( ! is_admin() && ! wp_doing_cron() ) {
+			$this->schedule_refresh();
+
+			// No transient on purpose: caching the nulls would hide the
+			// cron's freshly written prices until the transient expired.
+			return array_fill_keys( $tlds, null );
+		}
+
 		$prices  = $this->fetch_set( $tlds );
 		$got_any = (bool) array_filter( $prices );
 
@@ -334,11 +351,41 @@ final class Reseller_Intent_TLD_Strip {
 		$prices = array();
 
 		foreach ( $tlds as $tld ) {
-			$prices[ $tld ] = $pl_id ? $this->fetch_price( $pl_id, $tld ) : null;
+			if ( ! $pl_id ) {
+				$prices[ $tld ] = null;
+				continue;
+			}
+
+			$prices[ $tld ] = $this->fetch_price( $pl_id, $tld );
+
+			/*
+			 * A transport failure (timeout, DNS, connection refused) is a
+			 * host-level problem: the next TLD will fail the same way, at up
+			 * to eight seconds each. Stop the sweep on the first one so a
+			 * five-TLD set costs one timeout, not five. An HTTP error (403,
+			 * 500) answers fast and says nothing about the next request, so
+			 * the sweep continues through those.
+			 */
+			if ( $this->last_fetch_was_transport_error ) {
+				foreach ( $tlds as $rest ) {
+					if ( ! array_key_exists( $rest, $prices ) ) {
+						$prices[ $rest ] = null;
+					}
+				}
+				break;
+			}
 		}
 
 		return $prices;
 	}
+
+	/**
+	 * Whether the most recent fetch_price() died in transport rather than
+	 * receiving an HTTP response. Set there, read by fetch_set()'s bail-out.
+	 *
+	 * @var bool
+	 */
+	private $last_fetch_was_transport_error = false;
 
 	private function cache_key( array $tlds ) {
 		return self::TRANSIENT_KEY . '_' . md5( implode( ',', $tlds ) );
@@ -366,9 +413,16 @@ final class Reseller_Intent_TLD_Strip {
 			rawurlencode( self::PROBE_NAME . $tld )
 		);
 
+		$this->last_fetch_was_transport_error = false;
+
 		$response = wp_remote_get( $url, array( 'timeout' => 8 ) );
 
-		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+		if ( is_wp_error( $response ) ) {
+			$this->last_fetch_was_transport_error = true;
+			return null;
+		}
+
+		if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
 			return null;
 		}
 

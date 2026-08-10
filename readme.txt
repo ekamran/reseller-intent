@@ -2,9 +2,9 @@
 Contributors: ekamran, yusufmudagal, arina01
 Tags: godaddy, godaddy reseller, reseller store, domain reseller, reseller analytics
 Requires at least: 6.2
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.2.1
+Stable tag: 2.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -136,6 +136,9 @@ The default support numbers for the phone shortcode are GoDaddy's published numb
 
 == Upgrade Notice ==
 
+= 2.2.2 =
+A visitor no longer waits on price lookups when the strip renders for the very first time, a dead connection costs one timeout instead of one per TLD, and large retention cleanups run in small batches. The dashboard version label reads from one place now.
+
 = 2.2.1 =
 Fixes a dashboard rate that could read above 100%, a price strip that lost a TLD's price after one failed lookup, and empty pills for TLDs with no price. The Site Health checks are one entry now.
 
@@ -152,6 +155,13 @@ Transfer searches and product add to cart are tracked now, with a panel each. Th
 The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value panels are gone. The price shortcode is now family-first; every old embed keeps working. Your data is untouched.
 
 == Changelog ==
+
+= 2.2.2 =
+* Fixed: the very first render of a price strip could hold the page while prices were fetched.
+* Fixed: a dead connection cost one timeout per TLD; the sweep now stops at the first.
+* Fixed: the version on the dashboard could disagree with the installed version.
+* Changed: retention cleanup deletes in small batches on large tables.
+* Changed: every screen counts events the same way.
 
 = 2.2.1 =
 * Fixed: the dashboard widget could show a search to cart rate above 100%.

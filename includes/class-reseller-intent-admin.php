@@ -727,7 +727,10 @@ final class Reseller_Intent_Admin {
 			array(
 				'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
 				'nonce'       => wp_create_nonce( 'rintent_dashboard_data' ),
-				'version'     => Reseller_Intent::VERSION,
+				// Read from the plugin header, the one place the version is
+				// kept. Admin dashboard only, so the file read costs nothing
+				// a visitor ever pays.
+				'version'     => get_file_data( RINTENT_FILE, array( 'Version' => 'Version' ) )['Version'],
 				'exportUrl'   => wp_nonce_url(
 					add_query_arg( array( 'action' => 'rintent_export_csv' ), admin_url( 'admin-post.php' ) ),
 					'rintent_export'
@@ -921,7 +924,7 @@ final class Reseller_Intent_Admin {
 
 		switch ( $panel ) {
 			case 'tlds':
-				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT LOWER(SUBSTRING_INDEX(domain_query, '.', -1)) AS tld, SUM(event_count) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s{$page_sql} GROUP BY tld ORDER BY hits DESC LIMIT %d OFFSET %d", array_merge( array( '%' . $wpdb->esc_like( '.' ) . '%', $range_start, $range_end ), $page_params, array( $fetch, $offset ) ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $page_sql is a class constant carrying its own placeholders.
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT LOWER(SUBSTRING_INDEX(domain_query, '.', -1)) AS tld, COUNT(*) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s{$page_sql} GROUP BY tld ORDER BY hits DESC LIMIT %d OFFSET %d", array_merge( array( '%' . $wpdb->esc_like( '.' ) . '%', $range_start, $range_end ), $page_params, array( $fetch, $offset ) ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $page_sql is a class constant carrying its own placeholders.
 				foreach ( $rows as $row ) {
 					$items[] = array(
 						'label' => '.' . (string) $row->tld,
@@ -931,7 +934,7 @@ final class Reseller_Intent_Admin {
 				break;
 
 			case 'repeats':
-				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT domain_query AS domain, SUM(event_count) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql} GROUP BY domain_query HAVING hits >= 2 ORDER BY hits DESC LIMIT %d OFFSET %d", array_merge( array( $range_start, $range_end ), $page_params, array( $fetch, $offset ) ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $page_sql is a class constant carrying its own placeholders.
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT domain_query AS domain, COUNT(*) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql} GROUP BY domain_query HAVING hits >= 2 ORDER BY hits DESC LIMIT %d OFFSET %d", array_merge( array( $range_start, $range_end ), $page_params, array( $fetch, $offset ) ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $page_sql is a class constant carrying its own placeholders.
 				foreach ( $rows as $row ) {
 					$items[] = array(
 						'domain' => self::display_domain( $row->domain ),
@@ -941,7 +944,7 @@ final class Reseller_Intent_Admin {
 				break;
 
 			case 'countries':
-				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT country, COALESCE(SUM(event_count),0) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND country <> '' AND created_at >= %s AND created_at < %s{$page_sql} GROUP BY country ORDER BY hits DESC LIMIT %d OFFSET %d", array_merge( array( $range_start, $range_end ), $page_params, array( $fetch, $offset ) ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $page_sql is a class constant carrying its own placeholders.
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT country, COUNT(*) AS hits FROM {$table_name} WHERE event_type = 'domain_search' AND country <> '' AND created_at >= %s AND created_at < %s{$page_sql} GROUP BY country ORDER BY hits DESC LIMIT %d OFFSET %d", array_merge( array( $range_start, $range_end ), $page_params, array( $fetch, $offset ) ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $page_sql is a class constant carrying its own placeholders.
 				foreach ( $rows as $row ) {
 					$items[] = array(
 						'code'  => (string) $row->country,
@@ -1047,7 +1050,7 @@ final class Reseller_Intent_Admin {
 		// TLD ranking: a plain top slice, the pager fetches deeper rows.
 		$tld_rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT LOWER(SUBSTRING_INDEX(domain_query, '.', -1)) AS tld, SUM(event_count) AS hits
+				"SELECT LOWER(SUBSTRING_INDEX(domain_query, '.', -1)) AS tld, COUNT(*) AS hits
 				FROM {$table_name}
 				WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s{$page_sql}
 				GROUP BY tld
@@ -1104,7 +1107,7 @@ final class Reseller_Intent_Admin {
 		// Repeat intent: searched 2+ times inside the window.
 		$repeat_rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT domain_query AS domain, SUM(event_count) AS hits
+				"SELECT domain_query AS domain, COUNT(*) AS hits
 				FROM {$table_name}
 				WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql}
 				GROUP BY domain_query
@@ -1134,8 +1137,8 @@ final class Reseller_Intent_Admin {
 		$availability_row = $wpdb->get_row(
 			$wpdb->prepare(
 				"SELECT
-					COALESCE(SUM(CASE WHEN is_available = 1 THEN event_count ELSE 0 END),0) AS avail,
-					COALESCE(SUM(CASE WHEN is_available = 0 THEN event_count ELSE 0 END),0) AS taken
+					COALESCE(SUM(CASE WHEN is_available = 1 THEN 1 ELSE 0 END),0) AS avail,
+					COALESCE(SUM(CASE WHEN is_available = 0 THEN 1 ELSE 0 END),0) AS taken
 				FROM {$table_name}
 				WHERE event_type = 'domain_search' AND is_available IS NOT NULL AND created_at >= %s AND created_at < %s{$page_sql}",
 				array_merge( array( $range_start, $range_end ), $page_params )
@@ -1147,7 +1150,7 @@ final class Reseller_Intent_Admin {
 
 		$device_rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT device, COALESCE(SUM(event_count),0) AS hits
+				"SELECT device, COUNT(*) AS hits
 				FROM {$table_name}
 				WHERE event_type = 'domain_search' AND device IN ('mobile','tablet','desktop') AND created_at >= %s AND created_at < %s{$page_sql}
 				GROUP BY device",
@@ -1170,7 +1173,7 @@ final class Reseller_Intent_Admin {
 		// Top countries (privacy-safe: 2-letter geo header codes, no IPs).
 		$country_rows    = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT country, COALESCE(SUM(event_count),0) AS hits
+				"SELECT country, COUNT(*) AS hits
 				FROM {$table_name}
 				WHERE event_type = 'domain_search' AND country <> '' AND created_at >= %s AND created_at < %s{$page_sql}
 				GROUP BY country
@@ -1232,9 +1235,9 @@ final class Reseller_Intent_Admin {
 		$outbound_row = $wpdb->get_row(
 			$wpdb->prepare(
 				"SELECT
-					COALESCE(SUM(CASE WHEN event_type = 'cart_view' THEN event_count ELSE 0 END),0) AS cart,
-					COALESCE(SUM(CASE WHEN event_type = 'login_click' THEN event_count ELSE 0 END),0) AS login,
-					COALESCE(SUM(CASE WHEN event_type = 'phone_click' THEN event_count ELSE 0 END),0) AS phone
+					COALESCE(SUM(CASE WHEN event_type = 'cart_view' THEN 1 ELSE 0 END),0) AS cart,
+					COALESCE(SUM(CASE WHEN event_type = 'login_click' THEN 1 ELSE 0 END),0) AS login,
+					COALESCE(SUM(CASE WHEN event_type = 'phone_click' THEN 1 ELSE 0 END),0) AS phone
 				FROM {$table_name}
 				WHERE created_at >= %s AND created_at < %s{$page_sql}",
 				array_merge( array( $range_start, $range_end ), $page_params )
@@ -1304,7 +1307,7 @@ final class Reseller_Intent_Admin {
 			'outbound'     => $outbound,
 			'totals'       => array(
 				'tlds'      => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT LOWER(SUBSTRING_INDEX(domain_query, '.', -1))) FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s{$page_sql}", array_merge( array( '%' . $wpdb->esc_like( '.' ) . '%', $range_start, $range_end ), $page_params ) ) ),
-				'repeats'   => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM (SELECT 1 FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql} GROUP BY domain_query HAVING SUM(event_count) >= 2) grouped", array_merge( array( $range_start, $range_end ), $page_params ) ) ),
+				'repeats'   => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM (SELECT 1 FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql} GROUP BY domain_query HAVING COUNT(*) >= 2) grouped", array_merge( array( $range_start, $range_end ), $page_params ) ) ),
 				'carted'    => (int) $carted['total'],
 				// Only worth a round trip when the panel is on screen at all.
 				'products'  => $products ? $this->count_query_ranking( $table_name, 'product_add', $range_start, $range_end, $page_sql, $page_params ) : 0,
@@ -1333,7 +1336,7 @@ final class Reseller_Intent_Admin {
 			$rows     = $wpdb->get_results(
 				$wpdb->prepare(
 					"SELECT DATE(created_at) AS bucket,
-						COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN event_count ELSE 0 END),0) AS searches,
+						COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN 1 ELSE 0 END),0) AS searches,
 						COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END),0) AS carts
 					FROM {$table_name}
 					WHERE created_at >= %s{$page_sql}
@@ -1366,7 +1369,7 @@ final class Reseller_Intent_Admin {
 		$rows     = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT DATE_FORMAT(created_at, '%%Y-%%m') AS bucket,
-					COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN event_count ELSE 0 END),0) AS searches,
+					COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN 1 ELSE 0 END),0) AS searches,
 					COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END),0) AS carts
 				FROM {$table_name}
 				WHERE created_at >= %s{$page_sql}
@@ -1417,7 +1420,7 @@ final class Reseller_Intent_Admin {
 		$page_rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(page_url, '#', 1), '?', 1) AS page_url,
-					COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN event_count ELSE 0 END),0) AS searches,
+					COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN 1 ELSE 0 END),0) AS searches,
 					COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END),0) AS carts,
 					COUNT(*) AS events
 				FROM {$table_name}
@@ -1570,11 +1573,11 @@ final class Reseller_Intent_Admin {
 		$row = $wpdb->get_row(
 			$wpdb->prepare(
 				"SELECT
-					COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN event_count ELSE 0 END),0) AS searches,
+					COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN 1 ELSE 0 END),0) AS searches,
 					COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END),0) AS cart_clicks,
 					COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN items_count ELSE 0 END),0) AS domains_added,
-					COALESCE(SUM(CASE WHEN event_type = 'domain_transfer' THEN event_count ELSE 0 END),0) AS transfers,
-					COALESCE(SUM(CASE WHEN event_type = 'product_add' THEN event_count ELSE 0 END),0) AS product_adds,
+					COALESCE(SUM(CASE WHEN event_type = 'domain_transfer' THEN 1 ELSE 0 END),0) AS transfers,
+					COALESCE(SUM(CASE WHEN event_type = 'product_add' THEN 1 ELSE 0 END),0) AS product_adds,
 					COUNT(DISTINCT CASE WHEN event_type = 'domain_search' AND domain_query <> '' THEN domain_query END) AS unique_searches
 				FROM {$table_name}
 				WHERE created_at >= %s AND created_at < %s{$page_sql}",
@@ -1610,7 +1613,7 @@ final class Reseller_Intent_Admin {
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders -- $table_name is the fixed prefixed table; $page_sql is a class constant carrying its own placeholders.
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT domain_query, SUM(event_count) AS hits
+				"SELECT domain_query, COUNT(*) AS hits
 				FROM {$table_name}
 				WHERE event_type = %s AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql}
 				GROUP BY domain_query

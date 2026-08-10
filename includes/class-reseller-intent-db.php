@@ -25,6 +25,13 @@ final class Reseller_Intent_DB {
 		/*
 		 * Privacy by design: no IP address, no user id, no cookie/session id.
 		 * Rows are anonymous interaction events only.
+		 *
+		 * event_count is legacy: an aggregation idea that never shipped. The
+		 * tracker writes 1 on every row and nothing may ever trust the column;
+		 * every surface that counts events counts rows, so the three of them
+		 * (dashboard, CLI, glance) can never drift apart. Kept in the schema
+		 * and the export because dropping a column buys nothing but a
+		 * migration and a changed CSV format.
 		 */
 		$sql = "CREATE TABLE {$table_name} (
 			id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -157,8 +164,22 @@ final class Reseller_Intent_DB {
 		$table_name = self::table_name();
 		$cutoff     = wp_date( 'Y-m-d H:i:s', time() - ( $days * DAY_IN_SECONDS ) );
 
-		$wpdb->query(
-			$wpdb->prepare( "DELETE FROM {$table_name} WHERE created_at < %s", $cutoff ) // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-		);
+		/*
+		 * Batched, because one unbounded DELETE on a table that grew for a
+		 * year holds its lock for the whole run and the tracker's INSERTs
+		 * queue up behind it. Ten thousand rows a pass keeps each lock
+		 * short; fifty passes bounds the cron's runtime, and whatever is
+		 * left waits a day for the next one, which is what retention means
+		 * anyway.
+		 */
+		for ( $pass = 0; $pass < 50; $pass++ ) {
+			$deleted = $wpdb->query(
+				$wpdb->prepare( "DELETE FROM {$table_name} WHERE created_at < %s LIMIT 10000", $cutoff ) // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			);
+
+			if ( ! $deleted || $deleted < 10000 ) {
+				break;
+			}
+		}
 	}
 }

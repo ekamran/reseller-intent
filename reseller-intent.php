@@ -1,6 +1,7 @@
 <?php
 /**
  * Plugin Name: Reseller Intent for GoDaddy Reseller Store
+ * Plugin URI: https://wordpress.org/plugins/reseller-intent/
  * Description: See which domains visitors search on your reseller storefront, which ones they pick, and which ones they take to cart.
  * Version: 2.3.0
  * Author: Kamran Abdul Aziz

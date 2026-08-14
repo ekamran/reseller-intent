@@ -564,6 +564,16 @@ final class Reseller_Intent_Admin {
 								<p class="description"><?php esc_html_e( 'One pattern per line, matched against searched domains. * is a wildcard. Handy for your own test searches.', 'reseller-intent' ); ?></p>
 							</span>
 						</div>
+						<div class="rintent-field">
+							<span class="rintent-label"><?php esc_html_e( 'Admin bar', 'reseller-intent' ); ?></span>
+							<span class="rintent-check-group">
+								<label for="rintent-admin-bar">
+									<input type="checkbox" id="rintent-admin-bar" name="admin_bar" value="1" <?php checked( (bool) Reseller_Intent_Settings::get( 'admin_bar' ) ); ?> />
+									<?php esc_html_e( 'Show today’s count in the admin bar', 'reseller-intent' ); ?>
+								</label>
+								<small><?php esc_html_e( 'Everything tracked today, on the site and in the admin, with the breakdown one hover away. Only people who can see this dashboard see it.', 'reseller-intent' ); ?></small>
+							</span>
+						</div>
 					</div>
 				</div>
 

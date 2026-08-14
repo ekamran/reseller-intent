@@ -17,6 +17,7 @@ final class Reseller_Intent_Settings {
 		'domain_size'         => 0,     // 0 = inherit the theme's size.
 		'price_color'         => '',    // '' = inherit the theme's color.
 		'new_tab'             => false, // Open store links in a new tab.
+		'admin_bar'           => true,  // Today's pulse on the admin bar.
 		'clear_all_label'     => '',    // '' = translated default "Clear All".
 		'blocklist'           => array(),
 		'support_numbers'     => null,  // null = built-in GoDaddy defaults; array = owner's own list.
@@ -269,6 +270,7 @@ final class Reseller_Intent_Settings {
 			'domain_size'         => $this->sanitize_font_size( isset( $_POST['domain_size'] ) ? sanitize_text_field( wp_unslash( $_POST['domain_size'] ) ) : '' ),
 			'price_color'         => (string) sanitize_hex_color( isset( $_POST['price_color'] ) ? sanitize_text_field( wp_unslash( $_POST['price_color'] ) ) : '' ),
 			'new_tab'             => ! empty( $_POST['new_tab'] ),
+			'admin_bar'           => ! empty( $_POST['admin_bar'] ),
 			'clear_all_label'     => substr( sanitize_text_field( isset( $_POST['clear_all_label'] ) ? wp_unslash( $_POST['clear_all_label'] ) : '' ), 0, 40 ),
 			'blocklist'           => $this->sanitize_blocklist( isset( $_POST['blocklist'] ) ? sanitize_textarea_field( wp_unslash( $_POST['blocklist'] ) ) : '' ),
 		);

@@ -167,6 +167,14 @@ final class Reseller_Intent_Tracker {
 			wp_send_json_error( array( 'message' => 'Failed to save event' ), 500 );
 		}
 
+		/*
+		 * The admin bar count reads from a cache so pageviews cost nothing,
+		 * but a number about "right now" must not sit on yesterday's cache:
+		 * every new event drops it, so the next pageview rebuilds and the
+		 * bar is never more than one event behind the table.
+		 */
+		delete_transient( Reseller_Intent_Adminbar::TRANSIENT );
+
 		wp_send_json_success( array( 'id' => $wpdb->insert_id ) );
 	}
 

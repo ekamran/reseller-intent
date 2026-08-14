@@ -136,17 +136,24 @@ final class Reseller_Intent_DB {
 			// otherwise leave every row in place while the screen reported a
 			// successful clear, so fall back to a plain DELETE.
 			if ( false === $wpdb->query( "TRUNCATE TABLE {$table_name}" ) ) { // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-				return (int) $wpdb->query( "DELETE FROM {$table_name}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$count = (int) $wpdb->query( "DELETE FROM {$table_name}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			}
+
+			delete_transient( Reseller_Intent_Adminbar::TRANSIENT );
 
 			return $count;
 		}
 
 		$cutoff = wp_date( 'Y-m-d H:i:s', time() - $seconds );
 
-		return (int) $wpdb->query(
+		$deleted = (int) $wpdb->query(
 			$wpdb->prepare( "DELETE FROM {$table_name} WHERE created_at >= %s", $cutoff ) // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		);
+
+		// The admin bar counts today; a cleared window changes today.
+		delete_transient( Reseller_Intent_Adminbar::TRANSIENT );
+
+		return $deleted;
 	}
 
 	/**
@@ -181,5 +188,9 @@ final class Reseller_Intent_DB {
 				break;
 			}
 		}
+
+		// Purge trims old days, not today, but a purge crossing midnight can
+		// touch what the bar considers today: cheap to drop, wrong to skip.
+		delete_transient( Reseller_Intent_Adminbar::TRANSIENT );
 	}
 }

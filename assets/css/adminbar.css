@@ -1,0 +1,18 @@
+/*
+ * The admin bar pulse ships no styling of its own: the chip is core's
+ * ab-icon / ab-label shape and the dropdown is a stock submenu, so fonts,
+ * colors, hover and RTL all belong to WordPress. The two rules here are
+ * the only things core cannot know.
+ */
+
+/* Core hides its own extras on small screens; this is an extra. */
+@media screen and (max-width: 782px) {
+	#wp-admin-bar-rintent-pulse {
+		display: none;
+	}
+}
+
+/* Label rows (no href): the pointer should not promise a click. */
+#wp-admin-bar-rintent-pulse .ab-submenu .ab-item:not(a) {
+	cursor: default;
+}

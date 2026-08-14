@@ -4,7 +4,7 @@ Tags: godaddy, godaddy reseller, reseller store, domain reseller, reseller analy
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.2.2
+Stable tag: 2.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,6 +23,7 @@ Your analytics tell you about pages and traffic. They tell you nothing about the
 * A page filter that follows every panel, for when one landing page is doing the work
 * Full history in every list, and any range exported as CSV or JSON
 * The week at a glance on your WordPress dashboard, with the name people asked for most
+* Today's count on the admin bar, on the site and in the admin, with the day's breakdown one hover away
 * Site Health tells you when tracking or prices have quietly stopped, instead of leaving you to notice
 * An optional style pack that matches the Reseller Store widgets to your colors, plus shortcodes for a TLD price strip, a live product price and a regional support number
 
@@ -97,6 +98,7 @@ Nothing is deleted unless you asked for it. Tick the uninstall option in Setting
 8. Settings: three cards, everything optional.
 9. Browser-style clear data with a preview count before anything is deleted.
 10. The WordPress dashboard widget: the week against the week before, and the name people asked for most.
+11. Today's count on the admin bar, with the day's breakdown one hover away.
 
 == Shortcodes ==
 
@@ -136,6 +138,9 @@ The default support numbers for the phone shortcode are GoDaddy's published numb
 
 == Upgrade Notice ==
 
+= 2.3.0 =
+Today's tracked events now sit on the admin bar, on the site and in the admin, with the day's breakdown in the dropdown. The count updates the moment an event lands. One new Settings toggle turns it off.
+
 = 2.2.2 =
 A visitor no longer waits on price lookups when the strip renders for the very first time, a dead connection costs one timeout instead of one per TLD, and large retention cleanups run in small batches. The dashboard version label reads from one place now.
 
@@ -155,6 +160,11 @@ Transfer searches and product add to cart are tracked now, with a panel each. Th
 The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value panels are gone. The price shortcode is now family-first; every old embed keeps working. Your data is untouched.
 
 == Changelog ==
+
+= 2.3.0 =
+* Added: today's tracked events on the admin bar, with the day's breakdown per panel in the dropdown.
+* Added: a Settings toggle for the admin bar count. On by default.
+* Changed: the count refreshes the moment an event is tracked, cleared or purged.
 
 = 2.2.2 =
 * Fixed: the very first render of a price strip could hold the page while prices were fetched.

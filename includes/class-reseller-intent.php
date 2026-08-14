@@ -19,6 +19,7 @@ final class Reseller_Intent {
 	private $price;
 	private $phone;
 	private $health;
+	private $adminbar;
 
 	public function __construct() {
 		$this->settings  = new Reseller_Intent_Settings();
@@ -29,6 +30,7 @@ final class Reseller_Intent {
 		$this->price     = new Reseller_Intent_Price();
 		$this->phone     = new Reseller_Intent_Phone();
 		$this->health    = new Reseller_Intent_Health();
+		$this->adminbar  = new Reseller_Intent_Adminbar();
 
 		add_action( 'plugins_loaded', array( $this, 'bootstrap' ) );
 		add_action( 'admin_notices', array( $this, 'show_dependency_notice' ) );
@@ -70,6 +72,7 @@ final class Reseller_Intent {
 		$this->price->register();
 		$this->phone->register();
 		$this->health->register();
+		$this->adminbar->register();
 		Reseller_Intent_CLI::maybe_register();
 		add_action( 'admin_init', array( $this, 'add_privacy_policy_content' ) );
 

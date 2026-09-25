@@ -4,7 +4,7 @@ Tags: godaddy, godaddy reseller, reseller store, domain reseller, reseller analy
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.3.0
+Stable tag: 2.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -138,6 +138,9 @@ The default support numbers for the phone shortcode are GoDaddy's published numb
 
 == Upgrade Notice ==
 
+= 2.3.1 =
+New sites now get a short notice after activation explaining that the plugin styles the Reseller Store widgets by default, with a direct link to the toggle. Nothing changes for existing settings.
+
 = 2.3.0 =
 Today's tracked events now sit on the admin bar, on the site and in the admin, with the day's breakdown in the dropdown. The count updates the moment an event lands. One new Settings toggle turns it off.
 
@@ -160,6 +163,11 @@ Transfer searches and product add to cart are tracked now, with a panel each. Th
 The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value panels are gone. The price shortcode is now family-first; every old embed keeps working. Your data is untouched.
 
 == Changelog ==
+
+= 2.3.1 =
+* Added: a notice after activation that explains the widget styling default, with links to the setting and a one-click dismiss.
+* Added: Plugin URI in the plugin header.
+* Fixed: a fatal error on PHP 7.4 in the TLD price strip when a probe domain was taken and the price fell back to suggestions.
 
 = 2.3.0 =
 * Added: today's tracked events on the admin bar, with the day's breakdown per panel in the dropdown.

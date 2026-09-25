@@ -36,7 +36,9 @@ final class Reseller_Intent {
 		add_action( 'admin_notices', array( $this, 'show_dependency_notice' ) );
 		add_action( 'admin_notices', array( $this, 'show_outdated_notice' ) );
 		add_action( 'admin_notices', array( $this, 'show_compat_notice' ) );
+		add_action( 'admin_notices', array( $this, 'show_style_notice' ) );
 		add_action( 'admin_post_rintent_ack_rstore', array( $this, 'handle_ack_rstore' ) );
+		add_action( 'admin_post_rintent_ack_style', array( $this, 'handle_ack_style' ) );
 	}
 
 	public function bootstrap() {
@@ -171,6 +173,59 @@ final class Reseller_Intent {
 			. '</a></p></div>';
 	}
 
+	/**
+	 * One-time notice after activation: widget styling is on by default,
+	 * and anyone who already styled the Reseller Store widgets deserves to
+	 * learn about the toggle before hunting for what changed their buttons.
+	 * Cleans itself up when the styling is off or the owner reaches the
+	 * settings page, because the checkbox there says the same thing.
+	 */
+	public function show_style_notice() {
+		if ( ! current_user_can( 'activate_plugins' ) || ! get_option( 'rintent_style_notice' ) ) {
+			return;
+		}
+
+		if ( ! Reseller_Intent_Settings::get( 'style_widget' ) ) {
+			delete_option( 'rintent_style_notice' );
+			return;
+		}
+
+		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only menu slug, nothing is changed here.
+
+		if ( 'reseller-intent-settings' === $page ) {
+			delete_option( 'rintent_style_notice' );
+			return;
+		}
+
+		$settings_url = admin_url( 'admin.php?page=reseller-intent-settings' );
+		$ack_url      = wp_nonce_url(
+			admin_url( 'admin-post.php?action=rintent_ack_style' ),
+			'rintent_ack_style'
+		);
+
+		echo '<div class="notice notice-info"><p><strong>'
+			. esc_html__( 'Reseller Intent:', 'reseller-intent' )
+			. '</strong> '
+			. esc_html__( 'The plugin styles the Reseller Store widgets by default: accent buttons, aligned rows, mobile layout. If you already have your own widget styling, turn this off in Settings and your CSS stays untouched.', 'reseller-intent' )
+			. ' <a href="' . esc_url( $settings_url ) . '">'
+			. esc_html__( 'Open Settings', 'reseller-intent' )
+			. '</a> &middot; <a href="' . esc_url( $ack_url ) . '">'
+			. esc_html__( 'Keep the styling, dismiss', 'reseller-intent' )
+			. '</a></p></div>';
+	}
+
+	public function handle_ack_style() {
+		if ( ! current_user_can( 'activate_plugins' ) ) {
+			wp_die( esc_html__( 'Sorry, you are not allowed to do that.', 'reseller-intent' ), 403 );
+		}
+
+		check_admin_referer( 'rintent_ack_style' );
+
+		delete_option( 'rintent_style_notice' );
+		wp_safe_redirect( wp_get_referer() ? wp_get_referer() : admin_url() );
+		exit;
+	}
+
 	public function handle_ack_rstore() {
 		if ( ! current_user_can( 'activate_plugins' ) ) {
 			wp_die( esc_html__( 'Sorry, you are not allowed to do that.', 'reseller-intent' ), 403 );
@@ -209,6 +264,11 @@ final class Reseller_Intent {
 
 	public static function activate() {
 		Reseller_Intent_DB::activate();
+
+		// Widget styling ships on by default, and an owner with their own
+		// widget CSS should hear that from us right away, not discover it
+		// from their changed buttons.
+		update_option( 'rintent_style_notice', '1' );
 	}
 
 	public static function deactivate() {

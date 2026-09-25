@@ -27,6 +27,7 @@ delete_option( 'rintent_tld_strip_sets' );
 delete_option( 'rintent_tld_last_good' );
 delete_option( 'rintent_tld_last_refresh' );
 delete_option( 'rintent_rstore_ack' );
+delete_option( 'rintent_style_notice' );
 
 // TLD price transients (both storage forms).
 $wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient%rintent_tld_prices_%'" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared

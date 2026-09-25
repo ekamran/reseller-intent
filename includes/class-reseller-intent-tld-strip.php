@@ -433,10 +433,17 @@ final class Reseller_Intent_TLD_Strip {
 			return (string) $exact['listPrice'];
 		}
 
-		// Probe name unexpectedly taken: fall back to a suggestion on the same TLD.
+		// Probe name unexpectedly taken: fall back to a suggestion on the same
+		// TLD. Suffix check via substr, because the str_ends_with helper is PHP 8 only and
+		// the plugin supports 7.4.
+		$suffix = strtolower( $tld );
+
 		foreach ( (array) ( $body['suggestedDomains'] ?? array() ) as $suggestion ) {
+			$domain = strtolower( (string) ( $suggestion['domain'] ?? '' ) );
+
 			if ( ! empty( $suggestion['listPrice'] )
-				&& str_ends_with( strtolower( $suggestion['domain'] ?? '' ), strtolower( $tld ) ) ) {
+				&& strlen( $domain ) >= strlen( $suffix )
+				&& substr( $domain, -strlen( $suffix ) ) === $suffix ) {
 				return (string) $suggestion['listPrice'];
 			}
 		}

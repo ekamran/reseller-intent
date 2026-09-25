@@ -37,7 +37,7 @@ fingerprinting, no IP addresses, no third party.
 
 ## Requirements
 
-| | |
+| Requirement | Version |
 |---|---|
 | WordPress | 6.2 or newer |
 | PHP | 7.4 or newer |

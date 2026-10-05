@@ -417,6 +417,52 @@
 	}
 
 	/*
+	 * Reseller Store marks an Add to cart button as loading on every click
+	 * and clears that state only from its AJAX callbacks. A redirect-mode
+	 * button submits its form natively instead, so nothing ever clears it.
+	 * That is invisible while the page navigates away, but when the cart
+	 * opens in a new tab, or the visitor returns through the back/forward
+	 * cache, the page they come back to shows a spinner forever and a
+	 * button that swallows every further click.
+	 */
+	function resetCartLoading(scope) {
+		$(scope).find('.rstore-add-to-cart').removeAttr('data-loading');
+		$(scope).find('.rstore-loading').addClass('rstore-loading-hidden');
+	}
+
+	function bindCartLoadingReset() {
+		if (window.__rintentCartResetBound) {
+			return;
+		}
+
+		window.__rintentCartResetBound = true;
+
+		document.addEventListener('submit', function(event) {
+			var form = event.target;
+
+			if (!form || !form.matches || !form.matches('form.rstore-add-to-cart-form')) {
+				return;
+			}
+
+			if ('_blank' !== String(form.getAttribute('target') || '').toLowerCase()) {
+				return;
+			}
+
+			// Long enough to read as "working", short enough that the
+			// visitor never finds the button dead when they look back.
+			window.setTimeout(function() {
+				resetCartLoading(form);
+			}, 1200);
+		}, true);
+
+		window.addEventListener('pageshow', function(event) {
+			if (event.persisted) {
+				resetCartLoading(document);
+			}
+		});
+	}
+
+	/*
 	 * The three links that leave the site without a domain or a product
 	 * attached: the cart, the sign in link, and the support number from
 	 * [rintent_phone]. Nothing else in the plugin could tell you whether
@@ -490,6 +536,7 @@
 		bindSelectTracking();
 		bindProductTracking();
 		bindOutboundTracking();
+		bindCartLoadingReset();
 		reportSearchOutcome();
 		applyNewTab();
 

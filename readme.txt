@@ -4,7 +4,7 @@ Tags: godaddy, godaddy reseller, reseller store, domain reseller, reseller analy
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.3.1
+Stable tag: 2.3.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -138,6 +138,9 @@ The default support numbers for the phone shortcode are GoDaddy's published numb
 
 == Upgrade Notice ==
 
+= 2.3.2 =
+If you open store links in a new tab, Add to cart buttons no longer get stuck on loading after the first click. Recommended for every site using that setting.
+
 = 2.3.1 =
 New sites now get a short notice after activation explaining that the plugin styles the Reseller Store widgets by default, with a direct link to the toggle. Nothing changes for existing settings.
 
@@ -163,6 +166,10 @@ Transfer searches and product add to cart are tracked now, with a panel each. Th
 The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value panels are gone. The price shortcode is now family-first; every old embed keeps working. Your data is untouched.
 
 == Changelog ==
+
+= 2.3.2 =
+* Fixed: with store links set to open in a new tab, an Add to cart button stayed stuck on loading after the first click and ignored every further click.
+* Fixed: the same stuck button after returning to a page with the browser back button.
 
 = 2.3.1 =
 * Added: a notice after activation that explains the widget styling default, with links to the setting and a one-click dismiss.

@@ -3,7 +3,7 @@
  * Plugin Name: Reseller Intent for GoDaddy Reseller Store
  * Plugin URI: https://wordpress.org/plugins/reseller-intent/
  * Description: See which domains visitors search on your reseller storefront, which ones they pick, and which ones they take to cart.
- * Version: 2.3.2
+ * Version: 2.4.0
  * Author: Kamran Abdul Aziz
  * Author URI: https://shifteq.com
  * License: GPL-2.0-or-later
@@ -30,6 +30,7 @@ if ( ! defined( 'RINTENT_PATH' ) ) {
 require_once RINTENT_PATH . 'includes/class-reseller-intent-tz.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent-db.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent-settings.php';
+require_once RINTENT_PATH . 'includes/class-reseller-intent-reports.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent-assets.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent-tracker.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent-admin.php';
@@ -38,6 +39,7 @@ require_once RINTENT_PATH . 'includes/class-reseller-intent-price.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent-phone.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent-health.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent-adminbar.php';
+require_once RINTENT_PATH . 'includes/class-reseller-intent-abilities.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent-cli.php';
 require_once RINTENT_PATH . 'includes/class-reseller-intent.php';
 

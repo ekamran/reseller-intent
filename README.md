@@ -31,9 +31,14 @@ every other Reseller Store element on the page:
 - An optional style pack, so the store widgets match your site instead of the
   theme's defaults
 - Three shortcodes: TLD price strip, live product price, regional support number
+- Every report as a WordPress ability (6.9+), so AI agents and the REST API can
+  ask the store what people searched, and the same reports from WP-CLI with
+  `wp rintent report <name>`
 
 Everything is written to one table in your own database. No cookies, no
-fingerprinting, no IP addresses, no third party.
+fingerprinting, no IP addresses, no third party. The dashboard, the dashboard
+widget, WP-CLI and the abilities read from one query layer, so a number can
+only ever be computed one way.
 
 ## Requirements
 

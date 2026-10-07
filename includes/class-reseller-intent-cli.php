@@ -6,17 +6,114 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * WP-CLI: wp rintent <command>
  *
+ * report <name> [--range=<key>] [--from=<date>] [--to=<date>] [--page=<path>] [--limit=<n>] [--format=<table|json|csv|yaml>]
+ *                           Any dashboard panel, same numbers as the dashboard and the Abilities API.
  * stats [--days=<n>]        Event counts and conversion for the window.
+ * status                    Is tracking alive, how many events, last one when.
+ * prices                    The TLD price strip's current prices.
+ * abilities                 The Abilities API entries this plugin registers.
  * export [--days=<n>] [--format=<csv|json>]
  * clear --range=<range>     Delete events (hour|day|week|month|6months|year|all).
  * refresh-tld               Fetch fresh TLD strip prices right now.
  */
 final class Reseller_Intent_CLI {
 
+	/**
+	 * CLI report name => ability slug. The CLI and the Abilities API are
+	 * the same callbacks with different front doors.
+	 */
+	const REPORTS = array(
+		'summary'   => 'get-summary',
+		'searches'  => 'get-top-searches',
+		'tlds'      => 'get-top-tlds',
+		'countries' => 'get-countries',
+		'carted'    => 'get-carted-domains',
+		'products'  => 'get-product-adds',
+		'transfers' => 'get-transfer-searches',
+		'pages'     => 'get-pages',
+		'trend'     => 'get-trend',
+		'recent'    => 'get-recent-searches',
+		'prices'    => 'get-tld-prices',
+		'status'    => 'get-tracking-status',
+	);
+
 	public static function maybe_register() {
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			WP_CLI::add_command( 'rintent', __CLASS__ );
 		}
+	}
+
+	/**
+	 * One dashboard panel as a table, JSON, CSV or YAML.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <name>
+	 * : summary, searches, tlds, countries, carted, products, transfers, pages, trend, recent, prices or status.
+	 *
+	 * [--range=<range>]
+	 * : 7, 30, 90, all or custom. Default 30.
+	 *
+	 * [--from=<date>]
+	 * : Custom range start, YYYY-MM-DD.
+	 *
+	 * [--to=<date>]
+	 * : Custom range end, YYYY-MM-DD.
+	 *
+	 * [--page=<path>]
+	 * : Only events from this page path, like /domains/.
+	 *
+	 * [--limit=<n>]
+	 * : Rows to return for list reports.
+	 *
+	 * [--repeats]
+	 * : For searches: only names searched two or more times.
+	 *
+	 * [--format=<format>]
+	 * : table (default), json, csv or yaml.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp rintent report summary --range=7
+	 *     wp rintent report tlds --range=90 --limit=10
+	 *     wp rintent report searches --repeats --format=json
+	 *     wp rintent report recent --page=/domains/ --limit=20
+	 */
+	public function report( $args, $assoc_args ) {
+		$name = (string) ( $args[0] ?? '' );
+
+		if ( ! isset( self::REPORTS[ $name ] ) ) {
+			WP_CLI::error( 'Unknown report. Use one of: ' . implode( ', ', array_keys( self::REPORTS ) ) . '.' );
+		}
+
+		$input = array();
+		foreach ( array( 'range', 'from', 'to', 'page' ) as $key ) {
+			if ( isset( $assoc_args[ $key ] ) ) {
+				$input[ $key ] = (string) $assoc_args[ $key ];
+			}
+		}
+		if ( isset( $assoc_args['limit'] ) ) {
+			$input['limit'] = (int) $assoc_args['limit'];
+		}
+		if ( ! empty( $assoc_args['repeats'] ) ) {
+			$input['repeats_only'] = true;
+		}
+
+		// The shell already has the database; the capability gate is for HTTP.
+		$result = Reseller_Intent_Abilities::run( self::REPORTS[ $name ], $input, false );
+
+		if ( is_wp_error( $result ) ) {
+			WP_CLI::error( $result->get_error_message() );
+		}
+
+		$format = (string) ( $assoc_args['format'] ?? 'table' );
+
+		if ( 'json' === $format ) {
+			WP_CLI::line( wp_json_encode( $result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) );
+			return;
+		}
+
+		$this->print_report( $name, $result, $format );
 	}
 
 	/**
@@ -28,31 +125,14 @@ final class Reseller_Intent_CLI {
 	 * : Window in days. Default 7.
 	 */
 	public function stats( $args, $assoc_args ) {
-		global $wpdb;
+		$days  = max( 1, (int) ( $assoc_args['days'] ?? 7 ) );
+		$start = wp_date( 'Y-m-d H:i:s', strtotime( current_time( 'mysql' ) ) - $days * DAY_IN_SECONDS );
+		$end   = Reseller_Intent_Reports::RANGE_MAX;
 
-		$days       = max( 1, (int) ( $assoc_args['days'] ?? 7 ) );
-		$table_name = Reseller_Intent_DB::table_name();
-		$cutoff     = gmdate( 'Y-m-d H:i:s', strtotime( current_time( 'mysql' ) ) - $days * DAY_IN_SECONDS );
-
-		$row = $wpdb->get_row(
-			$wpdb->prepare(
-				"SELECT
-					SUM(CASE WHEN event_type = 'domain_search' THEN 1 ELSE 0 END) AS searches,
-					COUNT(DISTINCT CASE WHEN event_type = 'domain_search' AND domain_query <> '' THEN domain_query END) AS unique_searches,
-					SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END) AS carts,
-					SUM(CASE WHEN event_type = 'continue_to_cart' THEN items_count ELSE 0 END) AS domains_added,
-					SUM(CASE WHEN event_type = 'domain_transfer' THEN 1 ELSE 0 END) AS transfers,
-					SUM(CASE WHEN event_type = 'product_add' THEN 1 ELSE 0 END) AS product_adds,
-					SUM(CASE WHEN event_type = 'cart_view' THEN 1 ELSE 0 END) AS cart_views,
-					SUM(CASE WHEN event_type = 'login_click' THEN 1 ELSE 0 END) AS login_clicks,
-					SUM(CASE WHEN event_type = 'phone_click' THEN 1 ELSE 0 END) AS phone_clicks
-				FROM {$table_name} WHERE created_at >= %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				$cutoff
-			)
-		);
-
-		$searches = $row ? (int) $row->searches : 0;
-		$carts    = $row ? (int) $row->carts : 0;
+		$kpis     = Reseller_Intent_Reports::kpis( $start, $end );
+		$by_type  = Reseller_Intent_Reports::by_type( $start, $end );
+		$searches = $kpis['searches'];
+		$carts    = $kpis['cartClicks'];
 
 		WP_CLI\Utils\format_items(
 			'table',
@@ -63,7 +143,7 @@ final class Reseller_Intent_CLI {
 				),
 				array(
 					'metric' => 'unique searches',
-					'value'  => $row ? (int) $row->unique_searches : 0,
+					'value'  => $searches - $kpis['repeatSearches'],
 				),
 				array(
 					'metric' => 'cart clicks',
@@ -71,27 +151,27 @@ final class Reseller_Intent_CLI {
 				),
 				array(
 					'metric' => 'domains added',
-					'value'  => $row ? (int) $row->domains_added : 0,
+					'value'  => $kpis['domainsAdded'],
 				),
 				array(
 					'metric' => 'transfer searches',
-					'value'  => $row ? (int) $row->transfers : 0,
+					'value'  => $kpis['transfers'],
 				),
 				array(
 					'metric' => 'product adds',
-					'value'  => $row ? (int) $row->product_adds : 0,
+					'value'  => $kpis['productAdds'],
 				),
 				array(
 					'metric' => 'cart views',
-					'value'  => $row ? (int) $row->cart_views : 0,
+					'value'  => $by_type['cart_view'],
 				),
 				array(
 					'metric' => 'sign in clicks',
-					'value'  => $row ? (int) $row->login_clicks : 0,
+					'value'  => $by_type['login_click'],
 				),
 				array(
 					'metric' => 'support calls',
-					'value'  => $row ? (int) $row->phone_clicks : 0,
+					'value'  => $by_type['phone_click'],
 				),
 				array(
 					'metric' => 'search to cart rate',
@@ -100,6 +180,56 @@ final class Reseller_Intent_CLI {
 			),
 			array( 'metric', 'value' )
 		);
+	}
+
+	/**
+	 * Is tracking alive: version, events, last event, retention.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--format=<format>]
+	 * : table (default) or json.
+	 */
+	public function status( $args, $assoc_args ) {
+		$this->report( array( 'status' ), $assoc_args );
+	}
+
+	/**
+	 * The TLD price strip's current prices.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--format=<format>]
+	 * : table (default) or json.
+	 */
+	public function prices( $args, $assoc_args ) {
+		$this->report( array( 'prices' ), $assoc_args );
+	}
+
+	/**
+	 * The Abilities API entries this plugin registers, and whether this
+	 * WordPress has the API at all.
+	 */
+	public function abilities() {
+		$rows = array();
+
+		foreach ( Reseller_Intent_Abilities::definitions() as $slug => $def ) {
+			$name       = Reseller_Intent_Abilities::NS . '/' . $slug;
+			$registered = function_exists( 'wp_has_ability' ) && wp_has_ability( $name );
+			$rows[]     = array(
+				'ability'    => $name,
+				'readonly'   => ! empty( $def['meta']['annotations']['readonly'] ) ? 'yes' : 'no',
+				'registered' => $registered ? 'yes' : 'no',
+				'label'      => $def['label'],
+			);
+		}
+
+		WP_CLI\Utils\format_items( 'table', $rows, array( 'ability', 'readonly', 'registered', 'label' ) );
+
+		if ( ! function_exists( 'wp_register_ability' ) ) {
+			WP_CLI::line( '' );
+			WP_CLI::warning( 'This WordPress has no Abilities API (it arrived in 6.9). Every report above is still available through `wp rintent report`.' );
+		}
 	}
 
 	/**
@@ -227,16 +357,109 @@ final class Reseller_Intent_CLI {
 	 * @subcommand refresh-tld
 	 */
 	public function refresh_tld() {
-		$sets = (array) get_option( Reseller_Intent_TLD_Strip::SETS_OPTION, array() );
+		$result = Reseller_Intent_Abilities::run( 'refresh-tld-prices', array(), false );
 
-		if ( empty( $sets ) ) {
+		if ( is_wp_error( $result ) ) {
+			WP_CLI::error( $result->get_error_message() );
+		}
+
+		if ( empty( $result['refreshed_sets'] ) ) {
 			WP_CLI::warning( 'Nothing to refresh yet, the TLD strip has not rendered anywhere.' );
 			return;
 		}
 
-		$strip = new Reseller_Intent_TLD_Strip();
-		$strip->prefetch();
+		WP_CLI::success( sprintf( '%d TLD set(s) refreshed.', (int) $result['refreshed_sets'] ) );
+	}
 
-		WP_CLI::success( sprintf( '%d TLD set(s) refreshed.', count( $sets ) ) );
+	// Output.
+
+	/**
+	 * Turns an ability result into rows WP-CLI can print. Lists print as
+	 * they are; nested summaries flatten to metric/value pairs.
+	 */
+	private function print_report( $name, array $result, $format ) {
+		if ( isset( $result['range']['label'] ) && 'table' === $format ) {
+			WP_CLI::line( $result['range']['label'] . ( '' !== $result['range']['page'] ? ' · ' . $result['range']['page'] : '' ) );
+		}
+
+		switch ( $name ) {
+			case 'trend':
+				$rows = array();
+				foreach ( $result['labels'] as $i => $label ) {
+					$rows[] = array(
+						'period'      => $label,
+						'searches'    => $result['searches'][ $i ],
+						'cart_clicks' => $result['cart_clicks'][ $i ],
+					);
+				}
+				WP_CLI\Utils\format_items( $format, $rows, array( 'period', 'searches', 'cart_clicks' ) );
+				return;
+
+			case 'prices':
+				$rows = array();
+				foreach ( $result['sets'] as $i => $set ) {
+					foreach ( $set['tlds'] as $tld => $price ) {
+						$rows[] = array(
+							'set'   => $i + 1,
+							'tld'   => $tld,
+							'price' => $price,
+						);
+					}
+				}
+				WP_CLI\Utils\format_items( $format, $rows, array( 'set', 'tld', 'price' ) );
+				if ( 'table' === $format ) {
+					WP_CLI::line( 'Last refresh: ' . ( $result['last_refresh'] ? $result['last_refresh'] : 'never' ) . ' · next: ' . ( $result['next_refresh'] ? $result['next_refresh'] : 'not scheduled' ) );
+				}
+				return;
+
+			case 'summary':
+			case 'status':
+				$rows = array();
+				foreach ( self::flatten( $result ) as $metric => $value ) {
+					if ( 0 === strpos( $metric, 'range.' ) ) {
+						continue;
+					}
+					$rows[] = array(
+						'metric' => $metric,
+						'value'  => is_bool( $value ) ? ( $value ? 'yes' : 'no' ) : ( null === $value ? '' : $value ),
+					);
+				}
+				WP_CLI\Utils\format_items( $format, $rows, array( 'metric', 'value' ) );
+				return;
+		}
+
+		$items = isset( $result['items'] ) ? $result['items'] : array();
+
+		if ( ! $items ) {
+			WP_CLI::line( 'No rows in this window.' );
+			return;
+		}
+
+		WP_CLI\Utils\format_items( $format, $items, array_keys( $items[0] ) );
+
+		if ( isset( $result['total'] ) && 'table' === $format && $result['total'] > count( $items ) ) {
+			WP_CLI::line( sprintf( '%d of %d, raise --limit for more.', count( $items ), (int) $result['total'] ) );
+		}
+	}
+
+	private static function flatten( array $data, $prefix = '' ) {
+		$out = array();
+		foreach ( $data as $key => $value ) {
+			$path = '' === $prefix ? (string) $key : $prefix . '.' . $key;
+			if ( is_array( $value ) ) {
+				// A list of label/count pairs reads better as its own rows.
+				if ( isset( $value[0] ) && is_array( $value[0] ) && isset( $value[0]['label'], $value[0]['count'] ) ) {
+					foreach ( $value as $pair ) {
+						$out[ $path . '.' . $pair['label'] ] = $pair['count'];
+					}
+					continue;
+				}
+				$out = array_merge( $out, self::flatten( $value, $path ) );
+				continue;
+			}
+			$out[ $path ] = $value;
+		}
+
+		return $out;
 	}
 }

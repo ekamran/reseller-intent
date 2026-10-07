@@ -4,7 +4,7 @@ Tags: godaddy, godaddy reseller, reseller store, domain reseller, reseller analy
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.3.2
+Stable tag: 2.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,6 +26,14 @@ Your analytics tell you about pages and traffic. They tell you nothing about the
 * Today's count on the admin bar, on the site and in the admin, with the day's breakdown one hover away
 * Site Health tells you when tracking or prices have quietly stopped, instead of leaving you to notice
 * An optional style pack that matches the Reseller Store widgets to your colors, plus shortcodes for a TLD price strip, a live product price and a regional support number
+* Every report as a WordPress ability, so an AI agent or any tool that speaks the Abilities API can ask your store what people searched this week
+* The same reports from WP-CLI, as a table, JSON or CSV
+
+= Ask your store a question =
+
+On WordPress 6.9 or newer the plugin registers its reports with the Abilities API: the funnel summary, top searches, top TLDs, countries, carted domains, product adds, transfer searches, pages, the trend, recent searches, current TLD prices and tracking status. Anything that can read WordPress abilities, including the REST API and AI agents connected through an MCP adapter, can ask for them. Every report is read-only, returns aggregates, and needs the same capability as the dashboard. The one action only refreshes TLD prices. Nothing about a single visitor is ever exposed, because nothing about a single visitor is stored.
+
+The dashboard, the WordPress dashboard widget, WP-CLI and the abilities all read from one query layer, so a number can only ever be computed one way.
 
 = Privacy =
 
@@ -64,7 +72,7 @@ Collection starts at activation, so searches from before that are not there. Che
 
 = Does it slow my site down, and does it work with caching? =
 
-The tracking script is about 6 KB and loads only where a store widget is. Full page caching is fine: tracking avoids nonces, which go stale inside a cached page, and prices come from a server side cache.
+The tracking script is about 6 KB compressed and loads only where a store widget is. Full page caching is fine: tracking avoids nonces, which go stale inside a cached page, and prices come from a server side cache.
 
 = Is any of this personal data? =
 
@@ -85,6 +93,10 @@ Variables win without `!important`, and one line changes every button, field and
 = What happens when I uninstall? =
 
 Nothing is deleted unless you asked for it. Tick the uninstall option in Settings first if you want the table and settings removed.
+
+= Does it work with AI agents? =
+
+Yes, on WordPress 6.9 or newer. The plugin registers every report with the core Abilities API, so an agent connected to your site through an MCP adapter can ask "what did people search this week" and get the same numbers the dashboard shows. The reports are read-only, return aggregates only, and require the dashboard capability. `wp rintent abilities` lists them. On older WordPress nothing is registered and everything else keeps working.
 
 == Screenshots ==
 
@@ -118,13 +130,23 @@ One phone number as a tap to call link, picked for the visitor's region from the
 
 == WP-CLI ==
 
+`wp rintent report <name>` prints any dashboard panel: `summary`, `searches`, `tlds`, `countries`, `carted`, `products`, `transfers`, `pages`, `trend`, `recent`, `prices` or `status`. Options: `--range=7|30|90|all|custom`, `--from` and `--to` for custom, `--page=/domains/` to follow one page, `--limit`, `--repeats` for searches, and `--format=table|json|csv|yaml`.
+
 `wp rintent stats --days=30` prints searches, unique searches, cart clicks, domains added, transfer searches, product adds and the search to cart rate.
+
+`wp rintent status` and `wp rintent prices` are shortcuts for the two reports of the same name.
+
+`wp rintent abilities` lists the Abilities API entries the plugin registers and whether this WordPress has the API.
 
 `wp rintent export --days=90 --format=csv > events.csv` streams every event as CSV or JSON, in batches.
 
 `wp rintent clear --range=month --yes` deletes events in a window: `hour`, `day`, `week`, `month`, `6months`, `year` or `all`.
 
 `wp rintent refresh-tld` fetches fresh TLD strip prices immediately.
+
+== Abilities API ==
+
+Registered on WordPress 6.9 and newer, under the `reseller-intent` category. Read-only: `reseller-intent/get-summary`, `get-top-searches`, `get-top-tlds`, `get-countries`, `get-carted-domains`, `get-product-adds`, `get-transfer-searches`, `get-pages`, `get-trend`, `get-recent-searches`, `get-tld-prices` and `get-tracking-status`. One action: `reseller-intent/refresh-tld-prices`. Inputs take `range`, `from`, `to`, `page` and, for lists, `limit`. All of them require the dashboard capability and return aggregates, never individual visitors. Over REST a report runs with GET, for example `/wp-json/wp-abilities/v1/abilities/reseller-intent/get-summary/run?input[range]=30`, and the action runs with POST. Both need a logged in user or an application password.
 
 == External services ==
 
@@ -137,6 +159,9 @@ That API is operated by GoDaddy: [Universal Terms of Service](https://www.godadd
 The default support numbers for the phone shortcode are GoDaddy's published numbers, stored inside the plugin. Showing them involves no external request.
 
 == Upgrade Notice ==
+
+= 2.4.0 =
+Every report is now a WordPress ability on 6.9 and newer, readable by AI agents and the REST API, and `wp rintent report` prints any dashboard panel from the command line. Same numbers as the dashboard, from one shared query layer.
 
 = 2.3.2 =
 If you open store links in a new tab, Add to cart buttons no longer get stuck on loading after the first click. Recommended for every site using that setting.
@@ -166,6 +191,12 @@ Transfer searches and product add to cart are tracked now, with a panel each. Th
 The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value panels are gone. The price shortcode is now family-first; every old embed keeps working. Your data is untouched.
 
 == Changelog ==
+
+= 2.4.0 =
+* Added: Abilities API support on WordPress 6.9 and newer. Twelve read-only reports and one refresh action, under the reseller-intent category, so AI agents and the REST API can read what the dashboard shows.
+* Added: `wp rintent report <name>` for every dashboard panel, with range, page filter, limit and table, JSON, CSV or YAML output. Plus `wp rintent status`, `wp rintent prices` and `wp rintent abilities`.
+* Changed: the dashboard, the dashboard widget, WP-CLI and the abilities now share one query layer, so every surface shows the same numbers.
+* Changed: ranked lists keep a stable order when counts tie, instead of shuffling between reloads.
 
 = 2.3.2 =
 * Fixed: with store links set to open in a new tab, an Add to cart button stayed stuck on loading after the first click and ignored every further click.

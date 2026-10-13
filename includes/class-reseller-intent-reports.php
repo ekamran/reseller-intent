@@ -27,16 +27,49 @@ final class Reseller_Intent_Reports {
 	const EVENT_TYPES = array( 'domain_search', 'domain_select', 'continue_to_cart', 'domain_transfer', 'product_add', 'cart_view', 'login_click', 'phone_click' );
 
 	/*
-	 * Per-page filter, appended verbatim to range-bound queries. Strips
-	 * query string and fragment, then cuts the path off after the host
-	 * (the first slash past "https://"), so the comparison is an exact
+	 * SQL that both MySQL/MariaDB and SQLite run. The functions used here,
+	 * INSTR, SUBSTR, CASE, LOWER, DATE and DATE_FORMAT, exist on both. The
+	 * MySQL-only ones (substring by delimiter, locate with an offset, string
+	 * reverse) do not, and WordPress Playground, where the wordpress.org
+	 * Live Preview runs, is SQLite.
+	 */
+
+	/**
+	 * $expr cut off before the first $char, or unchanged when absent.
+	 */
+	private static function cut_before_sql( $expr, $char ) {
+		return "CASE WHEN INSTR($expr, '$char') > 0 THEN SUBSTR($expr, 1, INSTR($expr, '$char') - 1) ELSE $expr END";
+	}
+
+	/**
+	 * page_url without its query string and fragment.
+	 */
+	private static function page_url_clean_sql() {
+		return self::cut_before_sql( self::cut_before_sql( 'page_url', '?' ), '#' );
+	}
+
+	/**
+	 * The lower-cased path of page_url: everything from the first slash
+	 * past the scheme ("https://" is eight characters, so the host starts
+	 * at nine), without query string and fragment. A URL with no path at
+	 * all yields '', which the home filter passes as its second value.
+	 */
+	private static function page_path_sql() {
+		$rest = 'SUBSTR(page_url, 9)';
+		$path = "CASE WHEN INSTR($rest, '/') > 0 THEN SUBSTR($rest, INSTR($rest, '/')) ELSE '' END";
+
+		return 'LOWER(' . self::cut_before_sql( self::cut_before_sql( $path, '?' ), '#' ) . ')';
+	}
+
+	/**
+	 * Per-page filter, appended verbatim to range-bound queries. An exact
 	 * path match, never a substring one: filtering /domains/ must not
 	 * count /old-domains/ or /foo/domains/. Two placeholders cover the
-	 * stored URL with and without its trailing slash; a URL with no path
-	 * at all yields '' from SUBSTRING, which the home filter passes as
-	 * its second value.
+	 * stored URL with and without its trailing slash.
 	 */
-	const PAGE_FILTER_SQL = " AND LOWER(SUBSTRING(SUBSTRING_INDEX(SUBSTRING_INDEX(page_url, '#', 1), '?', 1), LOCATE('/', SUBSTRING_INDEX(SUBSTRING_INDEX(page_url, '#', 1), '?', 1), 9))) IN (%s, %s)";
+	public static function page_filter_sql() {
+		return ' AND ' . self::page_path_sql() . ' IN (%s, %s)';
+	}
 
 	// Inputs: ranges and the page filter.
 
@@ -70,7 +103,7 @@ final class Reseller_Intent_Reports {
 	}
 
 	/**
-	 * The two IN() values for PAGE_FILTER_SQL.
+	 * The two IN() values for page_filter_sql().
 	 */
 	public static function page_params( $page_path ) {
 		return array( $page_path, '/' === $page_path ? '' : untrailingslashit( $page_path ) );
@@ -84,7 +117,7 @@ final class Reseller_Intent_Reports {
 			return array( '', array() );
 		}
 
-		return array( self::PAGE_FILTER_SQL, self::page_params( $page ) );
+		return array( self::page_filter_sql(), self::page_params( $page ) );
 	}
 
 	/**
@@ -348,28 +381,11 @@ final class Reseller_Intent_Reports {
 	 * @return array<int,array{label:string,count:int}>
 	 */
 	public static function tlds( $start, $end, $page = '', $limit = 25, $offset = 0 ) {
-		global $wpdb;
-
-		$table_name                     = Reseller_Intent_DB::table_name();
-		list( $page_sql, $page_params ) = self::page_clause( $page );
-
-		$rows = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT LOWER(SUBSTRING_INDEX(domain_query, '.', -1)) AS tld, COUNT(*) AS hits
-				FROM {$table_name}
-				WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s{$page_sql}
-				GROUP BY tld
-				ORDER BY hits DESC, tld ASC
-				LIMIT %d OFFSET %d",
-				array_merge( array( '%' . $wpdb->esc_like( '.' ) . '%', $start, $end ), $page_params, array( (int) $limit, (int) $offset ) )
-			)
-		);
-
 		$items = array();
-		foreach ( (array) $rows as $row ) {
+		foreach ( array_slice( self::tld_totals( $start, $end, $page ), (int) $offset, (int) $limit, true ) as $tld => $hits ) {
 			$items[] = array(
-				'label' => '.' . sanitize_key( (string) $row->tld ),
-				'count' => (int) $row->hits,
+				'label' => '.' . sanitize_key( (string) $tld ),
+				'count' => (int) $hits,
 			);
 		}
 
@@ -377,17 +393,53 @@ final class Reseller_Intent_Reports {
 	}
 
 	public static function count_tlds( $start, $end, $page = '' ) {
+		return count( self::tld_totals( $start, $end, $page ) );
+	}
+
+	/**
+	 * Searches per TLD, most searched first, ties by name. The database
+	 * groups by name; the TLD is cut off in PHP because "after the last
+	 * dot" has no expression that both MySQL and SQLite accept. The rows
+	 * that cross over are one per distinct searched name in the window.
+	 *
+	 * @return array<string,int> tld => searches, already sorted.
+	 */
+	private static function tld_totals( $start, $end, $page = '' ) {
 		global $wpdb;
 
 		$table_name                     = Reseller_Intent_DB::table_name();
 		list( $page_sql, $page_params ) = self::page_clause( $page );
 
-		return (int) $wpdb->get_var(
+		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT COUNT(DISTINCT LOWER(SUBSTRING_INDEX(domain_query, '.', -1))) FROM {$table_name} WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s{$page_sql}",
+				"SELECT LOWER(domain_query) AS domain, COUNT(*) AS hits
+				FROM {$table_name}
+				WHERE event_type = 'domain_search' AND domain_query LIKE %s AND created_at >= %s AND created_at < %s{$page_sql}
+				GROUP BY LOWER(domain_query)",
 				array_merge( array( '%' . $wpdb->esc_like( '.' ) . '%', $start, $end ), $page_params )
 			)
 		);
+
+		$totals = array();
+		foreach ( (array) $rows as $row ) {
+			$domain = (string) $row->domain;
+			$domain = function_exists( 'mb_strtolower' ) ? mb_strtolower( $domain, 'UTF-8' ) : strtolower( $domain );
+			$tld    = (string) substr( (string) strrchr( $domain, '.' ), 1 );
+
+			$totals[ $tld ] = ( isset( $totals[ $tld ] ) ? $totals[ $tld ] : 0 ) + (int) $row->hits;
+		}
+
+		uksort(
+			$totals,
+			static function ( $a, $b ) use ( $totals ) {
+				if ( $totals[ $a ] !== $totals[ $b ] ) {
+					return $totals[ $b ] <=> $totals[ $a ];
+				}
+				return strcmp( (string) $a, (string) $b );
+			}
+		);
+
+		return $totals;
 	}
 
 	/**
@@ -748,9 +800,10 @@ final class Reseller_Intent_Reports {
 		 * site has a handful. normalize_page_path() still merges what is
 		 * left, the scheme, host, casing and trailing slash.
 		 */
+		$clean_url = self::page_url_clean_sql();
 		$page_rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(page_url, '#', 1), '?', 1) AS page_url,
+				"SELECT {$clean_url} AS page_url,
 					COALESCE(SUM(CASE WHEN event_type = 'domain_search' THEN 1 ELSE 0 END),0) AS searches,
 					COALESCE(SUM(CASE WHEN event_type = 'continue_to_cart' THEN 1 ELSE 0 END),0) AS carts,
 					COUNT(*) AS events

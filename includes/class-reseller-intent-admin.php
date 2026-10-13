@@ -16,9 +16,8 @@ final class Reseller_Intent_Admin {
 
 	// The query layer lives in Reseller_Intent_Reports; these stay for the
 	// export code and anyone who referenced them here.
-	const RANGE_MIN       = Reseller_Intent_Reports::RANGE_MIN;
-	const RANGE_MAX       = Reseller_Intent_Reports::RANGE_MAX;
-	const PAGE_FILTER_SQL = Reseller_Intent_Reports::PAGE_FILTER_SQL;
+	const RANGE_MIN = Reseller_Intent_Reports::RANGE_MIN;
+	const RANGE_MAX = Reseller_Intent_Reports::RANGE_MAX;
 
 	/**
 	 * Sanitized page filter from the request, '' = all pages.

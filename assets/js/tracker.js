@@ -157,6 +157,93 @@
 	}
 
 	/*
+	 * Only this element's own text. Restricted TLDs render a "Restrictions
+	 * apply" note inside .domain-name, and .text() would glue it on:
+	 * "example.appRestrictions apply".
+	 */
+	function domainNameOf($result) {
+		var name = $result
+			.find('.domain-name')
+			.first()
+			.contents()
+			.filter(function() {
+				return this.nodeType === 3;
+			})
+			.text() || '';
+
+		return String(name).trim();
+	}
+
+	/*
+	 * The domains a Continue to cart click carries. Reseller Store up to
+	 * 3.0.1 submits a form with a hidden items input, which is read as is.
+	 * From 3.0.2 the widget has no form and no input: it posts each domain
+	 * itself from a click handler. The list is then rebuilt from the result
+	 * rows the way the widget builds its own: the selected rows, or the
+	 * exact match when nothing was selected.
+	 */
+	function parseItemsFromScope($scope) {
+		var fromForm = parseItemsFromForm($scope);
+		var domains = [];
+		var $rows;
+
+		if (fromForm.itemsRaw) {
+			return fromForm;
+		}
+
+		$rows = $scope.find('.domain-result').has('.rstore-domain-buy-button.selected');
+		if (!$rows.length) {
+			$rows = $scope.find('.rstore-exact-domain-list .domain-result').first();
+		}
+
+		$rows.each(function() {
+			var name = domainNameOf($(this));
+
+			if (name) {
+				domains.push({ id: 'domain', domain: name });
+			}
+		});
+
+		return {
+			itemsRaw: domains.length ? JSON.stringify(domains) : '',
+			itemsCount: domains.length
+		};
+	}
+
+	/*
+	 * Continue to cart is recorded on the button click, in the capture
+	 * phase, not on a form submit. Up to Reseller Store 3.0.1 the button
+	 * submits a form, from 3.0.2 it runs the widget's own click handler and
+	 * there is no form at all. A click precedes both, so one listener covers
+	 * every version, and keyboard activation of a button fires click too.
+	 */
+	function bindContinueTracking() {
+		if (window.__rintentContinueBound) {
+			return;
+		}
+
+		window.__rintentContinueBound = true;
+
+		document.addEventListener('click', function(event) {
+			var button = event.target && event.target.closest
+				? event.target.closest('.rstore-domain-search .rstore-domain-continue-button')
+				: null;
+			var itemsMeta;
+
+			if (!button || button.disabled) {
+				return;
+			}
+
+			itemsMeta = parseItemsFromScope($(button).closest('.rstore-domain-search'));
+
+			trackEvent('continue_to_cart', {
+				items_count: itemsMeta.itemsCount,
+				items_json: itemsMeta.itemsRaw || ''
+			});
+		}, true);
+	}
+
+	/*
 	 * The search box is a controlled input, so it holds whatever is typed
 	 * right now, not the query the results on screen came from. Someone who
 	 * starts typing a second name before the first result lands would
@@ -231,20 +318,7 @@
 
 			$scope = $(button).closest('.rstore-domain-search');
 			$result = $(button).closest('.domain-result');
-			/*
-			 * Only this element's own text. Restricted TLDs render a
-			 * "Restrictions apply" note inside .domain-name, and .text()
-			 * would glue it on: "example.appRestrictions apply".
-			 */
-			domainName = $result
-				.find('.domain-name')
-				.first()
-				.contents()
-				.filter(function() {
-					return this.nodeType === 3;
-				})
-				.text() || '';
-			domainName = String(domainName).trim();
+			domainName = domainNameOf($result);
 
 			if (!domainName) {
 				return;
@@ -270,15 +344,6 @@
 	}
 
 	window.__rintentTrackingBound = true;
-
-	$(document).on('submit', '.continue-form', function() {
-		var itemsMeta = parseItemsFromForm($(this));
-
-		trackEvent('continue_to_cart', {
-			items_count: itemsMeta.itemsCount,
-			items_json: itemsMeta.itemsRaw || ''
-		});
-	});
 
 	$(document).on('submit', '.rstore-domain-search .search-form', function() {
 		var $form = $(this);
@@ -397,7 +462,7 @@
 	 * the cart link, the sign in link, or for any shortcode placement, which
 	 * is what this covers.
 	 */
-	var NEW_TAB_FORMS = 'form.rstore-domain-form, form.rstore-add-to-cart-form, .rstore-domain-search .continue-form';
+	var NEW_TAB_FORMS = 'form.rstore-domain-form, form.rstore-add-to-cart-form, .rstore-domain-search form.continue-form';
 	/*
 	 * Reseller Store's own inner classes, never the widget wrapper.
 	 * Elementor's WP Widget element supplies its own before_widget, so
@@ -407,11 +472,28 @@
 	 */
 	var NEW_TAB_LINKS = '.rstore-view-cart a, .rstore-cart a, .rstore-login-block .login-link, .rstore-login-block .logout-link, .rstore-welcome-block .logout-link';
 
+	/*
+	 * The domain search widget reads data-new_tab once, when it mounts on
+	 * DOMContentLoaded, and from Reseller Store 3.0.2 it opens the cart
+	 * itself instead of submitting a form that could be retargeted. jQuery 3
+	 * runs ready handlers asynchronously, after that mount, so the flag is
+	 * set the moment this file executes: in the footer the widget markup is
+	 * already on the page and the mount has not happened yet.
+	 */
+	function markNewTabRoots() {
+		if (!window.resellerIntent || !window.resellerIntent.newTab) {
+			return;
+		}
+
+		$('.rstore-domain-search').attr('data-new_tab', 'true');
+	}
+
 	function applyNewTab() {
 		if (!window.resellerIntent || !window.resellerIntent.newTab) {
 			return;
 		}
 
+		markNewTabRoots();
 		$(NEW_TAB_FORMS).attr({ target: '_blank', rel: 'noopener' });
 		$(NEW_TAB_LINKS).attr({ target: '_blank', rel: 'noopener' });
 	}
@@ -508,6 +590,8 @@
 		}, true);
 	}
 
+	markNewTabRoots();
+
 	$(document).ready(function() {
 		/*
 		 * The widget also searches on mount, with no submit, when the URL
@@ -534,6 +618,7 @@
 		}
 
 		bindSelectTracking();
+		bindContinueTracking();
 		bindProductTracking();
 		bindOutboundTracking();
 		bindCartLoadingReset();

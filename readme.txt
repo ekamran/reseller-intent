@@ -4,7 +4,7 @@ Tags: godaddy, godaddy reseller, reseller store, domain reseller, reseller analy
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.4.0
+Stable tag: 2.4.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,7 +60,7 @@ Yes. Reseller Intent reads the widgets that Reseller Store renders, so it cannot
 
 = Which Reseller Store versions are supported? =
 
-2.2.17 up to 3.0.1. On anything older the plugin pauses itself with a notice instead of guessing, and resumes on its own once you update Reseller Store.
+2.2.17 up to 3.0.1, and the Continue to cart change coming in 3.0.2 is already covered. On anything older the plugin pauses itself with a notice instead of guessing, and resumes on its own once you update Reseller Store.
 
 = Which Reseller Store elements does it cover? =
 
@@ -160,6 +160,9 @@ The default support numbers for the phone shortcode are GoDaddy's published numb
 
 == Upgrade Notice ==
 
+= 2.4.1 =
+Keeps Continue to cart tracking working with the domain search change coming in Reseller Store 3.0.2, and fills the Top TLDs and Search by Page panels on SQLite sites such as the wordpress.org Live Preview.
+
 = 2.4.0 =
 Every report is now a WordPress ability on 6.9 and newer, readable by AI agents and the REST API, and `wp rintent report` prints any dashboard panel from the command line. Same numbers as the dashboard, from one shared query layer.
 
@@ -191,6 +194,11 @@ Transfer searches and product add to cart are tracked now, with a panel each. Th
 The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value panels are gone. The price shortcode is now family-first; every old embed keeps working. Your data is untouched.
 
 == Changelog ==
+
+= 2.4.1 =
+* Fixed: Continue to cart is recorded on the button click instead of the form submit, so tracking keeps working with the Reseller Store 3.0.2 domain search, which has no form. When there is no form, the carted domains are read from the result rows.
+* Fixed: Top TLDs, Search by Page and the page filter were empty on SQLite, including the wordpress.org Live Preview. Every query now uses only functions that MySQL and SQLite share.
+* Changed: the open in a new tab setting now tells the domain search widget itself to open the cart in a new tab, which also covers Reseller Store 3.0.2.
 
 = 2.4.0 =
 * Added: Abilities API support on WordPress 6.9 and newer. Twelve read-only reports and one refresh action, under the reseller-intent category, so AI agents and the REST API can read what the dashboard shows.

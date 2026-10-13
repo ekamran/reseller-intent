@@ -53,27 +53,14 @@ only ever be computed one way.
 The plugin has no build step. Clone it into `wp-content/plugins/` and activate.
 
 Coding standards are the WordPress ones, with the project's own exclusions in
-`phpcs.xml.dist`, and `phpcompat.xml.dist` holds the PHP 7.4 compatibility
-ruleset:
+`phpcs.xml.dist`:
 
 ```bash
 phpcs --standard=phpcs.xml.dist
-phpcs --standard=phpcompat.xml.dist
 ```
 
-CI runs on every push and pull request: PHP lint and the unit harness on
-7.4 through 8.4, WordPress coding standards, PHPCompatibilityWP, JavaScript
-parsing, the release zip build with its content and version checks, the
-WordPress Plugin Check on that zip, the plugin on Playground (SQLite) on the
-latest and the nightly WordPress, a real WordPress with Reseller Store on
-MySQL at the 6.2 floor and at latest, and the tracker against both Reseller
-Store widget builds in a headless browser. See [tests/README.md](tests/README.md)
-to run any of it locally.
-
-A version tag such as `2.4.1` builds the zip and attaches it to a GitHub
-release. The wordpress.org deploy is a separate manual workflow, "Deploy to
-wordpress.org", which needs the `WPORG_SVN_USERNAME` and `WPORG_SVN_PASSWORD`
-repository secrets and commits trunk, the tag and the `.wordpress-org` assets.
+Every change is checked on PHP 7.4 through 8.4 and on WordPress 6.2 through
+the current release before it ships.
 
 ## Support the project
 

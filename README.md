@@ -75,6 +75,14 @@ release. The wordpress.org deploy is a separate manual workflow, "Deploy to
 wordpress.org", which needs the `WPORG_SVN_USERNAME` and `WPORG_SVN_PASSWORD`
 repository secrets and commits trunk, the tag and the `.wordpress-org` assets.
 
+## Support the project
+
+Reseller Intent is free and stays free. If it saves you time, you can
+[sponsor it on GitHub](https://github.com/sponsors/ekamran) or
+[buy me a coffee](https://buymeacoffee.com/ekamran). Bug reports and ideas
+are welcome in [Issues](https://github.com/ekamran/reseller-intent/issues) or
+on the [wordpress.org support forum](https://wordpress.org/support/plugin/reseller-intent/).
+
 ## License
 
 GPL-2.0-or-later. See [LICENSE](LICENSE).

@@ -1,0 +1,17 @@
+# Files kept out of the wordpress.org SVN deploy (10up/action-wordpress-plugin-deploy).
+# Mirrors the export-ignore rules in .gitattributes.
+.git
+.github
+.gitattributes
+.gitignore
+.distignore
+README.md
+phpcs.xml.dist
+phpcompat.xml.dist
+tests
+.wordpress-org
+.wp-env.json
+package.json
+package-lock.json
+node_modules
+build

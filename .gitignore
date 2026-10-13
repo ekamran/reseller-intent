@@ -1,3 +1,9 @@
 *.zip
 .DS_Store
 node_modules/
+
+# Development only
+build/
+tests/playground/pg-blueprint.json
+tests/playground/out*/
+.wp-env.override.json

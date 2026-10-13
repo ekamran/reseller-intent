@@ -1,0 +1,38 @@
+name: Deploy to wordpress.org
+
+# Manual on purpose: running it is the approval. Needs two repository
+# secrets, WPORG_SVN_USERNAME and WPORG_SVN_PASSWORD. Commits trunk, the
+# version tag and the .wordpress-org assets to the plugin SVN, excluding
+# everything listed in .distignore.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to deploy, for example 2.4.1'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: SVN commit of ${{ inputs.tag }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          coverage: none
+      - name: Build check against the tag
+        run: bash tests/build/check-build.sh "${{ inputs.tag }}"
+      - uses: 10up/action-wordpress-plugin-deploy@stable
+        env:
+          SVN_USERNAME: ${{ secrets.WPORG_SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.WPORG_SVN_PASSWORD }}
+          SLUG: reseller-intent
+          VERSION: ${{ inputs.tag }}
+          ASSETS_DIR: .wordpress-org

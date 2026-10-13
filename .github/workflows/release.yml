@@ -1,0 +1,31 @@
+name: Release
+
+# A version tag builds the same zip wordpress.org serves and attaches it to
+# a GitHub release. The wordpress.org deploy is a separate, manual workflow.
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: GitHub release with the zip
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          coverage: none
+      - name: Build the zip and require the tag to match every version string
+        run: bash tests/build/check-build.sh "$GITHUB_REF_NAME"
+      - name: Name the zip after the tag
+        run: cp build/reseller-intent.zip "build/reseller-intent-$GITHUB_REF_NAME.zip"
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          body: "Reseller Intent ${{ github.ref_name }}. The same zip wordpress.org serves. Changelog in readme.txt."
+          files: build/reseller-intent-${{ github.ref_name }}.zip

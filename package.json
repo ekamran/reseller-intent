@@ -1,0 +1,16 @@
+{
+  "name": "reseller-intent-dev",
+  "private": true,
+  "description": "Development dependencies for the Reseller Intent test suite. Nothing here ships in the plugin.",
+  "scripts": {
+    "test:widget": "node tests/widget/continue-click-check.js",
+    "test:unit": "php tests/unit/harness.php",
+    "test:build": "bash tests/build/check-build.sh",
+    "playground:build": "php tests/playground/pg-build.php"
+  },
+  "devDependencies": {
+    "puppeteer": "^24.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}

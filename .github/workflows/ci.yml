@@ -4,6 +4,7 @@ on:
   push:
     branches: [master]
   pull_request:
+  workflow_dispatch:
 
 # A branch that gets three pushes in a row does not need three full runs of
 # everything; only the newest one can still tell you anything useful.
@@ -18,13 +19,13 @@ permissions:
 
 jobs:
   php:
-    name: PHP ${{ matrix.php }} syntax
+    name: PHP ${{ matrix.php }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        # The declared floor and the highest version the plugin is tested on.
-        php: ['7.4', '8.4']
+        # Every version between the declared floor and the newest release.
+        php: ['7.4', '8.0', '8.1', '8.2', '8.3', '8.4']
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -33,11 +34,13 @@ jobs:
           coverage: none
       - name: Lint every PHP file
         run: |
-          find . -name '*.php' -not -path './vendor/*' -print0 \
+          find . -name '*.php' -not -path './node_modules/*' -not -path './vendor/*' -print0 \
             | xargs -0 -n1 -P4 php -l
+      - name: Unit harness (no WordPress, no database)
+        run: php tests/unit/harness.php
 
   standards:
-    name: WordPress coding standards
+    name: Coding standards and PHP 7.4 compatibility
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -57,7 +60,7 @@ jobs:
       # Installed into its own directory: composer global on the runner
       # already carries tools of its own and cannot resolve these alongside
       # them.
-      - name: Install PHPCS and WPCS
+      - name: Install PHPCS, WPCS and PHPCompatibilityWP
         run: |
           mkdir -p "$RUNNER_TEMP/cs"
           cd "$RUNNER_TEMP/cs"
@@ -65,10 +68,14 @@ jobs:
           composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer require --no-interaction --no-progress \
             squizlabs/php_codesniffer:3.13.6 \
-            wp-coding-standards/wpcs:3.4.1
-      - name: phpcs
+            wp-coding-standards/wpcs:3.4.1 \
+            phpcompatibility/phpcompatibility-wp:^2.1
+      - name: WordPress coding standards
         run: |
           "$RUNNER_TEMP/cs/vendor/bin/phpcs" --standard=phpcs.xml.dist
+      - name: PHP 7.4 to 8.4 compatibility (PHPCompatibilityWP)
+        run: |
+          "$RUNNER_TEMP/cs/vendor/bin/phpcs" --standard=phpcompat.xml.dist
 
   javascript:
     name: JavaScript syntax
@@ -80,43 +87,134 @@ jobs:
           node-version: '20'
       - name: Parse every script
         run: |
-          for file in assets/js/*.js; do
+          for file in assets/js/*.js tests/widget/*.js; do
             echo "checking $file"
             node --check "$file"
           done
 
-  blueprint:
-    name: Playground blueprint
+  build:
+    name: Release zip
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          # The zip is linted on the floor version, where a PHP 8 construct
+          # would be a fatal for a real user.
+          php-version: '7.4'
+          coverage: none
+      - name: Build the zip the way wordpress.org serves it and check it
+        run: bash tests/build/check-build.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reseller-intent-zip
+          path: build/reseller-intent.zip
+          if-no-files-found: error
+
+  plugin-check:
+    name: WordPress Plugin Check
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: reseller-intent-zip
+          path: build
+      # Against the release zip, not the checkout: Plugin Check rejects
+      # hidden files and dev directories that the shipped zip never contains.
+      - name: Unpack the release zip
+        run: |
+          unzip -q build/reseller-intent.zip -d build/unzipped
+          ls build/unzipped/reseller-intent
+      - uses: wordpress/plugin-check-action@v1
+        with:
+          build-dir: './build/unzipped/reseller-intent'
+
+  playground:
+    name: Playground (SQLite) on WordPress ${{ matrix.wp }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # latest is what the wordpress.org Live Preview runs. The CLI resolves
+        # nightly, beta and trunk to latest as well, so one entry is honest.
+        wp: ['latest']
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
           coverage: none
-      # The blueprint carries the demo seeder as one runPHP step. Broken JSON
-      # or a syntax error in there only shows up as a dead Live Preview on
-      # wordpress.org, which is a bad place to find out.
-      - name: Extract the seeder from the blueprint
-        run: python3 -c "import json; d=json.load(open('blueprints/blueprint.json')); open('seed.php','w').write([s for s in d['steps'] if s.get('step')=='runPHP'][0]['code'])"
-      - name: Lint the seeder
-        run: php -l seed.php
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build the blueprint (demo seeder plus the verify script)
+        run: php tests/playground/pg-build.php
+      - name: Run the plugin on Playground
+        run: |
+          mkdir -p tests/playground/out
+          npx --yes @wp-playground/cli@latest run-blueprint \
+            --blueprint=tests/playground/pg-blueprint.json \
+            --php=8.2 --wp=${{ matrix.wp }} \
+            --define-bool WP_DEBUG true \
+            --mount="$PWD:/wordpress/wp-content/plugins/reseller-intent" \
+            --mount="$PWD/tests/playground/out:/wordpress/pg-out" \
+            --verbosity=quiet
+      - name: Results
+        run: |
+          cat tests/playground/out/result.txt
+          ! grep -q 'CHECK FAIL' tests/playground/out/result.txt
+          test "$(grep -c 'CHECK ok' tests/playground/out/result.txt)" -ge 50
+          echo; echo "== CLI inside Playground"; cat tests/playground/out/cli.txt
 
-  plugin-check:
-    name: WordPress Plugin Check
+  wordpress:
+    name: WordPress ${{ matrix.name }} (MySQL)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # The declared floor, on the newest PHP it supports.
+          - name: '6.2 floor, PHP 8.0'
+            core: 'WordPress/WordPress#6.2'
+            php: '8.0'
+          - name: 'latest, PHP 8.3'
+            core: ''
+            php: '8.3'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Pin the WordPress and PHP versions for this run
+        run: |
+          if [ -n "${{ matrix.core }}" ]; then
+            printf '{ "core": "%s", "phpVersion": "%s" }\n' "${{ matrix.core }}" "${{ matrix.php }}" > .wp-env.override.json
+          else
+            printf '{ "phpVersion": "%s" }\n' "${{ matrix.php }}" > .wp-env.override.json
+          fi
+          cat .wp-env.override.json
+      - name: Start WordPress with Reseller Store and the plugin
+        run: npx --yes @wordpress/env@latest start
+      - name: Checks
+        run: bash tests/wp/run-checks.sh
+      - name: Container logs
+        if: failure()
+        run: npx --yes @wordpress/env@latest logs || true
+
+  widget:
+    name: Reseller Store widget, both versions
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Against the release export, not the checkout. Plugin Check rejects
-      # hidden files, and a checkout carries .git, .github and .gitattributes
-      # that the shipped zip never contains. git archive honours the
-      # export-ignore rules, so this is byte for byte what users download.
-      - name: Build the release directory
-        run: |
-          mkdir -p build
-          git archive --format=tar --prefix=reseller-intent/ HEAD | tar -x -C build
-          find build -name '.*' -maxdepth 2 -print
-          ls build/reseller-intent
-      - uses: wordpress/plugin-check-action@v1
+      - uses: actions/setup-node@v4
         with:
-          build-dir: './build/reseller-intent'
+          node-version: '20'
+          cache: npm
+      - name: Install puppeteer, React 18
+        run: npm ci
+      - name: Chrome for puppeteer
+        run: npx puppeteer browsers install chrome
+      - name: Continue to cart against the real 3.0.1 and 3.0.2 widget builds
+        run: node tests/widget/continue-click-check.js

@@ -14,38 +14,49 @@ See which domains visitors search on your reseller storefront, which ones they p
 
 **An add-on for the free [Reseller Store](https://wordpress.org/plugins/reseller-store/) plugin by GoDaddy Reseller Programs. Set that up first.**
 
-Your analytics tell you about pages and traffic. They tell you nothing about the search box that actually sells. Reseller Intent records what happens inside it: what people search, whether the name was free, what they pick instead, and what reaches the cart. It watches the transfer box and the product buttons too, so hosting, email and SSL demand shows up next to the domains.
+Your analytics show you pages and traffic. They show you nothing about the search box that sells your domains. Reseller Intent records what happens inside it: what people search for, whether the name was free, what they pick instead, and what reaches the cart. It also watches the transfer box and the product buttons, so you see demand for hosting, email and SSL next to the domains.
+
+= What it tracks =
+
+* Domain searches, and whether the name was available
+* Names picked from the results, and names sent to the cart
+* Transfer searches
+* Products added to the cart: hosting, email, SSL and the rest
+* Clicks on View cart, Sign in and the support number
 
 = What you get =
 
-* A dashboard of real intent: searches, cart clicks, top TLDs, repeat searches, carted domains, added products, transfer searches and outbound clicks
-* Every number compared with the period before it, so you see direction, not just totals
-* A page filter that follows every panel, for when one landing page is doing the work
-* Full history in every list, and any range exported as CSV or JSON
+* A dashboard with the numbers that matter: searches, cart clicks, top TLDs, repeat searches, carted domains, added products, transfer searches and outbound clicks
+* Every number compared with the period before, so you see the direction, not just the total
+* A page filter, for when one landing page is doing all the work
+* Full history in every list, and any date range exported as CSV or JSON
 * The week at a glance on your WordPress dashboard, with the name people asked for most
-* Today's count on the admin bar, on the site and in the admin, with the day's breakdown one hover away
-* Site Health tells you when tracking or prices have quietly stopped, instead of leaving you to notice
-* An optional style pack that matches the Reseller Store widgets to your colors, plus shortcodes for a TLD price strip, a live product price and a regional support number
-* Every report as a WordPress ability, so an AI agent or any tool that speaks the Abilities API can ask your store what people searched this week
-* The same reports from WP-CLI, as a table, JSON or CSV
+* Today's count on the admin bar, with the day's breakdown one hover away
+* Site Health checks that tell you when tracking or prices have quietly stopped
+* An optional style pack that matches the Reseller Store widgets to your colors
+* Three shortcodes: a TLD price strip, a live product price and a regional support number
+* Every report available to AI agents and the REST API through the WordPress Abilities API
+* The same reports from WP-CLI, as a table, JSON, CSV or YAML
 
 = Ask your store a question =
 
-On WordPress 6.9 or newer the plugin registers its reports with the Abilities API: the funnel summary, top searches, top TLDs, countries, carted domains, product adds, transfer searches, pages, the trend, recent searches, current TLD prices and tracking status. Anything that can read WordPress abilities, including the REST API and AI agents connected through an MCP adapter, can ask for them. Every report is read-only, returns aggregates, and needs the same capability as the dashboard. The one action only refreshes TLD prices. Nothing about a single visitor is ever exposed, because nothing about a single visitor is stored.
+On WordPress 6.9 or newer, the plugin registers its reports with the Abilities API. Anything that can read WordPress abilities can ask for them: the REST API, and AI agents connected through an MCP adapter. Ask "what did people search this week" and the agent gets the same numbers the dashboard shows.
 
-The dashboard, the WordPress dashboard widget, WP-CLI and the abilities all read from one query layer, so a number can only ever be computed one way.
+Every report is read-only, returns totals only, and needs the same permission as the dashboard. The one action only refreshes TLD prices. Nothing about a single visitor is ever exposed, because nothing about a single visitor is stored.
+
+The dashboard, the dashboard widget, WP-CLI and the abilities all read from one query layer. A number can only ever be computed one way.
 
 = Privacy =
 
-Events are written to one table in your own database and never leave your site. No cookies, no fingerprinting, no IP addresses. An event is "someone on a mobile device searched example.com and it was available", nothing more. Bots are never recorded, you can ignore your own test searches, and you can clear any window of data with the count shown first.
+Events are written to one table in your own database and never leave your site. No cookies, no fingerprinting, no IP addresses. An event looks like "someone on a mobile device searched example.com and it was available", nothing more. Bots are never recorded. You can ignore your own test searches, and you can clear any window of data, with the count shown before anything is deleted.
 
 = For developers =
 
-`rintent_should_track` pauses tracking, `rintent_event_data` changes or drops an event before it is stored, and `rintent_track_bots` records bot traffic while you debug. Everything lives in one indexed custom table.
+Four filters: `rintent_should_track` pauses tracking, `rintent_event_data` changes or drops an event before it is stored, `rintent_track_bots` records bot traffic while you debug, and `rintent_dashboard_capability` changes who can open the dashboard. Everything lives in one indexed custom table.
 
 == Installation ==
 
-1. Install the free Reseller Store plugin and connect it to your GoDaddy reseller account. Nothing here works until Reseller Store is showing real prices.
+1. Install the free Reseller Store plugin and connect it to your GoDaddy reseller account. Nothing here works until Reseller Store shows real prices.
 2. Install and activate Reseller Intent.
 3. Put a Reseller Store search widget on a page visitors can reach, as a block, a widget or a shortcode.
 4. Open Reseller Intent in the admin menu. Run a search on your own site and watch it arrive.
@@ -56,61 +67,75 @@ Everything under Settings is optional. Tracking works out of the box.
 
 = Do I need the Reseller Store plugin? =
 
-Yes. Reseller Intent reads the widgets that Reseller Store renders, so it cannot work alone. WordPress will tell you if it is missing.
+Yes. Reseller Intent reads the widgets that Reseller Store renders, so it cannot work alone. WordPress tells you if it is missing.
 
-= Which Reseller Store versions are supported? =
+= Which versions are supported? =
 
-2.2.17 up to 3.0.1, and the Continue to cart change coming in 3.0.2 is already covered. On anything older the plugin pauses itself with a notice instead of guessing, and resumes on its own once you update Reseller Store.
+Reseller Store 2.2.17 up to 3.0.1, and the Continue to cart change coming in 3.0.2 is already covered. On anything older the plugin pauses itself with a notice instead of guessing, and resumes on its own once you update Reseller Store.
+
+PHP 7.4 through 8.5, and WordPress 6.2 or newer. Every release is tested on each of those PHP versions, on the oldest supported WordPress and on the newest one, before it ships.
 
 = Which Reseller Store elements does it cover? =
 
-The domain search, the simple search box, the transfer box, product pods and their Add to cart button, the cart, the sign in link, and the support number from the phone shortcode. Reseller Store renders all of these through the same classes whether you place them as a shortcode, a widget or a block, so tracking and styling reach all three placements at once.
+The domain search, the simple search box, the transfer box, product pods and their Add to cart button, the cart, the sign in link, and the support number from the phone shortcode. Reseller Store renders all of these through the same classes whether you place them as a shortcode, a widget or a block, so tracking and styling cover all three.
 
 = My dashboard is empty =
 
-Collection starts at activation, so searches from before that are not there. Check the search widget is on a page visitors can reach, then run a search yourself. If your own searches are in the ignore list they will not appear. Tools then Site Health also checks the tracking for you.
+Tracking starts when you activate the plugin, so older searches are not there. Check that the search widget is on a page visitors can reach, then run a search yourself. If your own searches are on the ignore list, they will not appear. Tools, then Site Health, also checks the tracking for you.
+
+= What does "typed" mean next to a search? =
+
+Someone typed a name without an extension, like "shifteq", and the store looked it up as "shifteq.com". The dashboard records the full name, so it counts under the right TLD and its availability describes a real domain. What was typed shows next to it in Recent Searches and in the export.
 
 = Does it slow my site down, and does it work with caching? =
 
-The tracking script is about 6 KB compressed and loads only where a store widget is. Full page caching is fine: tracking avoids nonces, which go stale inside a cached page, and prices come from a server side cache.
+The whole front end is about 8 KB compressed, and the tracking script itself is under 3 KB. It loads only on pages that have a store widget. Full page caching is fine: tracking does not use nonces, which go stale inside a cached page, and prices come from a server side cache.
 
-= Is any of this personal data? =
+= Is any of this personal data, and does anything leave my site? =
 
 No identifiers are stored. Searched names are kept as typed, and people can type anything into a search box, so mention the tracking in your privacy policy if you want to be thorough. Running a consent banner? Return false from the `rintent_should_track` filter until the visitor agrees, and nothing is recorded before that.
 
+Nothing about visitors leaves your site. The only outside request is the optional TLD price strip: your server asks GoDaddy's storefront API for current prices about twice a day, sending your public reseller ID and one probe domain name per TLD. See the External services section below.
+
 = Will it change how my search widget looks? =
 
-Only if you let it. The style pack is optional and matches the Reseller Store widgets to your accent color and corner rounding. Turn it off and the plugin loads no CSS at all, so your page comes back exactly as it was. That is tested by measuring every store element with the pack off against the same page with the plugin deactivated, and the two match.
+Only if you let it. The style pack is optional. It matches the Reseller Store widgets to your accent color and corner rounding. Turn it off and the plugin loads no CSS at all, so your page comes back exactly as it was. This is tested by measuring every store element with the pack off against the same page with the plugin deactivated, and the two match.
 
 = My own CSS does not override the style pack. Why? =
 
-The pack uses `!important` on the parts that have to win, because themes reach the same buttons through selectors that outrank a plain class. Do not fight it, set the variables instead:
+The pack uses `!important` on the parts that have to win, because themes reach the same buttons through selectors that outrank a plain class. Do not fight it. Set the variables instead:
 
 `body { --rintent-accent: #0f766e; --rintent-radius: 0; }`
 
-Variables win without `!important`, and one line changes every button, field and card at once. Corner style, domain name size and price color also have plain settings, no CSS needed. The full list lives under Settings, Store widgets, Theming reference.
+Variables win without `!important`, and one line changes every button, field and card at once. Corner style, domain name size and price color also have plain settings, no CSS needed. The full list is under Settings, Store widgets, Theming reference.
 
-= What happens when I uninstall? =
+= Does it work on multisite? =
 
-Nothing is deleted unless you asked for it. Tick the uninstall option in Settings first if you want the table and settings removed.
+Yes. Activate it for the network or for one site. Each site keeps its own events table and its own settings, created the first time that site is loaded. `wp rintent report` takes `--url` to pick the site.
 
 = Does it work with AI agents? =
 
-Yes, on WordPress 6.9 or newer. The plugin registers every report with the core Abilities API, so an agent connected to your site through an MCP adapter can ask "what did people search this week" and get the same numbers the dashboard shows. The reports are read-only, return aggregates only, and require the dashboard capability. `wp rintent abilities` lists them. On older WordPress nothing is registered and everything else keeps working.
+Yes, on WordPress 6.9 or newer. The plugin registers every report with the core Abilities API, so an agent connected to your site through an MCP adapter can ask "what did people search this week" and get the same numbers the dashboard shows. The reports are read-only, return totals only, and need the dashboard permission. `wp rintent abilities` lists them. On older WordPress nothing is registered and everything else keeps working.
+
+= What happens when I uninstall? =
+
+Nothing is deleted unless you asked for it. Tick the uninstall option in Settings first if you want the table and the settings removed.
 
 == Screenshots ==
 
-1. The intent dashboard: six KPI cards with tooltips, search vs cart trend, and every list paging in place.
+1. The dashboard: six KPI cards with tooltips, the search and cart trend, and every list paging in place.
 2. The whole dashboard following one page through the page filter.
 3. Repeat Demand, Carted Domains with the cart-size split, and Search by Page on one row.
-4. Added Products, Transfer Searches and Outbound Clicks. Each one hides itself until it has something to show.
+4. Added Products, Transfer Searches and Outbound Clicks. Each panel hides itself until it has something to show.
 5. The Shortcodes page: the family-first price builder with a live preview.
 6. The TLD price strip builder, with the refresh clock in the card footer.
 7. The support number card, previewed with your own timezone.
 8. Settings: three cards, everything optional.
-9. Browser-style clear data with a preview count before anything is deleted.
+9. Clear data with a preview count before anything is deleted.
 10. The WordPress dashboard widget: the week against the week before, and the name people asked for most.
 11. Today's count on the admin bar, with the day's breakdown one hover away.
+12. Recent Searches: result, device and time for every search, with the typed name next to the one the store looked up.
+13. The same reports from WP-CLI: the summary and the abilities list.
 
 == Shortcodes ==
 
@@ -118,35 +143,43 @@ Each one has a visual builder with a live preview under Reseller Intent, Shortco
 
 `[rintent_tld_strip tlds=".com,.in,.io" theme="dark" more_url="/domains/" more_label="560+ more TLDs"]`
 
-A row of price pills using live prices from your own catalog. `theme` is light or dark; dark sections are also detected on their own.
+A row of price pills with live prices from your own catalog. `theme` is light or dark. Dark page sections are also detected on their own.
 
 `[rintent_price family="cpanel" mode="range" before="cPanel from" after="per month"]`
 
-A live price from a product family in your catalog: cheapest, highest or the range across its plans. Build it visually on the Shortcodes page, the family keeps the number correct when prices change. Older `ids=""` embeds keep working unchanged.
+A live price from a product family in your catalog. `mode` is min, max or range: the cheapest plan, the highest, or both. Build it on the Shortcodes page. The family keeps the number right when prices change. Older `ids=""` embeds keep working unchanged.
 
 `[rintent_phone]`
 
-One phone number as a tap to call link, picked for the visitor's region from the browser timezone. GoDaddy's public numbers are the defaults; your own are never overwritten.
+One phone number as a tap to call link, picked for the visitor's region from the browser timezone. GoDaddy's public numbers are the defaults. Your own numbers are never overwritten.
 
 == WP-CLI ==
 
-`wp rintent report <name>` prints any dashboard panel: `summary`, `searches`, `tlds`, `countries`, `carted`, `products`, `transfers`, `pages`, `trend`, `recent`, `prices` or `status`. Options: `--range=7|30|90|all|custom`, `--from` and `--to` for custom, `--page=/domains/` to follow one page, `--limit`, `--repeats` for searches, and `--format=table|json|csv|yaml`.
+`wp rintent report <name>` prints any dashboard panel. Names: `summary`, `searches`, `tlds`, `countries`, `carted`, `products`, `transfers`, `pages`, `trend`, `recent`, `prices` and `status`. Options: `--range=7|30|90|all|custom`, `--from` and `--to` for a custom range, `--page=/domains/` to follow one page, `--limit`, `--repeats` for searches, and `--format=table|json|csv|yaml`.
 
-`wp rintent stats --days=30` prints searches, unique searches, cart clicks, domains added, transfer searches, product adds and the search to cart rate.
+`wp rintent stats --days=30` prints searches, unique searches, cart clicks, domains added, transfer searches, product adds, cart views, sign in clicks, support calls and the search to cart rate.
 
 `wp rintent status` and `wp rintent prices` are shortcuts for the two reports of the same name.
 
-`wp rintent abilities` lists the Abilities API entries the plugin registers and whether this WordPress has the API.
+`wp rintent abilities` lists the Abilities API entries the plugin registers, and tells you if this WordPress has no Abilities API.
 
-`wp rintent export --days=90 --format=csv > events.csv` streams every event as CSV or JSON, in batches.
+`wp rintent export --days=90 --format=csv > events.csv` streams every event as CSV or JSON, in batches. Leave out `--days` for everything.
 
 `wp rintent clear --range=month --yes` deletes events in a window: `hour`, `day`, `week`, `month`, `6months`, `year` or `all`.
 
-`wp rintent refresh-tld` fetches fresh TLD strip prices immediately.
+`wp rintent refresh-tld` fetches fresh TLD strip prices right now.
 
 == Abilities API ==
 
-Registered on WordPress 6.9 and newer, under the `reseller-intent` category. Read-only: `reseller-intent/get-summary`, `get-top-searches`, `get-top-tlds`, `get-countries`, `get-carted-domains`, `get-product-adds`, `get-transfer-searches`, `get-pages`, `get-trend`, `get-recent-searches`, `get-tld-prices` and `get-tracking-status`. One action: `reseller-intent/refresh-tld-prices`. Inputs take `range`, `from`, `to`, `page` and, for lists, `limit`. All of them require the dashboard capability and return aggregates, never individual visitors. Over REST a report runs with GET, for example `/wp-json/wp-abilities/v1/abilities/reseller-intent/get-summary/run?input[range]=30`, and the action runs with POST. Both need a logged in user or an application password.
+Registered on WordPress 6.9 and newer, under the `reseller-intent` category.
+
+Read-only: `reseller-intent/get-summary`, `get-top-searches`, `get-top-tlds`, `get-countries`, `get-carted-domains`, `get-product-adds`, `get-transfer-searches`, `get-pages`, `get-trend`, `get-recent-searches`, `get-tld-prices` and `get-tracking-status`.
+
+One action: `reseller-intent/refresh-tld-prices`.
+
+Inputs take `range`, `from`, `to`, `page` and, for lists, `limit`. All of them need the dashboard permission and return totals, never individual visitors.
+
+Over REST, a report runs with GET, for example `/wp-json/wp-abilities/v1/abilities/reseller-intent/get-summary/run?input[range]=30`. The action runs with POST. Both need a logged in user or an application password.
 
 == External services ==
 
@@ -154,73 +187,73 @@ The optional TLD price strip fetches live domain prices from GoDaddy's storefron
 
 What is sent: your public reseller ID and one static probe domain name per TLD you configured. This happens from your server about twice a day, plus whenever you press refresh, and only while the shortcode is in use. No visitor data is ever sent.
 
-That API is operated by GoDaddy: [Universal Terms of Service](https://www.godaddy.com/legal/agreements/universal-terms-of-service-agreement), [Privacy Policy](https://www.godaddy.com/legal/agreements/privacy-policy). Reseller Intent itself is an independent plugin, built for GoDaddy resellers but not made by, endorsed by or affiliated with GoDaddy.
+That API is operated by GoDaddy: [Universal Terms of Service](https://www.godaddy.com/legal/agreements/universal-terms-of-service-agreement), [Privacy Policy](https://www.godaddy.com/legal/agreements/privacy-policy). Reseller Intent is an independent plugin, built for GoDaddy resellers but not made by, endorsed by or affiliated with GoDaddy.
 
-The default support numbers for the phone shortcode are GoDaddy's published numbers, stored inside the plugin. Showing them involves no external request.
+The default support numbers for the phone shortcode are GoDaddy's published numbers, stored inside the plugin. Showing them makes no external request.
 
 == Upgrade Notice ==
 
 = 2.4.2 =
-Smaller front-end files on every storefront page, searches typed without an extension now count under the extension GoDaddy gave them, and Site Health flags a fast-growing events table. No settings change.
+Smaller front-end files on every storefront page. Searches typed without an extension now count under the extension the store looked up. Site Health warns when the events table grows fast. No settings change.
 
 = 2.4.1 =
 Keeps Continue to cart tracking working with the domain search change coming in Reseller Store 3.0.2, and fills the Top TLDs and Search by Page panels on SQLite sites such as the wordpress.org Live Preview.
 
 = 2.4.0 =
-Every report is now a WordPress ability on 6.9 and newer, readable by AI agents and the REST API, and `wp rintent report` prints any dashboard panel from the command line. Same numbers as the dashboard, from one shared query layer.
+Every report is now a WordPress ability on 6.9 and newer, readable by AI agents and the REST API. `wp rintent report` prints any dashboard panel from the command line. Same numbers as the dashboard, from one shared query layer.
 
 = 2.3.2 =
 If you open store links in a new tab, Add to cart buttons no longer get stuck on loading after the first click. Recommended for every site using that setting.
 
 = 2.3.1 =
-New sites now get a short notice after activation explaining that the plugin styles the Reseller Store widgets by default, with a direct link to the toggle. Nothing changes for existing settings.
+New sites get a short notice after activation explaining that the plugin styles the Reseller Store widgets by default, with a link to the toggle. Nothing changes for existing settings.
 
 = 2.3.0 =
-Today's tracked events now sit on the admin bar, on the site and in the admin, with the day's breakdown in the dropdown. The count updates the moment an event lands. One new Settings toggle turns it off.
+Today's tracked events now sit on the admin bar, with the day's breakdown in the dropdown. The count updates the moment an event lands. One new Settings toggle turns it off.
 
 = 2.2.2 =
-A visitor no longer waits on price lookups when the strip renders for the very first time, a dead connection costs one timeout instead of one per TLD, and large retention cleanups run in small batches. The dashboard version label reads from one place now.
+A visitor no longer waits on price lookups when the strip renders for the first time, a dead connection costs one timeout instead of one per TLD, and large retention cleanups run in small batches.
 
 = 2.2.1 =
-Fixes a dashboard rate that could read above 100%, a price strip that lost a TLD's price after one failed lookup, and empty pills for TLDs with no price. The Site Health checks are one entry now.
+Fixes a dashboard rate that could read above 100%, a price strip that lost a TLD's price after one failed lookup, and empty pills for TLDs with no price.
 
 = 2.2.0 =
-New Site Health tests catch failures that used to stay silent, above all a price strip quietly serving stale prices. The dashboard widget was rebuilt and now counts transfers and product adds too. The asset trim setting is gone; it saved under 1% of a page and could break store widgets.
+New Site Health tests catch failures that used to stay silent, above all a price strip serving stale prices. The dashboard widget was rebuilt and now counts transfers and product adds too. The asset trim setting is gone.
 
 = 2.1.1 =
-Fixes the cart and sign in links being missed on sites that place them with Elementor, the asset trim breaking store widgets that live in a builder's header, and the Panels menu offering panels that had nothing to show.
+Fixes the cart and sign in links being missed on sites that place them with Elementor, the asset trim breaking store widgets in a builder's header, and the Panels menu offering panels with nothing to show.
 
 = 2.1.0 =
 Transfer searches and product add to cart are tracked now, with a panel each. The style pack reaches the rest of the Reseller Store widgets, corner style and type are plain settings, and store links can open in a new tab.
 
 = 2.0.0 =
-The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value panels are gone. The price shortcode is now family-first; every old embed keeps working. Your data is untouched.
+The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value panels are gone. The price shortcode is now family-first. Every old embed keeps working. Your data is untouched.
 
 == Changelog ==
 
 = 2.4.2 =
-* Added: the front-end scripts and the widget stylesheet ship minified, less than half the download they were on every storefront page. The readable files still ship and are served when SCRIPT_DEBUG is on.
-* Changed: a search typed without an extension, like "shifteq", is recorded as the name GoDaddy looked up, "shifteq.com", so it counts in Top TLDs and its availability describes a real name. What was typed shows next to it under Recent Searches and in the export.
-* Changed: with no retention window set, Site Health now reports how many events were added in the last 30 days and how old the oldest one is, and warns when the table is growing fast, not only once it is already large.
+* Added: the front-end scripts and the widget stylesheet now ship minified, less than half the download they were on every storefront page. The readable files still ship and are served when SCRIPT_DEBUG is on.
+* Changed: a search typed without an extension, like "shifteq", is recorded as the name the store looked up, "shifteq.com". It now counts in Top TLDs, and its availability describes a real domain. What was typed shows next to it in Recent Searches and in the export.
+* Changed: with no retention window set, Site Health reports how many events were added in the last 30 days and how old the oldest one is. It warns when the table is growing fast, not only once it is already large.
 * Changed: `wp rintent report` prints yes and no instead of 1 and blank in table, CSV and YAML output.
 
 = 2.4.1 =
-* Fixed: Continue to cart is recorded on the button click instead of the form submit, so tracking keeps working with the Reseller Store 3.0.2 domain search, which has no form. When there is no form, the carted domains are read from the result rows.
+* Fixed: Continue to cart is recorded on the button click instead of the form submit, so tracking keeps working with the Reseller Store 3.0.2 domain search, which has no form. Without a form, the carted domains are read from the result rows.
 * Fixed: Top TLDs, Search by Page and the page filter were empty on SQLite, including the wordpress.org Live Preview. Every query now uses only functions that MySQL and SQLite share.
 * Changed: the open in a new tab setting now tells the domain search widget itself to open the cart in a new tab, which also covers Reseller Store 3.0.2.
 
 = 2.4.0 =
-* Added: Abilities API support on WordPress 6.9 and newer. Twelve read-only reports and one refresh action, under the reseller-intent category, so AI agents and the REST API can read what the dashboard shows.
+* Added: Abilities API support on WordPress 6.9 and newer. Twelve read-only reports and one refresh action under the reseller-intent category, so AI agents and the REST API can read what the dashboard shows.
 * Added: `wp rintent report <name>` for every dashboard panel, with range, page filter, limit and table, JSON, CSV or YAML output. Plus `wp rintent status`, `wp rintent prices` and `wp rintent abilities`.
-* Changed: the dashboard, the dashboard widget, WP-CLI and the abilities now share one query layer, so every surface shows the same numbers.
+* Changed: the dashboard, the dashboard widget, WP-CLI and the abilities share one query layer, so every surface shows the same numbers.
 * Changed: ranked lists keep a stable order when counts tie, instead of shuffling between reloads.
 
 = 2.3.2 =
-* Fixed: with store links set to open in a new tab, an Add to cart button stayed stuck on loading after the first click and ignored every further click.
-* Fixed: the same stuck button after returning to a page with the browser back button.
+* Fixed: with store links set to open in a new tab, an Add to cart button stayed stuck on loading after the first click and ignored every click after it.
+* Fixed: the same stuck button after coming back to a page with the browser back button.
 
 = 2.3.1 =
-* Added: a notice after activation that explains the widget styling default, with links to the setting and a one-click dismiss.
+* Added: a notice after activation that explains the widget styling default, with a link to the setting and a one-click dismiss.
 * Added: Plugin URI in the plugin header.
 * Fixed: a fatal error on PHP 7.4 in the TLD price strip when a probe domain was taken and the price fell back to suggestions.
 
@@ -230,8 +263,8 @@ The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value 
 * Changed: the count refreshes the moment an event is tracked, cleared or purged.
 
 = 2.2.2 =
-* Fixed: the very first render of a price strip could hold the page while prices were fetched.
-* Fixed: a dead connection cost one timeout per TLD; the sweep now stops at the first.
+* Fixed: the first render of a price strip could hold the page while prices were fetched.
+* Fixed: a dead connection cost one timeout per TLD. The sweep now stops at the first.
 * Fixed: the version on the dashboard could disagree with the installed version.
 * Changed: retention cleanup deletes in small batches on large tables.
 * Changed: every screen counts events the same way.
@@ -244,14 +277,14 @@ The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value 
 * Changed: the six Site Health checks are one entry now.
 
 = 2.2.0 =
-* Added: Site Health now flags the failures that used to stay silent: a TLD price strip serving stale prices, a scheduled job that is not queued, and stored events growing with no retention window.
-* Added: the WordPress dashboard widget compares this week with the week before, names the domain or product asked for most, and counts transfer searches and product adds, which it used to ignore.
+* Added: Site Health flags the failures that used to stay silent: a TLD price strip serving stale prices, a scheduled job that is not queued, and stored events growing with no retention window.
+* Added: the WordPress dashboard widget compares this week with the week before, names the domain or product asked for most, and counts transfer searches and product adds.
 * Fixed: under a page filter, empty panels claimed nothing was being tracked. They now say the page and the range are the reason.
-* Fixed: Search by Page says it keeps comparing all pages while a filter is on, instead of looking like the one panel that broke.
+* Fixed: Search by Page says it keeps comparing all pages while a filter is on.
 * Removed: the asset trim setting. It saved under 1% of a page, could not run on most storefronts, and a wrong guess silently broke the cart, sign in and click tracking. The `rintent_page_needs_store` filter goes with it.
 
 = 2.1.1 =
-* Fixed: with the asset trim on, store elements placed in a page builder's header, footer or popup were invisible to the detection, so its scripts were removed sitewide and the cart count, sign in state and click tracking died.
+* Fixed: with the asset trim on, store elements placed in a page builder's header, footer or popup were invisible to the detection, so its scripts were removed sitewide and the cart count, sign in state and click tracking stopped.
 * Fixed: the cart and sign in links got no styling and no tracking when placed with Elementor's WP Widget element. Reseller Store's own inner classes are matched now, so every placement is covered.
 * Fixed: the Panels menu offered Added Products, Transfer Searches, Outbound Clicks and Top Countries on sites with no data for them. They read "nothing yet" until there is something to show.
 
@@ -259,27 +292,27 @@ The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value 
 * Added: View cart, Sign in and the support number are tracked, in one Outbound Clicks panel.
 * Added: transfer searches and product Add to cart are tracked, with a panel each. Both are sent with sendBeacon so they survive the jump to GoDaddy.
 * Added: the Recent Searches log carries transfer searches, marked Transfer beside Available and Registered.
-* Added: the style pack now covers the simple search, the transfer box, Add to cart, the cart, the sign in link, product pods and product pages.
+* Added: the style pack covers the simple search, the transfer box, Add to cart, the cart, the sign in link, product pods and product pages.
 * Added: corner style, domain name size and price color are plain settings, no CSS needed.
 * Added: an option to open store links in a new tab. Off by default.
 * Changed: `wp rintent stats` reports the new event types alongside the existing counts.
 * Fixed: the page filter could not reach a page that only saw a product added or a domain transferred. It now lists every page with any tracked event.
-* Fixed: on right-to-left sites the search bar reversed but its corners did not. Corners are logical now.
+* Fixed: on right-to-left sites the search bar reversed but its corners did not.
 * Fixed: the cart widget sat flush against the left edge of the page instead of in the content column.
-* Fixed: the simple search and transfer selectors outweighed the ones the theming reference documents, so your own CSS could not win. They match now.
+* Fixed: the simple search and transfer selectors outweighed the ones the theming reference documents, so your own CSS could not win.
 * Fixed: with a Dark accent color set, buttons in dark sections drew their labels in dark ink instead of white.
 * Fixed: a product family whose plans differ mid-name was labelled by one shared word, so two SSL services both read "Managed".
 
 = 2.0.0 =
 * Added: filter the whole dashboard by the page a search happened on.
 * Added: a live preview blueprint that seeds widget pages and six months of sample data.
-* Changed: the dashboard is rebuilt on a fixed grid. Every list panel is the same machine, ten rows per page with a pager in the footer.
+* Changed: the dashboard is rebuilt on a fixed grid. Every list panel works the same way, ten rows per page with a pager in the footer.
 * Changed: the dashboard runs its own fixed palette. Your accent color still styles the search widget and the price strip.
-* Changed: KPI cards renamed to say what they count, each with a tooltip. Repeat Searches, Domains Sent to Cart and Avg per Cart Click replace the old names.
-* Changed: the price shortcode is family-first, so the number stays correct when prices change. Old `ids=""` embeds keep working.
-* Changed: Settings slimmed to four cards. Retention is a plain day count, 0 keeps everything forever.
+* Changed: KPI cards renamed to say what they count, each with a tooltip.
+* Changed: the price shortcode is family-first, so the number stays right when prices change. Old `ids=""` embeds keep working.
+* Changed: Settings slimmed down. Retention is a plain day count, 0 keeps everything forever.
 * Removed: the Missed Opportunities, Conversion Funnel and Selection Behavior panels. The cart-size split lives on inside Carted Domains.
-* Removed: the bot-tracking option. Bots are never recorded; developers can opt back in with `rintent_track_bots`.
+* Removed: the bot-tracking option. Bots are never recorded. Developers can opt back in with `rintent_track_bots`.
 * Fixed: tables, tooltips and delta badges render correctly in right-to-left admin languages.
 
 Earlier versions are documented in the [GitHub repository](https://github.com/ekamran/reseller-intent/releases).

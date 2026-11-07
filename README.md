@@ -18,12 +18,12 @@ GoDaddy.
 
 ## What it does
 
-Your analytics tell you about pages and traffic. They tell you nothing about
-the search box that actually sells. This records what happens in it, and in
-every other Reseller Store element on the page:
+Your analytics show you pages and traffic. They show you nothing about the
+search box that sells your domains. This plugin records what happens in it,
+and in every other Reseller Store element on the page:
 
-- Domain searches, whether the name was free, what got picked instead, and what
-  reached the cart
+- Domain searches, whether the name was free, what got picked instead, and
+  what reached the cart
 - Transfer searches and products added to cart, so hosting, email and SSL
   demand sits next to the domains
 - The three links that hand a visitor on: View cart, Sign in, and the support
@@ -31,9 +31,9 @@ every other Reseller Store element on the page:
 - An optional style pack, so the store widgets match your site instead of the
   theme's defaults
 - Three shortcodes: TLD price strip, live product price, regional support number
-- Every report as a WordPress ability (6.9+), so AI agents and the REST API can
-  ask the store what people searched, and the same reports from WP-CLI with
-  `wp rintent report <name>`
+- Every report as a WordPress ability (6.9 and newer), so AI agents and the
+  REST API can ask the store what people searched, and the same reports from
+  WP-CLI with `wp rintent report <name>`
 
 Everything is written to one table in your own database. No cookies, no
 fingerprinting, no IP addresses, no third party. The dashboard, the dashboard
@@ -45,13 +45,13 @@ only ever be computed one way.
 | Requirement | Version |
 |---|---|
 | WordPress | 6.2 or newer |
-| PHP | 7.4 or newer |
+| PHP | 7.4 or newer, tested through 8.5 |
 | Reseller Store | 2.2.17 or newer |
 
 ## Development
 
 The plugin has no build step. Clone it into `wp-content/plugins/` and activate.
-The front-end files ship minified next to their readable sources; with
+The front-end files ship minified next to their readable sources. With
 `SCRIPT_DEBUG` on, WordPress serves the readable ones.
 
 Coding standards are the WordPress ones, with the project's own exclusions in
@@ -61,8 +61,8 @@ Coding standards are the WordPress ones, with the project's own exclusions in
 phpcs --standard=phpcs.xml.dist
 ```
 
-Every change is checked on PHP 7.4 through 8.4 and on WordPress 6.2 through
-the current release before it ships.
+Every change is checked on PHP 7.4 through 8.5, on WordPress 6.2 and on the
+current release, before it ships.
 
 ## Support the project
 

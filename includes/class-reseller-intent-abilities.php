@@ -189,7 +189,7 @@ final class Reseller_Intent_Abilities {
 			),
 			'get-countries'         => array(
 				'label'               => __( 'Get countries', 'reseller-intent' ),
-				'description'         => __( 'Searches by visitor country as two-letter codes. Country comes from the edge geo header, no IP address is ever stored.', 'reseller-intent' ),
+				'description'         => __( 'Searches by visitor country, as two-letter codes. The country comes from the CDN country header or the visitor\'s browser timezone. No IP address is ever stored.', 'reseller-intent' ),
 				'category'            => self::CATEGORY,
 				'input_schema'        => self::range_input( array( 'limit' => self::limit_schema( 20, 100 ) ) ),
 				'output_schema'       => self::list_output(
@@ -234,7 +234,7 @@ final class Reseller_Intent_Abilities {
 			),
 			'get-transfer-searches' => array(
 				'label'               => __( 'Get transfer searches', 'reseller-intent' ),
-				'description'         => __( 'Domain names visitors looked up for a transfer in, most looked up first.', 'reseller-intent' ),
+				'description'         => __( 'Domain names visitors looked up to transfer to your store, most looked up first.', 'reseller-intent' ),
 				'category'            => self::CATEGORY,
 				'input_schema'        => self::range_input( array( 'limit' => self::limit_schema( 15, 100 ) ) ),
 				'output_schema'       => self::list_output(
@@ -249,7 +249,7 @@ final class Reseller_Intent_Abilities {
 			),
 			'get-pages'             => array(
 				'label'               => __( 'Get pages', 'reseller-intent' ),
-				'description'         => __( 'Searches and cart clicks per page the widgets sit on, busiest first. Never filtered by page, it is the page comparator.', 'reseller-intent' ),
+				'description'         => __( 'Searches and cart clicks per page the widgets sit on, busiest first. This report compares pages, so the page filter does not apply to it.', 'reseller-intent' ),
 				'category'            => self::CATEGORY,
 				'input_schema'        => self::range_input(),
 				'output_schema'       => array(
@@ -300,7 +300,7 @@ final class Reseller_Intent_Abilities {
 			),
 			'get-recent-searches'   => array(
 				'label'               => __( 'Get recent searches', 'reseller-intent' ),
-				'description'         => __( 'The latest domain and transfer searches, newest first, with availability and device. Anonymous: no visitor can be told apart from another.', 'reseller-intent' ),
+				'description'         => __( 'The latest domain and transfer searches, newest first, with availability, device and the typed name when it differs. Anonymous: no visitor can be told apart from another.', 'reseller-intent' ),
 				'category'            => self::CATEGORY,
 				'input_schema'        => self::range_input( array( 'limit' => self::limit_schema( 50, 200 ) ) ),
 				'output_schema'       => array(

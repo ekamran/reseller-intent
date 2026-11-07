@@ -5,6 +5,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 final class Reseller_Intent_Assets {
 	/**
+	 * Every front-end file ships twice: the readable one and a .min sibling
+	 * built from it. Visitors get the small one; SCRIPT_DEBUG, the same
+	 * switch WordPress core uses for its own scripts, serves the readable
+	 * file so a problem can be read in the browser as it is in the repo.
+	 *
+	 * @return string '.min' or ''.
+	 */
+	public static function suffix() {
+		return ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
+	}
+
+	/**
 	 * Load frontend assets only on pages where the Reseller Store widget
 	 * script is actually enqueued, zero footprint everywhere else.
 	 */
@@ -15,13 +27,14 @@ final class Reseller_Intent_Assets {
 
 		$base_url  = plugin_dir_url( RINTENT_FILE );
 		$base_path = plugin_dir_path( RINTENT_FILE );
+		$suffix    = self::suffix();
 
 		// Tracking (always on while the plugin is active).
 		wp_enqueue_script(
 			'reseller-intent-tracker',
-			$base_url . 'assets/js/tracker.js',
+			$base_url . 'assets/js/tracker' . $suffix . '.js',
 			array( 'jquery', 'reseller-store-js' ),
-			filemtime( $base_path . 'assets/js/tracker.js' ),
+			filemtime( $base_path . 'assets/js/tracker' . $suffix . '.js' ),
 			true
 		);
 
@@ -41,9 +54,9 @@ final class Reseller_Intent_Assets {
 
 		wp_enqueue_style(
 			'reseller-intent-widget',
-			$base_url . 'assets/css/widget.css',
+			$base_url . 'assets/css/widget' . $suffix . '.css',
 			array( 'reseller-store-css' ),
-			filemtime( $base_path . 'assets/css/widget.css' )
+			filemtime( $base_path . 'assets/css/widget' . $suffix . '.css' )
 		);
 
 		$accent = Reseller_Intent_Settings::accent_color();
@@ -75,9 +88,9 @@ final class Reseller_Intent_Assets {
 
 		wp_enqueue_script(
 			'reseller-intent-widget',
-			$base_url . 'assets/js/widget.js',
+			$base_url . 'assets/js/widget' . $suffix . '.js',
 			array( 'jquery', 'reseller-store-js' ),
-			filemtime( $base_path . 'assets/js/widget.js' ),
+			filemtime( $base_path . 'assets/js/widget' . $suffix . '.js' ),
 			true
 		);
 

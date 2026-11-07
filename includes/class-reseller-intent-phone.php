@@ -273,6 +273,7 @@ final class Reseller_Intent_Phone {
 
 		$base_url  = plugin_dir_url( RINTENT_FILE );
 		$base_path = plugin_dir_path( RINTENT_FILE );
+		$suffix    = Reseller_Intent_Assets::suffix();
 
 		wp_enqueue_style(
 			'reseller-intent-phone',
@@ -283,9 +284,9 @@ final class Reseller_Intent_Phone {
 
 		wp_enqueue_script(
 			'reseller-intent-phone',
-			$base_url . 'assets/js/phone.js',
+			$base_url . 'assets/js/phone' . $suffix . '.js',
 			array(),
-			filemtime( $base_path . 'assets/js/phone.js' ),
+			filemtime( $base_path . 'assets/js/phone' . $suffix . '.js' ),
 			true
 		);
 

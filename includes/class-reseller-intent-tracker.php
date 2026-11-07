@@ -197,6 +197,34 @@ final class Reseller_Intent_Tracker {
 		$table_name = Reseller_Intent_DB::table_name();
 		$cutoff     = gmdate( 'Y-m-d H:i:s', strtotime( current_time( 'mysql' ) ) - 300 );
 
+		$resolved = isset( $_POST['resolved_query'] ) ? sanitize_text_field( wp_unslash( $_POST['resolved_query'] ) ) : '';
+		$resolved = self::resolve_search_query( $domain_query, $this->normalize_domain_query( $resolved ) );
+
+		/*
+		 * A search typed without an extension is stored as the name GoDaddy
+		 * looked up ("shifteq" becomes "shifteq.com"), and what was typed
+		 * moves to related_query so the export still shows it. The row is
+		 * matched on the typed name, which is what the search event stored.
+		 */
+		if ( '' !== $resolved ) {
+			$updated = $wpdb->query(
+				$wpdb->prepare(
+					"UPDATE {$table_name}
+					SET is_available = %d, domain_query = %s, related_query = CASE WHEN related_query = '' THEN %s ELSE related_query END
+					WHERE event_type = 'domain_search' AND domain_query = %s AND is_available IS NULL AND created_at >= %s
+					ORDER BY id DESC
+					LIMIT 1",
+					$is_available,
+					$resolved,
+					$domain_query,
+					$domain_query,
+					$cutoff
+				)
+			);
+
+			wp_send_json_success( array( 'updated' => (int) $updated ) );
+		}
+
 		$updated = $wpdb->query(
 			$wpdb->prepare(
 				"UPDATE {$table_name}
@@ -211,6 +239,35 @@ final class Reseller_Intent_Tracker {
 		);
 
 		wp_send_json_success( array( 'updated' => (int) $updated ) );
+	}
+
+	/**
+	 * The name a search without an extension became. GoDaddy answers a bare
+	 * "shifteq" with "shifteq.com", and that is the domain whose availability
+	 * the visitor saw. Both values arrive normalized.
+	 *
+	 * Returns the resolved name only when the pair fits: the typed query has
+	 * no dot, and the resolved one is exactly that query followed by a dot
+	 * and at least one more character. Anything else returns '' and the
+	 * search stays recorded as typed.
+	 *
+	 * @param string $typed    The query as submitted, normalized.
+	 * @param string $resolved The exact match the widget rendered, normalized.
+	 * @return string
+	 */
+	public static function resolve_search_query( $typed, $resolved ) {
+		$typed    = (string) $typed;
+		$resolved = (string) $resolved;
+
+		if ( '' === $typed || '' === $resolved || false !== strpos( $typed, '.' ) ) {
+			return '';
+		}
+
+		if ( 0 !== strpos( $resolved, $typed . '.' ) || strlen( $resolved ) <= strlen( $typed ) + 1 ) {
+			return '';
+		}
+
+		return $resolved;
 	}
 
 	private function derive_items_count_from_json( $items_json ) {

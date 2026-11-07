@@ -885,7 +885,11 @@ final class Reseller_Intent_Reports {
 	 * Latest searches in range, newest first. Transfer searches ride along,
 	 * they are the same act with a different destination.
 	 *
-	 * @return array<int,array{domain:string,time:string,available:?bool,device:string,transfer:bool}>
+	 * typed is what the visitor entered when it differs from the stored
+	 * name: a search without an extension is stored as the name GoDaddy
+	 * looked up, and the typed form is kept beside it. Empty otherwise.
+	 *
+	 * @return array<int,array{domain:string,typed:string,time:string,available:?bool,device:string,transfer:bool}>
 	 */
 	public static function recent( $start, $end, $page = '', $limit = 1000 ) {
 		global $wpdb;
@@ -895,7 +899,7 @@ final class Reseller_Intent_Reports {
 
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT domain_query, created_at, is_available, device, event_type
+				"SELECT domain_query, related_query, created_at, is_available, device, event_type
 				FROM {$table_name}
 				WHERE event_type IN ('domain_search', 'domain_transfer') AND domain_query <> '' AND created_at >= %s AND created_at < %s{$page_sql}
 				ORDER BY id DESC
@@ -906,8 +910,11 @@ final class Reseller_Intent_Reports {
 
 		$recent = array();
 		foreach ( (array) $rows as $row ) {
+			$typed = 'domain_search' === (string) $row->event_type ? (string) $row->related_query : '';
+
 			$recent[] = array(
 				'domain'    => Reseller_Intent_Admin::display_domain( $row->domain_query ),
+				'typed'     => ( '' !== $typed && $typed !== (string) $row->domain_query ) ? Reseller_Intent_Admin::display_domain( $typed ) : '',
 				'time'      => self::format_datetime_local( (string) $row->created_at ),
 				'available' => ( null === $row->is_available || '' === (string) $row->is_available ) ? null : (bool) (int) $row->is_available,
 				'device'    => (string) $row->device,

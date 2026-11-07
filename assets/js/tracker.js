@@ -261,6 +261,32 @@
 	}
 
 	/*
+	 * A name typed without an extension ("shifteq") comes back from GoDaddy
+	 * as "shifteq.com": the exact match row carries the name that was
+	 * actually looked up. Reporting it lets the server store the search as
+	 * the domain it became, so it counts in Top TLDs and the availability
+	 * flag describes a real name. Only when the typed query has no dot and
+	 * the exact match is that query plus an extension; anything else stays
+	 * as typed.
+	 */
+	function resolvedSearchName($scope, query) {
+		var typed = String(query || '').trim().toLowerCase();
+		var exact;
+
+		if (!typed || typed.indexOf('.') !== -1) {
+			return '';
+		}
+
+		exact = domainNameOf($scope.find('.rstore-exact-domain-list .domain-result').first()).toLowerCase();
+
+		if (exact.indexOf(typed + '.') !== 0) {
+			return '';
+		}
+
+		return exact;
+	}
+
+	/*
 	 * Once results render, report whether the searched domain was available.
 	 * The server attaches the flag to the matching domain_search row. The
 	 * signature dedupes repeat DOM mutations for the same render; it is
@@ -273,6 +299,8 @@
 			var query;
 			var available;
 			var signature;
+			var resolved;
+			var payload;
 
 			if (!$status.length) {
 				return;
@@ -290,10 +318,18 @@
 			}
 
 			$scope.attr('data-rintent-outcome-sent', signature);
-			trackEvent('search_result', {
+
+			payload = {
 				domain_query: query,
 				is_available: available
-			});
+			};
+
+			resolved = resolvedSearchName($scope, query);
+			if (resolved) {
+				payload.resolved_query = resolved;
+			}
+
+			trackEvent('search_result', payload);
 		});
 	}
 

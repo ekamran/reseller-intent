@@ -313,6 +313,7 @@ final class Reseller_Intent_Abilities {
 								'type'       => 'object',
 								'properties' => array(
 									'domain'    => array( 'type' => 'string' ),
+									'typed'     => array( 'type' => 'string' ),
 									'time'      => array( 'type' => 'string' ),
 									'available' => array( 'type' => array( 'boolean', 'null' ) ),
 									'device'    => array( 'type' => 'string' ),

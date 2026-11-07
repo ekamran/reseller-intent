@@ -118,6 +118,20 @@ final class Reseller_Intent_DB {
 	}
 
 	/**
+	 * When the oldest stored event was recorded, as the site-local datetime
+	 * the rows carry, or '' when there are no rows.
+	 *
+	 * @return string
+	 */
+	public static function oldest_event_at() {
+		global $wpdb;
+
+		$table_name = self::table_name();
+
+		return (string) $wpdb->get_var( "SELECT MIN(created_at) FROM {$table_name}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	}
+
+	/**
 	 * Delete events newer than the given cutoff (browser-style "clear data"),
 	 * or truncate everything for all-time.
 	 *

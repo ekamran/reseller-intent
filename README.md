@@ -51,6 +51,8 @@ only ever be computed one way.
 ## Development
 
 The plugin has no build step. Clone it into `wp-content/plugins/` and activate.
+The front-end files ship minified next to their readable sources; with
+`SCRIPT_DEBUG` on, WordPress serves the readable ones.
 
 Coding standards are the WordPress ones, with the project's own exclusions in
 `phpcs.xml.dist`:

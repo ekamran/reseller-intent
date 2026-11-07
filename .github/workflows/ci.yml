@@ -92,6 +92,20 @@ jobs:
             node --check "$file"
           done
 
+  minified:
+    name: Minified files are fresh
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - name: Install terser and lightningcss
+        run: npm ci
+      - name: Rebuild the .min siblings and compare with the committed copies
+        run: bash tests/build/check-minified.sh
+
   build:
     name: Release zip
     runs-on: ubuntu-latest
@@ -218,3 +232,5 @@ jobs:
         run: npx puppeteer browsers install chrome
       - name: Continue to cart against the real 3.0.1 and 3.0.2 widget builds
         run: node tests/widget/continue-click-check.js
+      - name: The same run with the minified tracker, which is what visitors load
+        run: TRACKER_JS="$PWD/assets/js/tracker.min.js" node tests/widget/continue-click-check.js

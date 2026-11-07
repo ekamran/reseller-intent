@@ -435,6 +435,20 @@ final class Reseller_Intent_CLI {
 			return;
 		}
 
+		// Table, CSV and YAML read better with yes/no than with 1 and an
+		// empty cell, and an unknown (recent searches whose result never
+		// came back) stays blank. JSON returned above with the real values.
+		foreach ( $items as &$item ) {
+			foreach ( $item as $key => $value ) {
+				if ( is_bool( $value ) ) {
+					$item[ $key ] = $value ? 'yes' : 'no';
+				} elseif ( null === $value ) {
+					$item[ $key ] = '';
+				}
+			}
+		}
+		unset( $item );
+
 		WP_CLI\Utils\format_items( $format, $items, array_keys( $items[0] ) );
 
 		if ( isset( $result['total'] ) && 'table' === $format && $result['total'] > count( $items ) ) {

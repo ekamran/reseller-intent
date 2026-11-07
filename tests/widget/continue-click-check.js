@@ -72,7 +72,7 @@ const CORS = { 'Access-Control-Allow-Origin': 'https://fixture.test', 'Access-Co
  * One fixture page: scripts injected in the given order, the search run,
  * results on screen. Returns the page plus the Node-side event log.
  */
-async function open(browser, build, order, intent) {
+async function open(browser, build, order, intent, query = 'cypresstest.com') {
 	const page = await browser.newPage();
 	const ajax = [];
 	const cartPosts = [];
@@ -116,7 +116,7 @@ async function open(browser, build, order, intent) {
 	});
 	await page.goto('https://fixture.test/', { waitUntil: 'load' });
 	await page.waitForSelector('.rstore-domain-search-input', { timeout: 5000 });
-	await page.type('.rstore-domain-search-input', 'cypresstest.com');
+	await page.type('.rstore-domain-search-input', query);
 	await page.click('.rstore-domain-search-button');
 	await page.waitForSelector('.rstore-domain-continue-button', { timeout: 5000 });
 	await sleep(300);
@@ -150,6 +150,7 @@ const domainsOf = (e) => {
 				let all = await events(page, ajax);
 				check(`${tag} one domain_search for the typed name`, byType(all, 'domain_search').length === 1 && byType(all, 'domain_search')[0].domain_query === 'cypresstest.com', JSON.stringify(byType(all, 'domain_search')));
 				check(`${tag} one search_result, available`, byType(all, 'search_result').length === 1 && '1' === String(byType(all, 'search_result')[0].is_available), JSON.stringify(byType(all, 'search_result')));
+				check(`${tag} a full name carries no resolved_query`, byType(all, 'search_result').length === 1 && !('resolved_query' in byType(all, 'search_result')[0]), JSON.stringify(byType(all, 'search_result')));
 				if (selectTwo) {
 					// Same click twice: the first Select turns into Selected and leaves the .select list.
 					await page.click('.rstore-domain-list .rstore-domain-buy-button.select');
@@ -173,6 +174,20 @@ const domainsOf = (e) => {
 				}
 				await page.close();
 			}
+		}
+
+		// A name typed without an extension. GoDaddy answers it with the .com
+		// as the exact match, and the search_result must carry that name so
+		// the server can store the search as the domain it became.
+		{
+			const tag = `${build} typed without extension:`;
+			const { page, ajax } = await open(browser, build, ['tracker', 'widget'], INTENT, 'cypresstest');
+			const all = await events(page, ajax);
+			const searches = byType(all, 'domain_search');
+			const outcomes = byType(all, 'search_result');
+			check(`${tag} domain_search records the typed name`, searches.length === 1 && searches[0].domain_query === 'cypresstest', JSON.stringify(searches));
+			check(`${tag} search_result carries resolved_query cypresstest.com`, outcomes.length === 1 && outcomes[0].domain_query === 'cypresstest' && outcomes[0].resolved_query === 'cypresstest.com' && '1' === String(outcomes[0].is_available), JSON.stringify(outcomes));
+			await page.close();
 		}
 
 		// Our "open store links in a new tab" setting, in both script orders. The

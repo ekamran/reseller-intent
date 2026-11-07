@@ -861,3 +861,10 @@
 	.ri-kpi-value { font-size: 22px; }
 	.ri-kpi-label { white-space: normal; }
 }
+
+/* Recent Searches: what the visitor typed when the stored name differs (a bare "shifteq" stored as shifteq.com). */
+.ri-typed {
+	color: var(--ri-muted);
+	font-size: 12px;
+	margin-inline-start: 6px;
+}

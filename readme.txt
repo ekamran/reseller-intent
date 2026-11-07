@@ -4,7 +4,7 @@ Tags: godaddy, godaddy reseller, reseller store, domain reseller, reseller analy
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.4.1
+Stable tag: 2.4.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -160,6 +160,9 @@ The default support numbers for the phone shortcode are GoDaddy's published numb
 
 == Upgrade Notice ==
 
+= 2.4.2 =
+Smaller front-end files on every storefront page, searches typed without an extension now count under the extension GoDaddy gave them, and Site Health flags a fast-growing events table. No settings change.
+
 = 2.4.1 =
 Keeps Continue to cart tracking working with the domain search change coming in Reseller Store 3.0.2, and fills the Top TLDs and Search by Page panels on SQLite sites such as the wordpress.org Live Preview.
 
@@ -194,6 +197,12 @@ Transfer searches and product add to cart are tracked now, with a panel each. Th
 The dashboard, Shortcodes and Settings screens are rebuilt, and three low-value panels are gone. The price shortcode is now family-first; every old embed keeps working. Your data is untouched.
 
 == Changelog ==
+
+= 2.4.2 =
+* Added: the front-end scripts and the widget stylesheet ship minified, less than half the download they were on every storefront page. The readable files still ship and are served when SCRIPT_DEBUG is on.
+* Changed: a search typed without an extension, like "shifteq", is recorded as the name GoDaddy looked up, "shifteq.com", so it counts in Top TLDs and its availability describes a real name. What was typed shows next to it under Recent Searches and in the export.
+* Changed: with no retention window set, Site Health now reports how many events were added in the last 30 days and how old the oldest one is, and warns when the table is growing fast, not only once it is already large.
+* Changed: `wp rintent report` prints yes and no instead of 1 and blank in table, CSV and YAML output.
 
 = 2.4.1 =
 * Fixed: Continue to cart is recorded on the button click instead of the form submit, so tracking keeps working with the Reseller Store 3.0.2 domain search, which has no form. When there is no form, the carted domains are read from the result rows.

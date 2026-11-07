@@ -99,7 +99,8 @@ class Reseller_Intent_Admin { const PAGE_SLUG = 'reseller-intent';
 	public static function capability() { return 'manage_options'; } }
 class Reseller_Intent_DB {
 	public static function table_name() { return 'wp_rintent_events'; }
-	public static function count_events_since( $s ) { return 100; }
+	public static function count_events_since( $s ) { return $s > 0 ? ( $GLOBALS['recent_events'] ?? 40 ) : ( $GLOBALS['total_events'] ?? 100 ); }
+	public static function oldest_event_at() { return $GLOBALS['oldest_event'] ?? gmdate( 'Y-m-d H:i:s', time() - 400 * 86400 ); }
 	public static function ensure_table() {}
 	public static function activate() { $GLOBALS['db_activated'] = true; }
 }
@@ -127,8 +128,18 @@ require $base . 'class-reseller-intent.php';
 require $base . 'class-reseller-intent-reports.php';
 require $base . 'class-reseller-intent-abilities.php';
 require $base . 'class-reseller-intent-cli.php';
+require $base . 'class-reseller-intent-tracker.php';
+require $base . 'class-reseller-intent-assets.php';
 
 /* ------------------------------------------------------------------ */
+
+// Private methods need setAccessible() on PHP 7.4 and 8.0; it is a no-op from 8.1 and deprecated from 8.5.
+function open_method( $method ) {
+	if ( PHP_VERSION_ID < 80100 ) {
+		$method->setAccessible( true );
+	}
+	return $method;
+}
 
 $pass = 0;
 $fail = 0;
@@ -145,9 +156,9 @@ function check( $name, $got, $want ) {
 
 $strip = new Reseller_Intent_TLD_Strip();
 $rlg   = new ReflectionMethod( $strip, 'remember_last_good' );
-$rlg->setAccessible( true );
+$rlg = open_method( $rlg );
 $ck    = new ReflectionMethod( $strip, 'cache_key' );
-$ck->setAccessible( true );
+$ck = open_method( $ck );
 
 echo "\n== A. remember_last_good merges instead of clobbering ==\n";
 
@@ -206,9 +217,9 @@ echo "\n== C. Site Health finds the missing prices ==\n";
 
 $health = new Reseller_Intent_Health();
 $tw     = new ReflectionMethod( $health, 'tlds_without_prices' );
-$tw->setAccessible( true );
+$tw = open_method( $tw );
 $cp     = new ReflectionMethod( $health, 'check_prices' );
-$cp->setAccessible( true );
+$cp = open_method( $cp );
 
 // check_prices() is private now that the six checks live behind one test.
 function price_result( $cp, $health ) {
@@ -380,7 +391,7 @@ unset( $GLOBALS['next_scheduled'] );
 echo "\n== F. transport failure ends the sweep early ==\n";
 
 $fs = new ReflectionMethod( $strip, 'fetch_set' );
-$fs->setAccessible( true );
+$fs = open_method( $fs );
 
 // F1: timeouts. Five TLDs, first request dies in transport -> one call only.
 $GLOBALS['opts'] = array( 'rstore_pl_id' => 487116 );
@@ -646,6 +657,51 @@ $mainf = file_get_contents( __DIR__ . '/../../reseller-intent.php' );
 check( 'Q9 Reports loads before the dashboard', strpos( $mainf, 'class-reseller-intent-reports.php' ) < strpos( $mainf, 'class-reseller-intent-admin.php' ), true );
 check( 'Q9 abilities are registered at bootstrap', false !== strpos( $main, '$this->abilities->register()' ), true );
 check( 'Q10 no em-dash in the new surfaces', false === strpos( $abl . $rep . $cli, "\u{2014}" ), true );
+
+// Q11 (2.4.2): a search typed without an extension is stored as the name
+// GoDaddy looked up. The pair has to fit exactly; anything else stays as typed.
+check( 'Q11 a bare name plus the extension GoDaddy chose resolves', Reseller_Intent_Tracker::resolve_search_query( 'shifteq', 'shifteq.com' ), 'shifteq.com' );
+check( 'Q11 a two-level extension resolves too', Reseller_Intent_Tracker::resolve_search_query( 'shifteq', 'shifteq.co.uk' ), 'shifteq.co.uk' );
+check( 'Q11 a typed name that already has an extension is left alone', Reseller_Intent_Tracker::resolve_search_query( 'shifteq.com', 'shifteq.com' ), '' );
+check( 'Q11 an exact match that is not the typed name plus an extension is refused', Reseller_Intent_Tracker::resolve_search_query( 'shifteq', 'shifteqs.com' ), '' );
+check( 'Q11 a bare dot after the name is refused', Reseller_Intent_Tracker::resolve_search_query( 'shifteq', 'shifteq.' ), '' );
+check( 'Q11 empty input is refused', Reseller_Intent_Tracker::resolve_search_query( '', 'x.com' ) . Reseller_Intent_Tracker::resolve_search_query( 'x', '' ), '' );
+$trk = file_get_contents( __DIR__ . '/../../assets/js/tracker.js' );
+check( 'Q11 the tracker only resolves a query without a dot', false !== strpos( $trk, "typed.indexOf('.') !== -1" ) && false !== strpos( $trk, 'payload.resolved_query = resolved' ), true );
+$recent_def = Reseller_Intent_Abilities::definitions()['get-recent-searches'];
+check( 'Q11 the recent searches ability declares the typed name', isset( $recent_def['output_schema']['properties']['items']['items']['properties']['typed'] ), true );
+check( 'Q11 the recent report reads the typed name from related_query', false !== strpos( $rep, "'typed'     =>" ) && false !== strpos( $rep, 'SELECT domain_query, related_query, created_at' ), true );
+
+// Q12 (2.4.2): the minified siblings ship and are the ones visitors get.
+foreach ( array( 'assets/js/tracker' => '.js', 'assets/js/widget' => '.js', 'assets/js/phone' => '.js', 'assets/css/widget' => '.css' ) as $f => $ext ) {
+	$src = __DIR__ . '/../../' . $f . $ext;
+	$min = __DIR__ . '/../../' . $f . '.min' . $ext;
+	check( "Q12 $f.min$ext exists and is smaller than its source", file_exists( $min ) && filesize( $min ) < filesize( $src ), true );
+}
+check( 'Q12 visitors get the .min files', Reseller_Intent_Assets::suffix(), '.min' );
+$ast = file_get_contents( __DIR__ . '/../../includes/class-reseller-intent-assets.php' );
+$phn = file_get_contents( __DIR__ . '/../../includes/class-reseller-intent-phone.php' );
+check( 'Q12 every front-end enqueue goes through the suffix', substr_count( $ast . $phn, '$suffix . ' ), 8 );
+
+// Q13 (2.4.2): with no retention window, Site Health reports the growth figures
+// and flags a table filling fast, not only one that is already large.
+$retention_check = open_method( new ReflectionMethod( 'Reseller_Intent_Health', 'check_retention' ) );
+$r = $retention_check->invoke( new Reseller_Intent_Health() );
+check( 'Q13 a small table is good', $r['status'], 'good' );
+check( 'Q13 the body carries the 30-day count', false !== strpos( $r['body'], '40 added in the last 30 days' ), true );
+check( 'Q13 the body carries the oldest row age', false !== strpos( $r['body'], 'the oldest from 4 hours ago' ), true );
+$GLOBALS['recent_events'] = 12000;
+$r = $retention_check->invoke( new Reseller_Intent_Health() );
+check( 'Q13 12,000 events in 30 days is flagged even at 100 total', $r['status'], 'recommended' );
+$GLOBALS['recent_events'] = 40;
+$GLOBALS['total_events']  = 60000;
+$r = $retention_check->invoke( new Reseller_Intent_Health() );
+check( 'Q13 60,000 stored events is still flagged', $r['status'], 'recommended' );
+$GLOBALS['total_events']  = 0;
+$GLOBALS['oldest_event']  = '';
+$r = $retention_check->invoke( new Reseller_Intent_Health() );
+check( 'Q13 an empty table has no oldest row to report', 'good' === $r['status'] && false === strpos( $r['body'], 'the oldest from' ), true );
+unset( $GLOBALS['recent_events'], $GLOBALS['total_events'], $GLOBALS['oldest_event'] );
 
 printf( "\n%d passed, %d failed\n", $pass, $fail );
 exit( $fail ? 1 : 0 );

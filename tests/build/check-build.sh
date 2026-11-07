@@ -24,6 +24,13 @@ done
 for f in .git .github .gitattributes .gitignore .distignore README.md phpcs.xml.dist phpcompat.xml.dist tests package.json package-lock.json node_modules .wp-env.json .wordpress-org build; do
 	[ -e "$OUT/reseller-intent/$f" ] && bad "ships $f" || ok "keeps out $f"
 done
+# The minified siblings ship next to their readable sources and must be the smaller of the two.
+for f in assets/js/tracker.min.js assets/js/widget.min.js assets/js/phone.min.js assets/css/widget.min.css; do
+	src="${f/.min/}"
+	if [ -f "$OUT/reseller-intent/$f" ] && [ "$(wc -c < "$OUT/reseller-intent/$f")" -lt "$(wc -c < "$OUT/reseller-intent/$src")" ]; then ok "ships $f, smaller than $src"; else bad "$f missing or not smaller than $src"; fi
+done
+# One blueprint, two homes: the wordpress.org Live Preview reads the copy under .wordpress-org.
+cmp -s blueprints/blueprint.json .wordpress-org/blueprints/blueprint.json && ok "blueprint.json matches the wordpress.org copy" || bad "blueprints/blueprint.json differs from .wordpress-org/blueprints/blueprint.json"
 
 V_PLUGIN="$(grep -m1 '^ \* Version:' reseller-intent.php | sed 's/.*Version: *//' | tr -d '[:space:]')"
 V_STABLE="$(grep -m1 '^Stable tag:' readme.txt | sed 's/.*: *//' | tr -d '[:space:]')"

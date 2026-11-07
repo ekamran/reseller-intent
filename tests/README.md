@@ -75,4 +75,17 @@ With a local Chrome instead of the bundled one:
     CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" node tests/widget/continue-click-check.js
 
 `TRACKER_JS=/path/to/old/tracker.js` runs the same checks against another
-tracker build, which is how a regression is shown before it is fixed.
+tracker build, which is how a regression is shown before it is fixed. CI runs
+it twice, the second time with `assets/js/tracker.min.js`.
+
+## build/minify.js and check-minified.sh
+
+The four front-end files visitors load (`tracker.js`, `widget.js`,
+`phone.js`, `widget.css`) ship with a committed `.min` sibling, built with
+terser and lightningcss. After editing any of them:
+
+    npm run minify
+
+`check-minified.sh` rebuilds them into a temporary directory and fails when a
+committed copy differs, so a change cannot ship without its minified twin.
+CI runs it on every push.

@@ -670,7 +670,7 @@
 				return rows;
 			}
 			return rows.filter(function(row) {
-				return row.domain.indexOf(query) !== -1;
+				return row.domain.indexOf(query) !== -1 || (row.typed || '').indexOf(query) !== -1;
 			});
 		}, [rows, filter]);
 
@@ -690,7 +690,20 @@
 			} else if (row.available === false) {
 				availCell = el('span', { className: 'ri-tag is-bad' }, __( 'Registered', 'reseller-intent' ));
 			}
-			return [row.domain, availCell, row.device || '-', row.time];
+
+			/*
+			 * A name typed without an extension is stored as the name GoDaddy
+			 * looked up ("shifteq" becomes "shifteq.com"); the typed form sits
+			 * beside it so the row still reads as what the visitor did.
+			 */
+			var domainCell = row.domain;
+			if (row.typed) {
+				domainCell = el('span', null, row.domain, ' ', el('span', { className: 'ri-typed' },
+					/* translators: %s: what the visitor typed, e.g. "shifteq" */
+					sprintf( __( 'typed %s', 'reseller-intent' ), row.typed )));
+			}
+
+			return [domainCell, availCell, row.device || '-', row.time];
 		});
 
 		var noteText = sprintf(

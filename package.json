@@ -6,11 +6,15 @@
     "test:widget": "node tests/widget/continue-click-check.js",
     "test:unit": "php tests/unit/harness.php",
     "test:build": "bash tests/build/check-build.sh",
-    "playground:build": "php tests/playground/pg-build.php"
+    "playground:build": "php tests/playground/pg-build.php",
+    "minify": "node tests/build/minify.js",
+    "test:minified": "bash tests/build/check-minified.sh"
   },
   "devDependencies": {
+    "lightningcss": "^1.33.0",
     "puppeteer": "^24.0.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "terser": "^5.51.2"
   }
 }

@@ -421,7 +421,9 @@ final class Reseller_Intent_Health {
 	/**
 	 * Events are one row each and nothing prunes them unless retention is
 	 * on. Small sites never notice; a busy storefront quietly grows a table
-	 * it never asked for.
+	 * it never asked for. With no window set the check reports what is
+	 * there and how fast it grows, and flags a table that is already big or
+	 * filling at a pace that gets it there within the year.
 	 */
 	private function check_retention() {
 		$retention = (int) Reseller_Intent_Settings::get( 'retention_days' );
@@ -442,30 +444,38 @@ final class Reseller_Intent_Health {
 			);
 		}
 
-		if ( $total > 50000 ) {
+		$recent = Reseller_Intent_DB::count_events_since( 30 * DAY_IN_SECONDS );
+		$oldest = Reseller_Intent_DB::oldest_event_at();
+
+		if ( '' !== $oldest ) {
+			$figures = sprintf(
+				/* translators: 1: number of stored events, 2: number of events added in the last 30 days, 3: human readable age of the oldest event, e.g. "2 years" */
+				__( '%1$s events stored, %2$s added in the last 30 days, the oldest from %3$s ago.', 'reseller-intent' ),
+				number_format_i18n( $total ),
+				number_format_i18n( $recent ),
+				human_time_diff( (int) strtotime( $oldest ), (int) strtotime( current_time( 'mysql' ) ) )
+			);
+		} else {
+			$figures = sprintf(
+				/* translators: 1: number of stored events, 2: number of events added in the last 30 days */
+				__( '%1$s events stored, %2$s added in the last 30 days.', 'reseller-intent' ),
+				number_format_i18n( $total ),
+				number_format_i18n( $recent )
+			);
+		}
+
+		if ( $total > 50000 || $recent > 10000 ) {
 			return $this->check(
 				'recommended',
 				__( 'Stored events are growing with no retention limit', 'reseller-intent' ),
-				esc_html(
-					sprintf(
-						/* translators: %s: number of stored events */
-						__( '%s events are stored and nothing is being deleted. That is fine if you want the full history, but a retention window under Settings keeps the table from growing forever. Exports always carry everything, so setting one does not lose you a report.', 'reseller-intent' ),
-						number_format_i18n( $total )
-					)
-				)
+				esc_html( $figures . ' ' . __( 'Nothing is being deleted. That is fine if you want the full history, but a retention window under Settings keeps the table from growing forever. Exports always carry everything, so setting one does not lose you a report.', 'reseller-intent' ) )
 			);
 		}
 
 		return $this->check(
 			'good',
 			__( 'Stored events are a sensible size', 'reseller-intent' ),
-			esc_html(
-				sprintf(
-					/* translators: %s: number of stored events */
-					__( '%s events stored, kept forever because no retention window is set.', 'reseller-intent' ),
-					number_format_i18n( $total )
-				)
-			)
+			esc_html( $figures . ' ' . __( 'Kept forever because no retention window is set.', 'reseller-intent' ) )
 		);
 	}
 }

@@ -254,7 +254,10 @@ jobs:
         run: bash tests/wp/run-checks.sh
       - name: Container logs
         if: failure()
-        run: npx --yes @wordpress/env@latest logs || true
+        # --no-watch: the default follows the log stream and never returns, which
+        # kept a failed job alive until the job timeout.
+        timeout-minutes: 2
+        run: npx --yes @wordpress/env@latest logs --no-watch || true
 
   widget:
     name: Reseller Store widget, both versions

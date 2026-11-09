@@ -14,8 +14,9 @@ jobs:
   release:
     name: GitHub release with the zip
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '7.4'
@@ -24,7 +25,7 @@ jobs:
         run: bash tests/build/check-build.sh "$GITHUB_REF_NAME"
       - name: Name the zip after the tag
         run: cp build/reseller-intent.zip "build/reseller-intent-$GITHUB_REF_NAME.zip"
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           name: ${{ github.ref_name }}
           body: "Reseller Intent ${{ github.ref_name }}. The same zip wordpress.org serves. Changelog in readme.txt."

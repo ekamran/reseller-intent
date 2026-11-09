@@ -35,13 +35,16 @@ blueprint and adds `pg-verify.php`, which registers and executes every
 ability through core, compares them with the dashboard, and exercises the
 CLI. Needs Node.
 
-    php tests/playground/pg-build.php
+    PG_PHP=8.5 php tests/playground/pg-build.php   # PG_PHP and PG_WP pin the versions; defaults 8.3 and latest
     mkdir -p tests/playground/out
     npx @wp-playground/cli@latest run-blueprint \
-      --blueprint=tests/playground/pg-blueprint.json --php=8.2 --wp=latest \
+      --blueprint=tests/playground/pg-blueprint.json \
       --mount="$PWD:/wordpress/wp-content/plugins/reseller-intent" \
       --mount="$PWD/tests/playground/out:/wordpress/pg-out"
     cat tests/playground/out/result.txt
+
+The CLI's own `--php` and `--wp` flags are ignored by `run-blueprint`; the
+pin written into the blueprint is what counts.
 
 ## wp/ with wp-env (MySQL)
 

@@ -847,7 +847,7 @@ final class Reseller_Intent_Reports {
 		);
 
 		// 50 paths = five pager pages; a real site has a handful.
-		$top = array_slice( array_values( $by_path ), 0, 50 );
+		$top = array_slice( $by_path, 0, 50 );
 		foreach ( $top as &$page ) {
 			$page['label'] = self::page_label_for_path( $page['path'] );
 		}

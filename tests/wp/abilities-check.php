@@ -68,7 +68,7 @@ foreach ( $inputs as $slug => $input ) {
 // Cross-check against the dashboard for the same window.
 $admin  = new Reseller_Intent_Admin();
 $method = new ReflectionMethod( 'Reseller_Intent_Admin', 'get_dashboard_data' );
-$method->setAccessible( true );
+if ( PHP_VERSION_ID < 80100 ) { $method->setAccessible( true ); } // no-op since 8.1, deprecated in 8.5
 $dash30 = $method->invoke( $admin, '30' );
 $sum    = $results['get-summary'];
 

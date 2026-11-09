@@ -61,6 +61,17 @@ Coding standards are the WordPress ones, with the project's own exclusions in
 phpcs --standard=phpcs.xml.dist
 ```
 
+Static analysis is PHPStan at level 5, configured in `phpstan.neon.dist`.
+The config looks for the WP-CLI stubs next to PHPStan itself, so install
+`phpstan/phpstan`, `phpstan/extension-installer`, `szepeviktor/phpstan-wordpress`
+and `php-stubs/wp-cli-stubs` together with Composer in one directory outside
+the plugin, then run that copy (a Homebrew or phar PHPStan will not find the
+stubs):
+
+```bash
+/path/to/that/vendor/bin/phpstan analyse -c phpstan.neon.dist
+```
+
 Every change is checked on PHP 7.4 through 8.5, on WordPress 6.2 and on the
 current release, before it ships.
 

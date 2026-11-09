@@ -445,7 +445,7 @@ final class Reseller_Intent_Admin {
 							<span class="rintent-label"><label for="rintent-domain-size"><?php esc_html_e( 'Domain name size', 'reseller-intent' ); ?></label></span>
 							<span>
 								<?php $domain_size = (int) Reseller_Intent_Settings::get( 'domain_size' ); ?>
-								<input type="number" id="rintent-domain-size" name="domain_size" min="10" max="48" step="1" value="<?php echo $domain_size > 0 ? esc_attr( $domain_size ) : ''; ?>" placeholder="<?php esc_attr_e( 'Theme', 'reseller-intent' ); ?>" />
+								<input type="number" id="rintent-domain-size" name="domain_size" min="10" max="48" step="1" value="<?php echo $domain_size > 0 ? esc_attr( (string) $domain_size ) : ''; ?>" placeholder="<?php esc_attr_e( 'Theme', 'reseller-intent' ); ?>" />
 								<p class="description"><?php esc_html_e( 'Size in pixels for the domain name in search results. Leave empty to keep your theme’s size.', 'reseller-intent' ); ?></p>
 							</span>
 						</div>
@@ -553,7 +553,7 @@ final class Reseller_Intent_Admin {
 							<span class="rintent-label"><label for="rintent-retention"><?php esc_html_e( 'Retention', 'reseller-intent' ); ?></label></span>
 							<span>
 								<span class="rintent-inline">
-									<input type="number" id="rintent-retention" name="retention_days" min="0" max="3650" step="1" value="<?php echo esc_attr( $retention ); ?>" style="width:80px;" />
+									<input type="number" id="rintent-retention" name="retention_days" min="0" max="3650" step="1" value="<?php echo esc_attr( (string) $retention ); ?>" style="width:80px;" />
 									<span><?php esc_html_e( 'days', 'reseller-intent' ); ?></span>
 								</span>
 								<p class="description"><?php esc_html_e( 'Events older than this are deleted once a day. 0 keeps everything forever. Specific windows can be cleared from the dashboard any time.', 'reseller-intent' ); ?></p>

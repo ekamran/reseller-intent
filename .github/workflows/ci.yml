@@ -21,13 +21,14 @@ jobs:
   php:
     name: PHP ${{ matrix.php }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
         # Every version between the declared floor and the newest release.
-        php: ['7.4', '8.0', '8.1', '8.2', '8.3', '8.4']
+        php: ['7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
@@ -42,8 +43,9 @@ jobs:
   standards:
     name: Coding standards and PHP 7.4 compatibility
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
@@ -73,18 +75,48 @@ jobs:
       - name: WordPress coding standards
         run: |
           "$RUNNER_TEMP/cs/vendor/bin/phpcs" --standard=phpcs.xml.dist
-      - name: PHP 7.4 to 8.4 compatibility (PHPCompatibilityWP)
+      - name: PHP 7.4 floor compatibility (PHPCompatibilityWP)
         run: |
           "$RUNNER_TEMP/cs/vendor/bin/phpcs" --standard=phpcompat.xml.dist
+
+  phpstan:
+    name: Static analysis (PHPStan level 5)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer
+      # Same pattern as the standards job: its own directory, so it never
+      # fights the runner's global Composer tools. phpstan.neon.dist finds
+      # the WP-CLI stubs relative to wherever PHPStan is installed.
+      - name: Install PHPStan with the WordPress and WP-CLI stubs
+        run: |
+          mkdir -p "$RUNNER_TEMP/stan"
+          cd "$RUNNER_TEMP/stan"
+          composer init --no-interaction --name=reseller-intent/stan
+          composer config allow-plugins.phpstan/extension-installer true
+          composer require --no-interaction --no-progress \
+            phpstan/phpstan:^2.3 \
+            phpstan/extension-installer:^1.4 \
+            szepeviktor/phpstan-wordpress:^2.0 \
+            php-stubs/wp-cli-stubs:^2.12
+      - name: PHPStan
+        run: |
+          "$RUNNER_TEMP/stan/vendor/bin/phpstan" analyse -c phpstan.neon.dist --no-progress --memory-limit=1G
 
   javascript:
     name: JavaScript syntax
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
       - name: Parse every script
         run: |
           for file in assets/js/*.js tests/widget/*.js; do
@@ -95,11 +127,12 @@ jobs:
   minified:
     name: Minified files are fresh
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
           cache: npm
       - name: Install terser and lightningcss
         run: npm ci
@@ -109,8 +142,9 @@ jobs:
   build:
     name: Release zip
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: shivammathur/setup-php@v2
         with:
           # The zip is linted on the floor version, where a PHP 8 construct
@@ -119,7 +153,7 @@ jobs:
           coverage: none
       - name: Build the zip the way wordpress.org serves it and check it
         run: bash tests/build/check-build.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: reseller-intent-zip
           path: build/reseller-intent.zip
@@ -129,9 +163,10 @@ jobs:
     name: WordPress Plugin Check
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           name: reseller-intent-zip
           path: build
@@ -148,6 +183,7 @@ jobs:
   playground:
     name: Playground (SQLite) on WordPress ${{ matrix.wp }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -155,22 +191,23 @@ jobs:
         # nightly, beta and trunk to latest as well, so one entry is honest.
         wp: ['latest']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
           coverage: none
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
       - name: Build the blueprint (demo seeder plus the verify script)
-        run: php tests/playground/pg-build.php
+        # The PHP and WordPress versions live in the blueprint; the CLI's --php
+        # and --wp flags are ignored by run-blueprint.
+        run: PG_PHP=8.5 PG_WP=${{ matrix.wp }} php tests/playground/pg-build.php
       - name: Run the plugin on Playground
         run: |
           mkdir -p tests/playground/out
           npx --yes @wp-playground/cli@latest run-blueprint \
             --blueprint=tests/playground/pg-blueprint.json \
-            --php=8.2 --wp=${{ matrix.wp }} \
             --define-bool WP_DEBUG true \
             --mount="$PWD:/wordpress/wp-content/plugins/reseller-intent" \
             --mount="$PWD/tests/playground/out:/wordpress/pg-out" \
@@ -178,13 +215,15 @@ jobs:
       - name: Results
         run: |
           cat tests/playground/out/result.txt
-          ! grep -q 'CHECK FAIL' tests/playground/out/result.txt
+          # Not "! grep": bash -e ignores a negated command, so a FAIL would stay green.
+          if grep -q 'CHECK FAIL' tests/playground/out/result.txt; then echo 'a Playground check failed'; exit 1; fi
           test "$(grep -c 'CHECK ok' tests/playground/out/result.txt)" -ge 50
           echo; echo "== CLI inside Playground"; cat tests/playground/out/cli.txt
 
   wordpress:
     name: WordPress ${{ matrix.name }} (MySQL)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -193,14 +232,14 @@ jobs:
           - name: '6.2 floor, PHP 8.0'
             core: 'WordPress/WordPress#6.2'
             php: '8.0'
-          - name: 'latest, PHP 8.3'
+          - name: 'latest, PHP 8.4'
             core: ''
-            php: '8.3'
+            php: '8.4'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
       - name: Pin the WordPress and PHP versions for this run
         run: |
           if [ -n "${{ matrix.core }}" ]; then
@@ -220,11 +259,12 @@ jobs:
   widget:
     name: Reseller Store widget, both versions
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
           cache: npm
       - name: Install puppeteer, React 18
         run: npm ci

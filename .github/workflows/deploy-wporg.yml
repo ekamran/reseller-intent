@@ -19,8 +19,9 @@ jobs:
   deploy:
     name: SVN commit of ${{ inputs.tag }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag }}
       - uses: shivammathur/setup-php@v2

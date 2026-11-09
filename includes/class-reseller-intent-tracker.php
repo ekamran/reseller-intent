@@ -353,7 +353,7 @@ final class Reseller_Intent_Tracker {
 		$normalized = preg_replace( '/\.{2,}/', '.', (string) $normalized );
 		$normalized = trim( (string) $normalized, '.-' );
 
-		if ( ! is_string( $normalized ) || '' === $normalized ) {
+		if ( '' === $normalized ) {
 			return '';
 		}
 		if ( ! preg_match( '/^[a-z0-9](?:[a-z0-9.-]{0,189}[a-z0-9])?$/', $normalized ) ) {

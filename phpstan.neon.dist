@@ -1,0 +1,19 @@
+# Static analysis. Level 5 reads the code as written without demanding
+# type annotations everywhere; it catches undefined variables and methods,
+# wrong argument types and impossible branches. Needs phpstan/phpstan,
+# phpstan/extension-installer, szepeviktor/phpstan-wordpress (brings the
+# WordPress stubs) and php-stubs/wp-cli-stubs installed together in one
+# Composer vendor directory, which can live outside the plugin. %rootDir% is
+# PHPStan's own package directory inside that vendor tree, which is how the
+# WP-CLI stubs below resolve; a Homebrew or phar PHPStan will not find them.
+parameters:
+    level: 5
+    paths:
+        - reseller-intent.php
+        - uninstall.php
+        - includes/
+    scanFiles:
+        - %rootDir%/../../php-stubs/wp-cli-stubs/wp-cli-stubs.php
+        - %rootDir%/../../php-stubs/wp-cli-stubs/wp-cli-commands-stubs.php
+        - %rootDir%/../../php-stubs/wp-cli-stubs/wp-cli-i18n-stubs.php
+    treatPhpDocTypesAsCertain: false

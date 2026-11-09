@@ -58,7 +58,7 @@ foreach ( $inputs as $slug => $input ) {
 try {
 	$admin = new Reseller_Intent_Admin();
 	$m     = new ReflectionMethod( 'Reseller_Intent_Admin', 'get_dashboard_data' );
-	$m->setAccessible( true );
+	if ( PHP_VERSION_ID < 80100 ) { $m->setAccessible( true ); } // no-op since 8.1, deprecated in 8.5
 	$d30 = $m->invoke( $admin, '30' );
 	pg( 'dashboard payload renders (30)', is_array( $d30 ) && isset( $d30['kpis']['now']['searches'] ) );
 	pg( 'summary kpis equal dashboard', ! is_wp_error( $results['get-summary'] ) && $results['get-summary']['kpis'] === $d30['kpis'] );

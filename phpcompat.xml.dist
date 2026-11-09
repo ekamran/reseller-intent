@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ruleset name="Reseller Intent PHP compatibility">
-	<description>Every shipped PHP file must run on PHP 7.4, the declared floor, through 8.4.</description>
+	<description>Every shipped PHP file must run on PHP 7.4, the declared floor, and on every release after it.</description>
 
 	<file>.</file>
 	<exclude-pattern>*/node_modules/*</exclude-pattern>

@@ -21,7 +21,7 @@ bad() { echo "FAIL  $1"; fail=1; }
 for f in reseller-intent.php readme.txt uninstall.php LICENSE includes/class-reseller-intent.php includes/class-reseller-intent-reports.php includes/class-reseller-intent-abilities.php assets/js/tracker.js languages/reseller-intent.pot blueprints/blueprint.json; do
 	[ -f "$OUT/reseller-intent/$f" ] && ok "ships $f" || bad "missing $f"
 done
-for f in .git .github .gitattributes .gitignore .distignore README.md phpcs.xml.dist phpcompat.xml.dist tests package.json package-lock.json node_modules .wp-env.json .wordpress-org build; do
+for f in .git .github .gitattributes .gitignore .distignore README.md phpcs.xml.dist phpcompat.xml.dist phpstan.neon.dist tests package.json package-lock.json node_modules .wp-env.json .wordpress-org build; do
 	[ -e "$OUT/reseller-intent/$f" ] && bad "ships $f" || ok "keeps out $f"
 done
 # The minified siblings ship next to their readable sources and must be the smaller of the two.

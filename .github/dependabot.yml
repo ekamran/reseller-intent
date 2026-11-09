@@ -1,0 +1,18 @@
+# Monthly, grouped: one pull request for the actions, one for the npm dev
+# tools. Enough to stop versions going stale, not enough to be noise.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ['*']
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      dev-tools:
+        patterns: ['*']

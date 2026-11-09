@@ -1,8 +1,9 @@
 <?php
 /*
  * Build pg-blueprint.json: the wp.org demo seeder from the shipped blueprint,
- * run against the WORKING TREE plugin (mounted by playground-check.sh), then
- * pg-verify.php, then the CLI. Usage: php pg-build.php
+ * run against the WORKING TREE plugin (mounted with the CLI's --mount, see
+ * ci.yml or tests/README.md), then
+ * pg-verify.php, then the CLI. Usage: php pg-build.php (PG_PHP=8.5 PG_WP=latest to pin)
  */
 $src  = json_decode( file_get_contents( __DIR__ . '/../../blueprints/blueprint.json' ), true );
 $seed = '';
@@ -10,7 +11,9 @@ foreach ( $src['steps'] as $s ) { if ( 'runPHP' === ( $s['step'] ?? '' ) ) { $se
 if ( '' === $seed ) { fwrite( STDERR, "no runPHP seeder in blueprint\n" ); exit( 1 ); }
 $bp = array(
 	'$schema'           => 'https://playground.wordpress.net/blueprint-schema.json',
-	'preferredVersions' => array( 'php' => '8.2', 'wp' => 'latest' ),
+	// The CLI's --php and --wp flags do not reach run-blueprint; only this pin
+	// does. PG_PHP and PG_WP pick the versions (defaults: 8.3, latest).
+	'preferredVersions' => array( 'php' => getenv( 'PG_PHP' ) ?: '8.3', 'wp' => getenv( 'PG_WP' ) ?: 'latest' ),
 	'features'          => array( 'networking' => true ),
 	'login'             => true,
 	'steps'             => array(

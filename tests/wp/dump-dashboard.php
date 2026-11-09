@@ -10,7 +10,7 @@
 
 $admin  = new Reseller_Intent_Admin();
 $method = new ReflectionMethod( 'Reseller_Intent_Admin', 'get_dashboard_data' );
-$method->setAccessible( true );
+if ( PHP_VERSION_ID < 80100 ) { $method->setAccessible( true ); } // no-op since 8.1, deprecated in 8.5
 
 $today = wp_date( 'Y-m-d' );
 $from  = wp_date( 'Y-m-d', strtotime( $today . ' -45 days' ) );

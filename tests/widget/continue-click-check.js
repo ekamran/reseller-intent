@@ -18,6 +18,8 @@ const CHROME = process.env.CHROME || undefined;
 const TRACKER_JS = process.env.TRACKER_JS || path.join(__dirname, '../../assets/js/tracker.js');
 const JQUERY_JS = path.join(__dirname, 'vendor/jquery-3.7.1.min.js');
 // React 18 keeps the UMD builds out of its package exports, so resolve the package and walk in.
+// Stay on 18: it is what WordPress core ships through wp-element (6.2 through trunk), and
+// React 19 has no UMD build at all. Dependabot is told to skip React majors for that reason.
 const REACT_JS = path.join(path.dirname(require.resolve('react/package.json')), 'umd/react.production.min.js');
 const REACT_DOM_JS = path.join(path.dirname(require.resolve('react-dom/package.json')), 'umd/react-dom.production.min.js');
 const BUILDS = {

@@ -16,3 +16,11 @@ updates:
     groups:
       dev-tools:
         patterns: ['*']
+    ignore:
+      # The widget test runs the Reseller Store widget on the React that
+      # WordPress core ships through wp-element: 18.x on 6.2, 7.1 and trunk.
+      # React 19 also drops the UMD builds the test loads. Follow core.
+      - dependency-name: react
+        update-types: ['version-update:semver-major']
+      - dependency-name: react-dom
+        update-types: ['version-update:semver-major']
